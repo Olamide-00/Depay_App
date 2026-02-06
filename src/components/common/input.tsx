@@ -26,7 +26,7 @@ export default Input;
 
 const styles = StyleSheet.create({
   input: {
-    height: hp("6.5%"),
+    height: hp("6%"),
     width: wp("80%"),
     backgroundColor: COLORS.input,
     borderRadius: 6,
