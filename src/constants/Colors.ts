@@ -1,0 +1,18 @@
+export const COLORS = {
+  brand: "rgba(107, 52, 255, 1)",
+  input: "rgba(217, 217, 217, 1)",
+  white: "rgba(255, 255, 255, 1)",
+  black: "rgba(0, 0, 0, 1)",
+  gray: "rgba(128, 128, 128, 1)",
+  lightGray: "rgba(211, 211, 211, 1)",
+  yellow: "rgba(255, 185, 1, 1)",
+  bg: "rgba(245, 245, 245, 1)",
+  textPrimary: "#000000", // or COLORS.black
+  textSecondary: "#374151",
+  textDisabled: "#9CA3AF",
+  disabled: "#E5E7EB",
+  success: "#10B981",
+  error: "#EF4444",
+  warning: "#F59E0B",
+  info: "#3B82F6",
+};
