@@ -1,11 +1,13 @@
-import { Image, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import Text from "../../../components/common/txt";
 import { styles } from "./style";
 import Input from "../../../components/common/input";
 import Btn from "../../../components/common/btn";
 import { COLORS } from "../../../constants/Colors";
+import { useNavigation } from "@react-navigation/native";
 
 export default function SignUp() {
+  const navigation = useNavigation();
   return (
     <View style={styles.root}>
       <Image
@@ -29,9 +31,11 @@ export default function SignUp() {
         <Btn title="REGISTER" />
         <Text color="#fff" style={{ marginTop: 15, alignSelf: "center" }}>
           Already have an account?{" "}
-          <Text color={COLORS.yellow} variant="bold">
-            Sign In
-          </Text>
+          <Pressable onPress={() => navigation.navigate("Login")}>
+            <Text color={COLORS.yellow} variant="bold">
+              Sign In
+            </Text>
+          </Pressable>
         </Text>
       </View>
     </View>

@@ -1,11 +1,13 @@
-import { Image, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import Text from "../../../components/common/txt";
 import { styles } from "./style";
 import Input from "../../../components/common/input";
 import Btn from "../../../components/common/btn";
 import { COLORS } from "../../../constants/Colors";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Login() {
+  const navigation = useNavigation();
   return (
     <View style={styles.root}>
       <Image
@@ -21,12 +23,17 @@ export default function Login() {
         <Input placeholder="Password" width="100%" />
       </View>
       <View style={styles.footer}>
-        <Btn title="LOGIN" />
+        <Btn
+          title="LOGIN"
+          onPress={() => navigation.navigate("Main", { screen: "Home" })}
+        />
         <Text color="#fff" style={{ marginTop: 15, alignSelf: "center" }}>
           Don't have an account?{" "}
-          <Text color={COLORS.yellow} variant="bold">
-            register
-          </Text>
+          <Pressable onPress={() => navigation.navigate("SignUp")}>
+            <Text color={COLORS.yellow} variant="bold">
+              register
+            </Text>
+          </Pressable>
         </Text>
       </View>
     </View>

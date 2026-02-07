@@ -8,16 +8,17 @@ import Text from "../../../components/common/txt";
 import Btn from "../../../components/common/btn";
 import { onboardingData } from "../../../constants/onboardingData";
 import { COLORS } from "../../../constants/Colors";
+import { useNavigation } from "@react-navigation/native";
 
 const Onboarding = () => {
+  const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentData = onboardingData[currentIndex];
   const isLastSlide = currentIndex === onboardingData.length - 1;
 
   const handleNext = () => {
     if (isLastSlide) {
-      // TODO: Navigate to login screen
-      console.log("Navigate to login");
+      navigation.navigate("Login" as never); // Navigate to Login screen
     } else {
       setCurrentIndex(currentIndex + 1);
     }

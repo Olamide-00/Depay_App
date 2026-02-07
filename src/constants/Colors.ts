@@ -1,5 +1,6 @@
 export const COLORS = {
   brand: "rgba(107, 52, 255, 1)",
+  dashboard: "#9B70FF",
   input: "rgba(217, 217, 217, 1)",
   white: "rgba(255, 255, 255, 1)",
   black: "rgba(0, 0, 0, 1)",
@@ -7,7 +8,7 @@ export const COLORS = {
   lightGray: "rgba(211, 211, 211, 1)",
   yellow: "rgba(255, 185, 1, 1)",
   bg: "rgba(245, 245, 245, 1)",
-  textPrimary: "#000000", // or COLORS.black
+  textPrimary: "#000000",
   textSecondary: "#374151",
   textDisabled: "#9CA3AF",
   disabled: "#E5E7EB",
