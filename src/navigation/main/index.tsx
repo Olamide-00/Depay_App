@@ -3,13 +3,13 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Home } from "../../screens/main/home";
 import { Platform } from "react-native";
 import { Home2, Profile, Wallet, Category } from "iconsax-react-native";
-
-// Import your other screens
+import { COLORS } from "../../constants/Colors";
+import Service from "../../screens/main/service";
 
 // Define your tab param list for TypeScript
 export type MainTabParamList = {
   HomeTab: undefined;
-  CategoryTab: undefined;
+  Service: undefined;
   WalletTab: undefined;
   ProfileTab: undefined;
 };
@@ -31,7 +31,7 @@ export default function MainNavigation() {
           paddingBottom: Platform.OS === "ios" ? 25 : 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: "#FF6B35", // Your brand color
+        tabBarActiveTintColor: COLORS.brand,
         tabBarInactiveTintColor: "#999999",
         tabBarLabelStyle: {
           fontSize: 11,
@@ -55,10 +55,10 @@ export default function MainNavigation() {
       />
 
       <Tab.Screen
-        name="CategoryTab"
-        component={Home}
+        name="Service"
+        component={Service}
         options={{
-          tabBarLabel: "Category",
+          tabBarLabel: "Service",
           tabBarIcon: ({ focused, color, size }) => (
             <Category
               size={size}
