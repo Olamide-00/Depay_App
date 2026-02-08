@@ -17,7 +17,7 @@ export type MainTabParamList = {
 // Create the tab navigator instance
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-export default function MainNavigation() {
+export default function TabNavigation() {
   return (
     <Tab.Navigator
       initialRouteName="HomeTab"

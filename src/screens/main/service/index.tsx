@@ -1,11 +1,13 @@
 import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
 import React, { useState, useMemo } from "react";
+import { useNavigation } from "@react-navigation/native";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import SearchBar from "../../../components/common/searchBar";
 import { services as serviceData } from "../../../constants/service";
 
 const Service = () => {
+  const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
 
   const allSections = [
@@ -44,7 +46,11 @@ const Service = () => {
             <TouchableOpacity
               key={`${item.label}-${index}`}
               style={styles.serviceItem}
-              onPress={() => console.log("Navigate to:", item.screen)}
+              onPress={() =>
+                navigation.navigate("StackNav", {
+                  screen: item.screen,
+                })
+              }
               activeOpacity={0.7}
             >
               <View style={styles.serviceIconContainer}>

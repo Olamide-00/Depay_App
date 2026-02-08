@@ -3,7 +3,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View } from "react-native";
 import AuthNavigation from "./auth";
-import MainNavigation from "./main";
+import MainNavigation from "./main/mainNavigation";
+// import MainNavigation from "./main";
 
 export type RootStackParamList = {
   Auth: undefined;
