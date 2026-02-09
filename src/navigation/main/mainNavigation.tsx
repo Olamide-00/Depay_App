@@ -10,7 +10,7 @@ export default function MainNavigation() {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="StackNav"
+      initialRouteName="TabNav"
     >
       <Stack.Screen name="TabNav" component={TabNavigation} />
       <Stack.Screen name="StackNav" component={StackNavigation} />

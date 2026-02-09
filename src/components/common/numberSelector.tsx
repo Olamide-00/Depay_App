@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,11 +6,15 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  Alert,
   StyleSheet,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as Contacts from "expo-contacts";
+import { useContacts } from "../../utils/contactProvider";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface PhoneInputWithContactProps {
   label: string;
@@ -26,113 +30,161 @@ const PhoneInputWithContact: React.FC<PhoneInputWithContactProps> = ({
   placeholder = "Enter phone number",
 }) => {
   const [isContactSheetVisible, setIsContactSheetVisible] = useState(false);
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [isLoadingContacts, setIsLoadingContacts] = useState(false);
+  const { contacts, isLoading, hasPermission, requestContacts } = useContacts();
+
+  // Animation values
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  // Animate modal open/close
+  useEffect(() => {
+    if (isContactSheetVisible) {
+      // Opening animation with spring
+      Animated.parallel([
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          damping: 20,
+          stiffness: 150,
+          mass: 0.8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      // Closing animation
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: SCREEN_HEIGHT,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isContactSheetVisible]);
 
   const openContactPicker = async () => {
-    try {
-      setIsLoadingContacts(true);
-      const { status } = await Contacts.requestPermissionsAsync();
+    // Always open modal immediately
+    setIsContactSheetVisible(true);
 
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Required",
-          "Please grant contact permissions to select a contact",
-        );
-        setIsLoadingContacts(false);
-        return;
-      }
-
-      const { data } = await Contacts.getContactsAsync({
-        fields: [Contacts.Fields.PhoneNumbers],
-      });
-
-      if (data.length > 0) {
-        const contactsWithPhones = data
-          .filter(
-            (contact) =>
-              contact.phoneNumbers && contact.phoneNumbers.length > 0,
-          )
-          .map((contact) => ({
-            id: contact.id,
-            name: contact.name || "Unknown",
-            phoneNumber: contact.phoneNumbers![0].number || "",
-            cleanPhone:
-              contact.phoneNumbers![0].number?.replace(/[^\d+]/g, "") || "",
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-
-        setContacts(contactsWithPhones);
-        setIsContactSheetVisible(true);
-      } else {
-        Alert.alert("No Contacts", "No contacts found on your device");
-      }
-      setIsLoadingContacts(false);
-    } catch (error) {
-      console.error("Error loading contacts:", error);
-      Alert.alert("Error", "Failed to load contacts");
-      setIsLoadingContacts(false);
+    // If no permission, request it
+    if (!hasPermission) {
+      await requestContacts();
     }
+  };
+
+  const closeModal = () => {
+    // Trigger closing animation
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: SCREEN_HEIGHT,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Close modal after animation completes
+      setIsContactSheetVisible(false);
+      // Reset animation values
+      slideAnim.setValue(SCREEN_HEIGHT);
+      opacityAnim.setValue(0);
+    });
   };
 
   const handleSelectContact = (cleanPhone: string) => {
     onChangeText(cleanPhone);
-    setIsContactSheetVisible(false);
+    closeModal();
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputWrapper}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="call-outline" size={18} color="#000" />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder={placeholder}
-          placeholderTextColor="#999"
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType="phone-pad"
-        />
-        <TouchableOpacity
-          style={styles.contactButton}
-          onPress={openContactPicker}
-          disabled={isLoadingContacts}
-        >
-          <Ionicons
-            name={isLoadingContacts ? "hourglass-outline" : "people-outline"}
-            size={20}
-            color="#6C2BD9"
+    <>
+      <View style={styles.container}>
+        <Text style={styles.label}>{label}</Text>
+        <View style={styles.inputWrapper}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="call-outline" size={18} color="#000" />
+          </View>
+          <TextInput
+            style={styles.input}
+            placeholder={placeholder}
+            placeholderTextColor="#999"
+            value={value}
+            onChangeText={onChangeText}
+            keyboardType="phone-pad"
           />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.contactButton}
+            onPress={openContactPicker}
+          >
+            <Ionicons name="people-outline" size={20} color="#6C2BD9" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Contact Picker Bottom Sheet */}
       <Modal
         visible={isContactSheetVisible}
         transparent
-        animationType="slide"
-        onRequestClose={() => setIsContactSheetVisible(false)}
+        animationType="none"
+        onRequestClose={closeModal}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setIsContactSheetVisible(false)}
+        <Animated.View
+          style={[
+            styles.modalOverlay,
+            {
+              opacity: opacityAnim,
+            },
+          ]}
         >
-          <View style={styles.bottomSheetContainer}>
-            <TouchableOpacity activeOpacity={1}>
-              <View style={styles.bottomSheetHandle} />
-              <View style={styles.bottomSheetContent}>
-                <View style={styles.sheetHeader}>
-                  <Text style={styles.bottomSheetTitle}>Select Contact</Text>
-                  <TouchableOpacity
-                    onPress={() => setIsContactSheetVisible(false)}
-                  >
-                    <Ionicons name="close" size={24} color="#666" />
-                  </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.overlayTouchable}
+            activeOpacity={1}
+            onPress={closeModal}
+          />
+          <Animated.View
+            style={[
+              styles.bottomSheetContainer,
+              {
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
+            <View style={styles.bottomSheetHandle} />
+            <View style={styles.bottomSheetContent}>
+              <View style={styles.sheetHeader}>
+                <Text style={styles.bottomSheetTitle}>Select Contact</Text>
+                <TouchableOpacity onPress={closeModal}>
+                  <Ionicons name="close" size={24} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              {isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#6C2BD9" />
+                  <Text style={styles.loadingText}>Loading contacts...</Text>
                 </View>
-                <ScrollView showsVerticalScrollIndicator={false}>
+              ) : contacts.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="people-outline" size={48} color="#999" />
+                  <Text style={styles.emptyText}>No contacts found</Text>
+                </View>
+              ) : (
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  style={styles.scrollView}
+                >
                   {contacts.map((contact) => (
                     <TouchableOpacity
                       key={contact.id}
@@ -152,12 +204,12 @@ const PhoneInputWithContact: React.FC<PhoneInputWithContactProps> = ({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+              )}
+            </View>
+          </Animated.View>
+        </Animated.View>
       </Modal>
-    </View>
+    </>
   );
 };
 
@@ -202,6 +254,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
+  overlayTouchable: {
+    flex: 1,
+  },
   bottomSheetContainer: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
@@ -220,7 +275,7 @@ const styles = StyleSheet.create({
   },
   bottomSheetContent: {
     paddingHorizontal: 16,
-    flex: 1,
+    maxHeight: "90%",
   },
   sheetHeader: {
     flexDirection: "row",
@@ -232,6 +287,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#000",
+  },
+  scrollView: {
+    maxHeight: 400,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 15,
+    color: "#666",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 15,
+    color: "#666",
   },
   contactItem: {
     flexDirection: "row",

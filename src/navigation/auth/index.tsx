@@ -18,7 +18,7 @@ export default function AuthNavigation() {
   return (
     <Stack.Navigator
       initialRouteName="Onboarding"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{ headerShown: false, animation: "slide_from_right" }}
     >
       <Stack.Screen name="Onboarding" component={Onboarding} />
       <Stack.Screen name="Login" component={Login} />

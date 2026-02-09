@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { styles } from "../style";
 import BottomSheetSelector from "../../../../components/common/bottomsheet";
 import PhoneInputWithContact from "../../../../components/common/numberSelector";
+import { useNavigation } from "@react-navigation/native";
 
 const networkOptions = [
   { label: "MTN", value: "mtn", icon: "call" as const },
@@ -12,6 +13,7 @@ const networkOptions = [
 ];
 
 const AirtimeTab = () => {
+  const navigation = useNavigation();
   const [selectedNetwork, setSelectedNetwork] = useState("9mobile");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [amount, setAmount] = useState("");
@@ -59,7 +61,10 @@ const AirtimeTab = () => {
       </View>
 
       {/* Continue Button */}
-      <TouchableOpacity style={styles.continueButton}>
+      <TouchableOpacity
+        style={styles.continueButton}
+        onPress={() => navigation.navigate("Confirmation")}
+      >
         <Text style={styles.continueButtonText}>Continue</Text>
       </TouchableOpacity>
     </View>

@@ -19,11 +19,7 @@ const CommonHeader = ({ title, back, onBackPress }: HeaderProps) => {
   const navigation = useNavigation();
 
   const handleBackPress = () => {
-    if (onBackPress) {
-      onBackPress();
-    } else {
-      navigation.goBack();
-    }
+    navigation.goBack();
   };
 
   return (
