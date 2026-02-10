@@ -1,6 +1,9 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Airtime from "../../screens/main/airtime";
 import Confirmation from "../../screens/main/confirmation";
+import OTP from "../../screens/main/OTP";
+import Success from "../../screens/main/success";
+import User from "../../screens/main/user";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -14,6 +17,9 @@ export default function StackNavigation() {
         component={Confirmation}
         options={{ presentation: "modal", animation: "slide_from_bottom" }}
       />
+      <Stack.Screen name="OTP" component={OTP} />
+      <Stack.Screen name="Success" component={Success} />
+      <Stack.Screen name="User" component={User} />
     </Stack.Navigator>
   );
 }

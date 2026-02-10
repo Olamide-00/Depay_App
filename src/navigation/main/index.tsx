@@ -1,6 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Home } from "../../screens/main/home";
+import ProfileScreen from "../../screens/main/profile";
 import { Platform } from "react-native";
 import { Home2, Profile, Wallet, Category } from "iconsax-react-native";
 import { COLORS } from "../../constants/Colors";
@@ -86,7 +87,7 @@ export default function TabNavigation() {
 
       <Tab.Screen
         name="ProfileTab"
-        component={Home}
+        component={ProfileScreen}
         options={{
           tabBarLabel: "Profile",
           tabBarIcon: ({ focused, color, size }) => (

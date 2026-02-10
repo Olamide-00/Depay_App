@@ -8,7 +8,19 @@ import { COLORS } from "../../../constants/Colors";
 export const styles = StyleSheet.create({
   root: {
     flex: 1,
-    paddingTop: hp("5%"),
     backgroundColor: COLORS.white,
+  },
+  container: {
+    paddingHorizontal: wp("5%"),
+  },
+  itemContainer: {
+    gap: hp("2%"),
+    marginTop: hp("3%"),
+  },
+  btn: {
+    backgroundColor: COLORS.brand,
+    borderWidth: 0,
+    paddingVertical: hp("2%"),
+    marginTop: hp("10%"),
   },
 });
