@@ -4,16 +4,17 @@ import { styles } from "./style";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileInfoItem from "./component/item";
 import Text from "../../../components/common/txt";
+import { useNavigation } from "@react-navigation/native";
 
 const User = () => {
+  const navigation = useNavigation();
   const handleBack = () => {
     console.log("Go back");
     // navigation.goBack();
   };
 
   const handleEdit = () => {
-    console.log("Navigate to Edit Profile");
-    // navigation.navigate("EditProfile");
+    navigation.navigate("EditUser");
   };
 
   return (

@@ -14,8 +14,7 @@ const Profile = () => {
   };
 
   const handleReferrals = () => {
-    console.log("Navigate to Referrals");
-    // navigation.navigate("Referrals");
+    navigation.navigate("StackNav", { screen: "Refer" });
   };
 
   const handleAnalytics = () => {

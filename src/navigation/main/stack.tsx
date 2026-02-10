@@ -4,6 +4,8 @@ import Confirmation from "../../screens/main/confirmation";
 import OTP from "../../screens/main/OTP";
 import Success from "../../screens/main/success";
 import User from "../../screens/main/user";
+import EditUser from "../../screens/main/editUser";
+import Refer from "../../screens/main/refer";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -20,6 +22,8 @@ export default function StackNavigation() {
       <Stack.Screen name="OTP" component={OTP} />
       <Stack.Screen name="Success" component={Success} />
       <Stack.Screen name="User" component={User} />
+      <Stack.Screen name="EditUser" component={EditUser} />
+      <Stack.Screen name="Refer" component={Refer} />
     </Stack.Navigator>
   );
 }
