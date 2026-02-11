@@ -6,6 +6,7 @@ import Success from "../../screens/main/success";
 import User from "../../screens/main/user";
 import EditUser from "../../screens/main/editUser";
 import Refer from "../../screens/main/refer";
+import Security from "../../screens/main/security";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -24,6 +25,7 @@ export default function StackNavigation() {
       <Stack.Screen name="User" component={User} />
       <Stack.Screen name="EditUser" component={EditUser} />
       <Stack.Screen name="Refer" component={Refer} />
+      <Stack.Screen name="Security" component={Security} />
     </Stack.Navigator>
   );
 }

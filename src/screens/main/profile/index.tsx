@@ -23,8 +23,7 @@ const Profile = () => {
   };
 
   const handleSecurity = () => {
-    console.log("Navigate to Security");
-    // navigation.navigate("Security");
+    navigation.navigate("StackNav", { screen: "Security" });
   };
 
   const handleTheme = () => {
