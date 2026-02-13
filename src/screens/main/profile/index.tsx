@@ -107,13 +107,13 @@ const Profile = () => {
             onPress={handleReferrals}
           />
 
-          <ProfileMenuItem
+          {/* <ProfileMenuItem
             icon="stats-chart-outline"
             iconColor="#EF4444"
             iconBgColor="#FEF2F2"
             title="Analytics"
             onPress={handleAnalytics}
-          />
+          /> */}
 
           <ProfileMenuItem
             icon="shield-checkmark-outline"
@@ -123,13 +123,13 @@ const Profile = () => {
             onPress={handleSecurity}
           />
 
-          <ProfileMenuItem
+          {/* <ProfileMenuItem
             icon="color-palette-outline"
             iconColor="#F59E0B"
             iconBgColor="#FFFBEB"
             title="Theme"
             onPress={handleTheme}
-          />
+          /> */}
 
           <ProfileMenuItem
             icon="notifications-outline"

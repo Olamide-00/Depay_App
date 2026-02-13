@@ -7,6 +7,11 @@ import User from "../../screens/main/user";
 import EditUser from "../../screens/main/editUser";
 import Refer from "../../screens/main/refer";
 import Security from "../../screens/main/security";
+import ChangePIN1 from "../../screens/main/changePIN1";
+import ChangePassword from "../../screens/main/changePassword";
+import OTPVerify from "../../screens/main/otpVerify";
+import PasswordOTP from "../../screens/main/PasswordOTP";
+import ResetPassword from "../../screens/main/resetPassword";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -26,6 +31,11 @@ export default function StackNavigation() {
       <Stack.Screen name="EditUser" component={EditUser} />
       <Stack.Screen name="Refer" component={Refer} />
       <Stack.Screen name="Security" component={Security} />
+      <Stack.Screen name="ChangePIN1" component={ChangePIN1} />
+      <Stack.Screen name="ChangePassword" component={ChangePassword} />
+      <Stack.Screen name="OTPVerify" component={OTPVerify} />
+      <Stack.Screen name="PasswordOTP" component={PasswordOTP} />
+      <Stack.Screen name="ResetPassword" component={ResetPassword} />
     </Stack.Navigator>
   );
 }

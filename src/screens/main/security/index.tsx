@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const Security = () => {
+  const navigation = useNavigation();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
 
   return (
@@ -33,7 +35,12 @@ const Security = () => {
           </View>
 
           {/* Change Pin */}
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() =>
+              navigation.navigate("StackNav", { screen: "ChangePIN1" })
+            }
+          >
             <View style={styles.menuLeft}>
               <View style={styles.iconContainer}>
                 <Ionicons name="keypad-outline" size={24} color="#8B5CF6" />
@@ -44,7 +51,12 @@ const Security = () => {
           </TouchableOpacity>
 
           {/* Change Password */}
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() =>
+              navigation.navigate("StackNav", { screen: "ChangePassword" })
+            }
+          >
             <View style={styles.menuLeft}>
               <View style={styles.iconContainer}>
                 <Ionicons
