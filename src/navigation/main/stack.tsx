@@ -16,6 +16,9 @@ import Wallet from "../../screens/main/bankAccount";
 import Legal from "../../screens/main/legal";
 import Support from "../../screens/main/support";
 import Notification from "../../screens/main/notification";
+import Electricity from "../../screens/main/electricity";
+import Receipt from "../../screens/main/receipt";
+import TV from "../../screens/main/tv";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -44,6 +47,9 @@ export default function StackNavigation() {
       <Stack.Screen name="Legal" component={Legal} />
       <Stack.Screen name="Support" component={Support} />
       <Stack.Screen name="Notification" component={Notification} />
+      <Stack.Screen name="Electricity" component={Electricity} />
+      <Stack.Screen name="Receipt" component={Receipt} />
+      <Stack.Screen name="TV" component={TV} />
     </Stack.Navigator>
   );
 }

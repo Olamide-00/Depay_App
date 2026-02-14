@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   Clipboard,
   Alert,
+  Image,
 } from "react-native";
 import React, { useState } from "react";
 import { styles } from "./style";
@@ -41,7 +42,11 @@ const Refer = () => {
           <View style={styles.referHeader}>
             {/* Referral Icon using emoji/icon */}
             <View style={styles.referIconContainer}>
-              <Text style={styles.referIconEmoji}>👋</Text>
+              <Image
+                resizeMode="contain"
+                style={styles.image}
+                source={require("../../../../assets/services/refer.png")}
+              />
             </View>
             <View style={styles.referTextContainer}>
               <Text style={styles.referTitle}>Refer Someone and Earn</Text>

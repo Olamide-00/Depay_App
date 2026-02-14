@@ -7,11 +7,13 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { COLORS } from "../../constants/Colors";
+import { useNavigation } from "@react-navigation/native";
 
 const Item = ({ data }: any) => {
+  const navigation = useNavigation();
   return (
     <Pressable
-      onPress={() => console.log("pressed item:", data)}
+      onPress={() => navigation.navigate("StackNav", { screen: "Receipt" })}
       style={styles.container}
     >
       <View style={styles.row1}>

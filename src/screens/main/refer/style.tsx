@@ -234,4 +234,8 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#fff",
   },
+  image: {
+    width: wp("100%"),
+    height: hp("7%"),
+  },
 });

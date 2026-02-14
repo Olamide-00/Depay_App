@@ -15,20 +15,20 @@ export const serviceData = [
   {
     id: 1,
     name: "Airtime",
-    icon: "Simcard1", // Use string name instead of JSX
+    icon: "Simcard1",
     screen: "Airtime",
   },
   {
     id: 2,
-    name: "Data",
-    icon: "Simcard",
-    screen: "Data",
-  },
-  {
-    id: 3,
     name: "Electricity",
     icon: "Electricity",
     screen: "Electricity",
+  },
+  {
+    id: 3,
+    name: "Data",
+    icon: "Simcard2",
+    screen: "Data",
   },
   {
     id: 4,
@@ -38,25 +38,25 @@ export const serviceData = [
   },
   {
     id: 5,
-    name: "Wallet",
-    icon: "WalletMoney",
-    screen: "Wallet",
+    name: "Education",
+    icon: "Book1",
+    screen: "Education",
   },
   {
     id: 6,
-    name: "Transfer",
-    icon: "Send2",
-    screen: "Transfer",
+    name: "Betting",
+    icon: "Game",
+    screen: "Betting",
   },
   {
     id: 7,
-    name: "Top Up",
+    name: "Intl",
     icon: "AddCircle",
     screen: "TopUp",
   },
   {
     id: 8,
-    name: "Card",
+    name: "Gift Card",
     icon: "Card",
     screen: "Card",
   },
@@ -70,6 +70,6 @@ export const serviceData = [
     id: 9,
     name: "More",
     icon: "People",
-    screen: "More",
+    screen: "Service",
   },
 ];

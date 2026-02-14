@@ -24,9 +24,13 @@ import {
   People,
   Electricity,
   Simcard2,
+  Book1,
+  Game,
 } from "iconsax-react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const QuickAction = () => {
+  const navigation = useNavigation();
   // Map icon names to Iconsax components
   const getIconComponent = (icon, color = "#FF8A65") => {
     if (React.isValidElement(icon)) {
@@ -50,10 +54,10 @@ const QuickAction = () => {
         return <Electricity {...iconProps} />;
       case "Receipt21":
         return <Receipt21 {...iconProps} />;
-      case "WalletMoney":
-        return <WalletMoney {...iconProps} />;
-      case "Send2":
-        return <Send2 {...iconProps} />;
+      case "Book1":
+        return <Book1 {...iconProps} />;
+      case "Game":
+        return <Game {...iconProps} />;
       case "AddCircle":
         return <AddCircle {...iconProps} />;
       case "Card":
@@ -87,7 +91,7 @@ const QuickAction = () => {
     return (
       <TouchableOpacity
         style={styles.serviceItem}
-        onPress={() => console.log("Navigate to:", item.screen)}
+        onPress={() => navigation.navigate("StackNav", { screen: item.screen })}
         activeOpacity={0.7}
       >
         <View
@@ -106,9 +110,6 @@ const QuickAction = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Quick Access</Text>
-        <TouchableOpacity>
-          <Text style={styles.seeAllText}>See All</Text>
-        </TouchableOpacity>
       </View>
 
       <FlatList
