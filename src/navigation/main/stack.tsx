@@ -12,6 +12,10 @@ import ChangePassword from "../../screens/main/changePassword";
 import OTPVerify from "../../screens/main/otpVerify";
 import PasswordOTP from "../../screens/main/PasswordOTP";
 import ResetPassword from "../../screens/main/resetPassword";
+import Wallet from "../../screens/main/bankAccount";
+import Legal from "../../screens/main/legal";
+import Support from "../../screens/main/support";
+import Notification from "../../screens/main/notification";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -36,6 +40,10 @@ export default function StackNavigation() {
       <Stack.Screen name="OTPVerify" component={OTPVerify} />
       <Stack.Screen name="PasswordOTP" component={PasswordOTP} />
       <Stack.Screen name="ResetPassword" component={ResetPassword} />
+      <Stack.Screen name="Wallet" component={Wallet} />
+      <Stack.Screen name="Legal" component={Legal} />
+      <Stack.Screen name="Support" component={Support} />
+      <Stack.Screen name="Notification" component={Notification} />
     </Stack.Navigator>
   );
 }

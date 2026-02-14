@@ -13,11 +13,13 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import Text from "../common/txt";
+import { useNavigation } from "@react-navigation/native";
 
 const Header = () => {
+  const navigation = useNavigation();
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const slideAnim = useRef(new Animated.Value(-100)).current; // Start above the header
+  const slideAnim = useRef(new Animated.Value(-100)).current;
 
   const handleSearchPress = () => {
     if (!showSearchBar) {
@@ -73,7 +75,13 @@ const Header = () => {
             />
           </TouchableOpacity>
           <MaterialCommunityIcons name="scan-helper" size={24} color="black" />
-          <MaterialCommunityIcons name="bell" size={24} color="black" />
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("StackNav", { screen: "Notification" })
+            }
+          >
+            <MaterialCommunityIcons name="bell" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       </View>
 

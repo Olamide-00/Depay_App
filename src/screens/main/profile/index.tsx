@@ -37,18 +37,15 @@ const Profile = () => {
   };
 
   const handleGenerateBankAccount = () => {
-    console.log("Navigate to Generate Bank Account");
-    // navigation.navigate("GenerateBankAccount");
+    navigation.navigate("StackNav", { screen: "Wallet" });
   };
 
   const handleSupport = () => {
-    console.log("Navigate to Support");
-    // navigation.navigate("Support");
+    navigation.navigate("StackNav", { screen: "Support" });
   };
 
   const handleLegal = () => {
-    console.log("Navigate to Legal");
-    // navigation.navigate("Legal");
+    navigation.navigate("StackNav", { screen: "Legal" });
   };
 
   const handleJoinCommunity = () => {
