@@ -14,6 +14,7 @@ import { COLORS } from "../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Spacer from "../../../components/common/spacer";
+import { useAuthStore } from "../../../context/userContext";
 
 export default function Login() {
   const navigation = useNavigation();
@@ -21,8 +22,10 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const { login } = useAuthStore();
+
   const handleLogin = () => {
-    navigation.navigate("Main", { screen: "Home" });
+    login();
   };
 
   return (

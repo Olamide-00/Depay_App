@@ -15,14 +15,15 @@ import { COLORS } from "../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Spacer from "../../../components/common/spacer";
+import { useAuthStore } from "../../../context/userContext";
 
 const SignUp = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
 
+  const { login } = useAuthStore();
   const handleContinue = () => {
-    // Validate email and proceed to OTP
-    navigation.navigate("OTP", { email, flow: "signup" });
+    login();
   };
 
   return (

@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View } from "react-native";
 import AuthNavigation from "./auth";
 import MainNavigation from "./main/mainNavigation";
+import { useAuthStore } from "../context/userContext";
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -13,7 +14,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigation() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { isAuthenticated, setIsAuthenticated } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,13 +23,25 @@ export default function RootNavigation() {
 
   const checkAuthStatus = async () => {
     try {
-      setIsAuthenticated(false);
+      // Check if user is authenticated (e.g., check AsyncStorage for token)
+      // const token = await AsyncStorage.getItem('userToken');
+      // setIsAuthenticated(!!token);
+
+      setIsAuthenticated(false); // For now, default to false
     } catch (error) {
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#7C4DFF" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
