@@ -1,94 +1,115 @@
-// Onboarding.tsx (without navigation)
-import { View, Image } from "react-native";
+import { View, Image, ImageBackground, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
 import { styles } from "./style";
 import Text from "../../../components/common/txt";
 import Btn from "../../../components/common/btn";
-import { onboardingData } from "../../../constants/onboardingData";
 import { COLORS } from "../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 
 const Onboarding = () => {
   const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const currentData = onboardingData[currentIndex];
-  const isLastSlide = currentIndex === onboardingData.length - 1;
+
+  const slides = [
+    {
+      id: 1,
+      image: require("../../../../assets/images/image1.png"),
+      background: require("../../../../assets/images/bgcolor.png"),
+      title: "Welcome To JAAN",
+      description:
+        "JAAN is your all-in-one digital hub for seamless payments and connections",
+    },
+    {
+      id: 2,
+      image: require("../../../../assets/images/image2.png"),
+      background: require("../../../../assets/images/bgcolor2.png"),
+      title: "Pay Bills Securely",
+      description:
+        "Effortlessly pay your bills with secure and reliable transactions, say goodbye to long queues",
+    },
+  ];
+
+  const currentSlide = slides[currentIndex];
+  const isLastSlide = currentIndex === slides.length - 1;
 
   const handleNext = () => {
     if (isLastSlide) {
-      navigation.navigate("Login" as never); // Navigate to Login screen
+      navigation.navigate("Login" as never);
     } else {
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const handleSkip = () => {
-    // TODO: Skip to login screen
-    console.log("Skip to login");
+    navigation.navigate("Login" as never);
   };
 
   return (
-    <View style={styles.root}>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../../../assets/images/logo.png")}
-          style={styles.logo}
-          resizeMode="center"
-        />
-        <MaterialCommunityIcons
-          name="close-circle"
-          size={24}
-          color="white"
-          onPress={handleSkip}
-        />
-      </View>
-
-      <View style={styles.contentContainer}>
-        {/* Only show icon if it exists in the data */}
-        {currentData.icon && (
-          <View style={styles.iconContainer}>
-            <MaterialCommunityIcons
-              name={currentData.icon as any}
-              size={80}
-              color={COLORS.white}
+    <ImageBackground
+      source={currentSlide.background}
+      style={styles.root}
+      resizeMode="cover"
+    >
+      <View style={styles.container}>
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoContent}>
+            <Image
+              source={require("../../../../assets/images/logo2.png")}
+              resizeMode="contain"
+              style={styles.image}
             />
           </View>
-        )}
+        </View>
 
-        <Text
-          variant="bold"
-          color="white"
-          size="xl"
-          style={styles.title}
-          center
-        >
-          {currentData.title}
-        </Text>
+        {/* Image */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={currentSlide.image}
+            style={styles.slideImage}
+            resizeMode="contain"
+          />
+        </View>
 
-        <View style={styles.dotContainer}>
-          {onboardingData.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                index === currentIndex ? styles.activeDot : styles.inactiveDot,
-              ]}
+        {/* Content */}
+        <View style={styles.contentContainer}>
+          {/* Dots */}
+          <View style={styles.dotContainer}>
+            {slides.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  index === currentIndex
+                    ? styles.activeDot
+                    : styles.inactiveDot,
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Title and Description */}
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>{currentSlide.title}</Text>
+            <Text style={styles.description}>{currentSlide.description}</Text>
+          </View>
+
+          {/* Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+              <Text style={styles.skipText}>skip</Text>
+            </TouchableOpacity>
+
+            <Btn
+              title={isLastSlide ? "Get Started" : "Next"}
+              style={styles.nextButton}
+              textStyle={{ color: COLORS.white }}
+              onPress={handleNext}
             />
-          ))}
+          </View>
         </View>
       </View>
-
-      <View style={styles.btnContainer}>
-        <Btn
-          title={isLastSlide ? "Get Started" : "Next"}
-          rounded
-          buttonStyle={styles.btn}
-          onPress={handleNext}
-        />
-      </View>
-    </View>
+    </ImageBackground>
   );
 };
 
