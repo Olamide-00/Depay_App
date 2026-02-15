@@ -95,7 +95,7 @@ export const styles = StyleSheet.create({
   },
   copyText: {
     fontSize: 13,
-    color: "#6C2BD9",
+    color: COLORS.brand,
     fontWeight: "500",
   },
   statsContainer: {
@@ -213,14 +213,14 @@ export const styles = StyleSheet.create({
     color: "#9CA3AF",
   },
   shareButton: {
-    backgroundColor: "#6C2BD9",
+    backgroundColor: COLORS.brand,
     marginHorizontal: wp("4%"),
     marginTop: hp("3%"),
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#6C2BD9",
+    shadowColor: COLORS.brand,
     shadowOffset: {
       width: 0,
       height: 4,

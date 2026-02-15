@@ -6,6 +6,7 @@ import {
   ScrollView,
 } from "react-native";
 import React from "react";
+import { COLORS } from "../../../constants/Colors";
 
 const Receipt = () => {
   return (
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   doneButton: {
-    backgroundColor: "#7C4DFF",
+    backgroundColor: COLORS.brand,
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 30,

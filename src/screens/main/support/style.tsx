@@ -105,7 +105,7 @@ export const styles = StyleSheet.create({
   },
   seeAll: {
     fontSize: 14,
-    color: "#7C3AED",
+    color: COLORS.brand,
     fontWeight: "500",
   },
   faqList: {

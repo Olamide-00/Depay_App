@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { COLORS } from "../../../constants/Colors";
 
 export const styles = StyleSheet.create({
   root: {
@@ -20,7 +21,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTab: {
-    backgroundColor: "#7C4DFF",
+    backgroundColor: COLORS.brand,
   },
   tabText: {
     fontSize: 14,
@@ -71,7 +72,7 @@ export const styles = StyleSheet.create({
   },
   currencySymbol: {
     fontSize: 16,
-    color: "#7C4DFF",
+    color: COLORS.brand,
     fontWeight: "600",
   },
   phoneInput: {
@@ -82,7 +83,7 @@ export const styles = StyleSheet.create({
     color: "#333",
   },
   continueButton: {
-    backgroundColor: "#7C4DFF",
+    backgroundColor: COLORS.brand,
     paddingVertical: 16,
     borderRadius: 10,
     alignItems: "center",

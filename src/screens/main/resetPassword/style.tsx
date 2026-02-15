@@ -90,7 +90,7 @@ export const styles = StyleSheet.create({
     right: wp("5%"),
   },
   button: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: COLORS.brand,
     borderRadius: 12,
     paddingVertical: hp("2%"),
     alignItems: "center",

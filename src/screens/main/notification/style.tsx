@@ -8,7 +8,7 @@ import { COLORS } from "../../../constants/Colors";
 export const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: COLORS.white,
   },
   customHeader: {
     flexDirection: "row",
@@ -104,6 +104,6 @@ export const styles = StyleSheet.create({
   viewLink: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#7C3AED",
+    color: COLORS.brand,
   },
 });

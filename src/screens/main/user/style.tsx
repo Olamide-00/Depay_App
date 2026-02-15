@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
   },
   editButton: {
     fontSize: 16,
-    color: "#6C2BD9",
+    color: COLORS.brand,
     fontWeight: "500",
   },
   profileImageContainer: {

@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: 16,
-    color: "#6C2BD9",
+    color: COLORS.brand,
     fontWeight: "500",
   },
   scrollContent: {
@@ -59,7 +59,7 @@ export const styles = StyleSheet.create({
   },
   changeImageText: {
     fontSize: 14,
-    color: "#6C2BD9",
+    color: COLORS.brand,
     fontWeight: "500",
   },
   formContainer: {

@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
   toggleButtonActive: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: COLORS.brand,
   },
   toggleText: {
     fontSize: 15,
@@ -96,7 +96,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   clickButton: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: COLORS.brand,
     paddingHorizontal: wp("4%"),
     paddingVertical: hp("0.8%"),
     borderRadius: 6,
@@ -135,7 +135,7 @@ export const styles = StyleSheet.create({
     right: wp("5%"),
   },
   generateButton: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: COLORS.brand,
     borderRadius: 12,
     paddingVertical: hp("2%"),
     alignItems: "center",

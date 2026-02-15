@@ -75,7 +75,7 @@ export const styles = StyleSheet.create({
   },
   currencySymbol: {
     fontSize: 16,
-    color: "#7C4DFF",
+    color: COLORS.brand,
     fontWeight: "600",
   },
   phoneInput: {
@@ -100,8 +100,8 @@ export const styles = StyleSheet.create({
     borderColor: "#E0E0E0",
   },
   quickAmountButtonActive: {
-    backgroundColor: "#7C4DFF",
-    borderColor: "#7C4DFF",
+    backgroundColor: COLORS.brand,
+    borderColor: COLORS.brand,
   },
   quickAmountText: {
     fontSize: 13,
@@ -113,7 +113,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   continueButton: {
-    backgroundColor: "#7C4DFF",
+    backgroundColor: COLORS.brand,
     paddingVertical: 16,
     borderRadius: 10,
     alignItems: "center",
