@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, TextInput, View, TextInputProps } from "react-native";
 import React from "react";
 import {
   widthPercentageToDP as wp,
@@ -6,31 +6,83 @@ import {
 } from "react-native-responsive-screen";
 import { COLORS } from "../../constants/Colors";
 
-interface InputProps {
+interface InputProps extends TextInputProps {
   width?: string | number;
   placeholder?: string;
+  rightIcon?: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  value?: string;
+  onChangeText?: (text: string) => void;
 }
 
 const Input = (props: InputProps) => {
+  const {
+    width,
+    placeholder,
+    rightIcon,
+    leftIcon,
+    value,
+    onChangeText,
+    ...rest
+  } = props;
+
   return (
-    <TextInput
-      placeholder={props.placeholder}
-      style={[styles.input, { width: props.width }]}
-      onChangeText={(value) => value}
-      placeholderTextColor={COLORS.black}
-    />
+    <View style={[styles.container, { width: width }]}>
+      {leftIcon && <View style={styles.leftIconContainer}>{leftIcon}</View>}
+
+      <TextInput
+        placeholder={placeholder}
+        style={[
+          styles.input,
+          leftIcon && styles.inputWithLeftIcon,
+          rightIcon && styles.inputWithRightIcon,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholderTextColor="#999"
+        {...rest}
+      />
+
+      {rightIcon && <View style={styles.rightIconContainer}>{rightIcon}</View>}
+    </View>
   );
 };
 
 export default Input;
 
 const styles = StyleSheet.create({
-  input: {
-    height: hp("6%"),
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: hp("7%"),
     width: wp("80%"),
-    backgroundColor: COLORS.input,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    color: COLORS.black,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 10,
+    position: "relative",
+  },
+  input: {
+    flex: 1,
+    height: "100%",
+    paddingHorizontal: 16,
+    color: "#333",
+    fontSize: 14,
+  },
+  inputWithLeftIcon: {
+    paddingLeft: 50,
+  },
+  inputWithRightIcon: {
+    paddingRight: 50,
+  },
+  leftIconContainer: {
+    position: "absolute",
+    left: 16,
+    zIndex: 1,
+  },
+  rightIconContainer: {
+    position: "absolute",
+    right: 16,
+    zIndex: 1,
   },
 });

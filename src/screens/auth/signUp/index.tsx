@@ -1,43 +1,135 @@
-import { Image, Pressable, View } from "react-native";
-import Text from "../../../components/common/txt";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  ScrollView,
+  Image,
+} from "react-native";
+import React, { useState } from "react";
 import { styles } from "./style";
+import Stepper from "./component/stepper";
 import Input from "../../../components/common/input";
 import Btn from "../../../components/common/btn";
 import { COLORS } from "../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Spacer from "../../../components/common/spacer";
 
-export default function SignUp() {
+const SignUp = () => {
   const navigation = useNavigation();
+  const [email, setEmail] = useState("");
+
+  const handleContinue = () => {
+    // Validate email and proceed to OTP
+    navigation.navigate("OTP", { email, flow: "signup" });
+  };
+
   return (
     <View style={styles.root}>
-      <Image
-        source={require("../../../../assets/images/logo.png")}
-        resizeMode="contain"
-        style={styles.logo}
-      />
-      <Text size="xl" variant="bold" color="#fff" style={styles.desc}>
-        CREATE AN ACCOUNT
-      </Text>
-      <View style={styles.inputs}>
-        <Input placeholder="Name" width="100%" />
-        <Input placeholder="Username" width="100%" />
-        <Input placeholder="Email Address" width="100%" />
-        <Input placeholder="Phone Number" width="100%" />
-        <Input placeholder="Referral Code" width="100%" />
-        <Input placeholder="Password" width="100%" />
-        <Input placeholder="Confirm Password" width="100%" />
-      </View>
-      <View style={styles.footer}>
-        <Btn title="REGISTER" />
-        <Text color="#fff" style={{ marginTop: 15, alignSelf: "center" }}>
-          Already have an account?{" "}
-          <Pressable onPress={() => navigation.navigate("Login")}>
-            <Text color={COLORS.yellow} variant="bold">
-              Sign In
+      {/* Back Button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialCommunityIcons name="chevron-left" size={28} color="#333" />
+      </TouchableOpacity>
+
+      {/* Stepper */}
+      <Stepper currentStep={0} totalSteps={4} />
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../../../assets/images/logo2.png")}
+              resizeMode="contain"
+              style={styles.image}
+            />
+          </View>
+
+          {/* Title */}
+          <Text style={styles.title}>Unlock Seamless Digital Living</Text>
+          <Text style={styles.subtitle}>
+            With JAAN it just 1 tap to access your digital needs
+          </Text>
+          <Spacer size={1.5} />
+
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email Address*</Text>
+            <Input
+              placeholder="Enter Your Email"
+              value={email}
+              onChangeText={setEmail}
+              width="100%"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <Text style={styles.hint}>
+              We'll send you a code. It helps to keep your account secure.
             </Text>
-          </Pressable>
-        </Text>
-      </View>
+          </View>
+          <Spacer size={4} />
+          {/* Privacy Policy */}
+          <Text style={styles.privacyText}>
+            By tapping continue, you agree to our{" "}
+            <Text style={styles.privacyLink}>privacy policy</Text> and{" "}
+            <Text style={styles.privacyLink}>terms of use</Text>
+          </Text>
+
+          {/* Continue Button */}
+          <Btn
+            title="Continue"
+            style={styles.continueButton}
+            textStyle={{ color: COLORS.white }}
+            onPress={handleContinue}
+          />
+
+          {/* Sign In Link */}
+          <Text style={styles.signInText}>
+            Already have an account?{" "}
+            <Pressable onPress={() => navigation.navigate("Login")}>
+              <Text style={styles.signInLink}>Log In</Text>
+            </Pressable>
+          </Text>
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.divider} />
+          </View>
+
+          {/* Social Login */}
+          <View style={styles.socialContainer}>
+            <Text style={styles.socialTitle}>Log in with</Text>
+            <View style={styles.socialButtons}>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="apple" size={28} color="#000" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+                <MaterialCommunityIcons
+                  name="google"
+                  size={28}
+                  color="#DB4437"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+                <MaterialCommunityIcons
+                  name="facebook"
+                  size={28}
+                  color="#1877F2"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
-}
+};
+
+export default SignUp;

@@ -22,8 +22,7 @@ export default function RootNavigation() {
 
   const checkAuthStatus = async () => {
     try {
-   
-      setIsAuthenticated(true); 
+      setIsAuthenticated(false);
     } catch (error) {
       setIsAuthenticated(false);
     } finally {
