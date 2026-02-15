@@ -1,10 +1,9 @@
 import { StyleSheet } from "react-native";
-import { COLORS } from "../../../constants/Colors";
 
 export const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: "#F5F5F5",
   },
   tabContainer: {
     flexDirection: "row",
@@ -37,9 +36,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  selectorContainer: {
-    marginBottom: 20,
-  },
   inputContainer: {
     marginBottom: 20,
   },
@@ -53,7 +49,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 10,
     paddingHorizontal: 16,
-    paddingVertical: 18,
+    paddingVertical: 14,
     fontSize: 14,
     color: "#333",
     borderWidth: 1,
@@ -84,33 +80,6 @@ export const styles = StyleSheet.create({
     paddingRight: 16,
     fontSize: 14,
     color: "#333",
-  },
-  quickAmountContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 30,
-  },
-  quickAmountButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  quickAmountButtonActive: {
-    backgroundColor: "#7C4DFF",
-    borderColor: "#7C4DFF",
-  },
-  quickAmountText: {
-    fontSize: 13,
-    color: "#666",
-    fontWeight: "500",
-  },
-  quickAmountTextActive: {
-    color: "#FFFFFF",
-    fontWeight: "600",
   },
   continueButton: {
     backgroundColor: "#7C4DFF",

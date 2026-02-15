@@ -7,7 +7,7 @@ import DataTab from "./component/dataTab";
 import { ContactsProvider } from "../../../utils/contactProvider";
 
 const Airtime = () => {
-  const [activeTab, setActiveTab] = useState<"airtime" | "data">("data");
+  const [activeTab, setActiveTab] = useState<"airtime" | "data">("airtime");
 
   return (
     <ContactsProvider>

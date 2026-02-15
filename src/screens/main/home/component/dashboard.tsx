@@ -1,5 +1,5 @@
-import { View, StyleSheet } from "react-native";
-import React from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -7,100 +7,133 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS } from "../../../../constants/Colors";
 import Text from "../../../../components/common/txt";
+import TopUpModal from "./topupModal";
 
 const Dashboard = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [balanceVisible, setBalanceVisible] = useState(true);
+  const [balance] = useState(16550.0);
+
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const toggleBalanceVisibility = () => {
+    setBalanceVisible(!balanceVisible);
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Main Brand Color Section */}
-      <View style={styles.row}>
-        <View style={styles.innerContainer}>
-          <View style={styles.balanceContainer}>
-            <Text variant="light" color="#fff" size="sm">
-              Balance
-            </Text>
-            <MaterialCommunityIcons
-              name="eye-off"
-              size={20}
-              color="#fff"
-              style={styles.eyeIcon}
-            />
-          </View>
-
-          <View style={styles.balanceDetails}>
-            <Text
-              variant="bold"
-              size="4xl"
-              color="#fff"
-              style={styles.amountText}
-            >
-              $16,550.00
-            </Text>
-
-            <View style={styles.accountInfo}>
-              <MaterialCommunityIcons
-                name="credit-card-outline"
-                size={16}
-                color="rgba(255,255,255,0.7)"
-                style={styles.accountIcon}
-              />
-              <Text variant="light" color="rgba(255,255,255,0.8)" size="xs">
-                Account Details: PAYSTACK-TITAN
+    <>
+      <View style={styles.container}>
+        {/* Main Brand Color Section */}
+        <View style={styles.row}>
+          <View style={styles.innerContainer}>
+            <View style={styles.balanceContainer}>
+              <Text variant="light" color="#fff" size="sm">
+                Balance
               </Text>
+              <TouchableOpacity
+                onPress={toggleBalanceVisibility}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons
+                  name={balanceVisible ? "eye-off" : "eye"}
+                  size={20}
+                  color="#fff"
+                  style={styles.eyeIcon}
+                />
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.accountInfo}>
-              <MaterialCommunityIcons
-                name="account-outline"
-                size={16}
-                color="rgba(255,255,255,0.7)"
-                style={styles.accountIcon}
-              />
-              <Text variant="light" color="#fff" size="xs">
-                9036018013 (JAAN/OLAMIDE OLADELE)
+            <View style={styles.balanceDetails}>
+              <Text
+                variant="bold"
+                size="4xl"
+                color="#fff"
+                style={styles.amountText}
+              >
+                {balanceVisible ? `₦${formatCurrency(balance)}` : "₦****.**"}
               </Text>
+
+              <View style={styles.accountInfo}>
+                <MaterialCommunityIcons
+                  name="credit-card-outline"
+                  size={16}
+                  color="rgba(255,255,255,0.7)"
+                  style={styles.accountIcon}
+                />
+                <Text variant="light" color="rgba(255,255,255,0.8)" size="xs">
+                  Account Details: PAYSTACK-TITAN
+                </Text>
+              </View>
+
+              <View style={styles.accountInfo}>
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={16}
+                  color="rgba(255,255,255,0.7)"
+                  style={styles.accountIcon}
+                />
+                <Text variant="light" color="#fff" size="xs">
+                  9036018013 (JAAN/OLAMIDE OLADELE)
+                </Text>
+              </View>
             </View>
           </View>
+
+          <TouchableOpacity
+            style={styles.topUp}
+            onPress={() => setModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.plusIconContainer}>
+              <MaterialCommunityIcons
+                name="plus"
+                size={18}
+                color={COLORS.brand}
+              />
+            </View>
+            <Text variant="semibold" color={COLORS.brand} size="sm">
+              Top Up
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.topUp}>
-          <View style={styles.plusIconContainer}>
+        {/* Yellow Bottom Section */}
+        <View style={styles.row2}>
+          <TouchableOpacity style={styles.yellowContent} activeOpacity={0.8}>
             <MaterialCommunityIcons
-              name="plus"
-              size={18}
+              name="lightning-bolt"
+              size={20}
+              color={COLORS.brand}
+              style={styles.boltIcon}
+            />
+            <View style={styles.yellowTextContainer}>
+              <Text variant="semibold" color={COLORS.brand} size="sm">
+                Quick Actions
+              </Text>
+              <Text variant="light" color={COLORS.brand} size="xs">
+                Transfer, Pay Bills, Buy Airtime
+              </Text>
+            </View>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={24}
               color={COLORS.brand}
             />
-          </View>
-          <Text variant="semibold" color={COLORS.brand} size="sm">
-            Top Up
-          </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Yellow Bottom Section */}
-      <View style={styles.row2}>
-        <View style={styles.yellowContent}>
-          <MaterialCommunityIcons
-            name="lightning-bolt"
-            size={20}
-            color={COLORS.brand}
-            style={styles.boltIcon}
-          />
-          <View style={styles.yellowTextContainer}>
-            <Text variant="semibold" color={COLORS.brand} size="sm">
-              Quick Actions
-            </Text>
-            <Text variant="light" color={COLORS.brand} size="xs">
-              Transfer, Pay Bills, Buy Airtime
-            </Text>
-          </View>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={24}
-            color={COLORS.brand}
-          />
-        </View>
-      </View>
-    </View>
+      {/* Top Up Modal */}
+      <TopUpModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
+    </>
   );
 };
 

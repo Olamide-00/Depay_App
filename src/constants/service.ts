@@ -22,7 +22,7 @@ export const services = [
   {
     id: 4,
     label: "NETFLIX",
-    screen: "Subscription",
+    screen: "ComingSoon",
     image: require("../../assets/services/netflix.png"),
   },
 
@@ -80,49 +80,49 @@ export const services = [
   {
     id: 17,
     label: "1XBET",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bet.png"),
   },
   {
     id: 18,
     label: "betway",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bettings.png"),
   },
   {
     id: 19,
     label: "BETKING",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bettings.png"),
   },
   {
     id: 20,
     label: "Nairabet",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bettings.png"),
   },
   {
     id: 21,
     label: "Sportybet",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bettings.png"),
   },
   {
     id: 22,
     label: "Merrybet",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bet.png"),
   },
   {
     id: 23,
     label: "Bet9ja",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bet.png"),
   },
   {
     id: 24,
     label: "BetBonanza",
-    screen: "Betting",
+    screen: "ComingSoon",
     image: require("../../assets/services/bet.png"),
   },
 
@@ -173,7 +173,7 @@ export const services = [
   {
     id: 31,
     label: "Flight",
-    screen: "Travel",
+    screen: "ComingSoon",
     image: require("../../assets/images/logo.png"),
   },
 ];

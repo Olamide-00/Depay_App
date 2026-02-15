@@ -19,6 +19,8 @@ import Notification from "../../screens/main/notification";
 import Electricity from "../../screens/main/electricity";
 import Receipt from "../../screens/main/receipt";
 import TV from "../../screens/main/tv";
+import Education from "../../screens/main/education";
+import ComingSoon from "../../screens/main/comingSoon";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -50,6 +52,8 @@ export default function StackNavigation() {
       <Stack.Screen name="Electricity" component={Electricity} />
       <Stack.Screen name="Receipt" component={Receipt} />
       <Stack.Screen name="TV" component={TV} />
+      <Stack.Screen name="Education" component={Education} />
+      <Stack.Screen name="ComingSoon" component={ComingSoon} />
     </Stack.Navigator>
   );
 }

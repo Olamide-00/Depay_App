@@ -51,8 +51,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     paddingVertical: hp("1.8%"),
     paddingHorizontal: wp("2%"),
-    // marginHorizontal: wp("4%"),
-    marginVertical: hp("0.5%"),
+    marginVertical: hp("0.3%"),
     borderRadius: wp("3%"),
     shadowColor: "#000",
     shadowOffset: {

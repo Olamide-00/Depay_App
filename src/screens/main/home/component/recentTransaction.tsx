@@ -1,4 +1,10 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import {
   widthPercentageToDP as wp,
@@ -6,8 +12,10 @@ import {
 } from "react-native-responsive-screen";
 import Item from "../../../../components/ui/item";
 import { COLORS } from "../../../../constants/Colors";
+import { useNavigation } from "@react-navigation/native";
 
 const RecentTransaction = () => {
+  const navigation = useNavigation();
   // Sample transaction data
   const transactionData = [
     { id: 1, type: "airtime", amount: "$500.00", time: "Today, 10:30am" },
@@ -29,7 +37,9 @@ const RecentTransaction = () => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Recent Transactions</Text>
-        <Text style={styles.viewAllText}>View All</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Service")}>
+          <Text style={styles.viewAllText}>View All</Text>
+        </TouchableOpacity>
       </View>
       <FlatList
         data={transactionData}

@@ -29,8 +29,10 @@ const Ad = () => {
   const timerRef = useRef(null);
   const isScrollingRef = useRef(false);
 
-  // Fixed: Calculate item width properly
-  const itemWidth = screenWidth - 32;
+  // Fixed: Calculate item width with proper spacing
+  const ITEM_SPACING = wp("5%"); // Space between items
+  const CONTAINER_PADDING = wp("5%"); // Padding on sides
+  const itemWidth = screenWidth - CONTAINER_PADDING * 2;
 
   // Fixed auto slide function
   const startAutoSlide = () => {
@@ -141,7 +143,7 @@ const Ad = () => {
           // Fixed: Add these props for better performance
           decelerationRate="fast"
           snapToInterval={itemWidth}
-          snapToAlignment="start"
+          snapToAlignment="center"
           contentContainerStyle={styles.flatListContent}
           keyExtractor={(_, index) => index.toString()}
         />
@@ -154,7 +156,9 @@ const Ad = () => {
 export default Ad;
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    paddingHorizontal: wp("5%"),
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -162,21 +166,18 @@ const styles = StyleSheet.create({
   },
   carouselContainer: {
     position: "relative",
-    borderRadius: 12,
-    overflow: "hidden",
   },
-
   itemContainer: {
-    width: screenWidth - 32,
+    width: screenWidth - wp("5%") * 2,
+    paddingHorizontal: 0,
   },
   adImage: {
-    width: "100%",
+    width: "90%",
     height: 100,
-    borderRadius: 12,
+    borderRadius: 8,
   },
-
   flatListContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
   },
   paginationContainer: {
     flexDirection: "row",
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "gray",
+    backgroundColor: "#D0D0D0",
     marginHorizontal: 4,
   },
   activeDot: {

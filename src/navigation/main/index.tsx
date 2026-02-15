@@ -6,12 +6,13 @@ import { Platform } from "react-native";
 import { Home2, Profile, Wallet, Category } from "iconsax-react-native";
 import { COLORS } from "../../constants/Colors";
 import Service from "../../screens/main/service";
+import Transaction from "../../screens/main/transaction";
 
 // Define your tab param list for TypeScript
 export type MainTabParamList = {
   HomeTab: undefined;
   Service: undefined;
-  WalletTab: undefined;
+  Transaction: undefined;
   ProfileTab: undefined;
 };
 
@@ -71,10 +72,10 @@ export default function TabNavigation() {
       />
 
       <Tab.Screen
-        name="WalletTab"
-        component={Home}
+        name="Transaction"
+        component={Transaction}
         options={{
-          tabBarLabel: "Wallet",
+          tabBarLabel: "Transaction",
           tabBarIcon: ({ focused, color, size }) => (
             <Wallet
               size={size}
