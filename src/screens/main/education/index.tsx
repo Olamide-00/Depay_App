@@ -1,134 +1,139 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
-import { styles } from "./style";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React from "react";
 import CommonHeader from "../../../components/ui/commonHeader";
-import BottomSheetSelector from "../../../components/common/bottomsheet";
-import { ContactsProvider } from "../../../utils/contactProvider";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
-const examBoardOptions = [
-  { label: "JAMB", value: "jamb", icon: "book" as const },
-  { label: "WAEC", value: "waec", icon: "book" as const },
-  { label: "NECO", value: "neco", icon: "book" as const },
-  { label: "NABTEB", value: "nabteb", icon: "book" as const },
-];
-
-const examTypeOptions = [
-  { label: "UTME", value: "utme", icon: "file-text" as const },
-  { label: "Direct Entry", value: "direct_entry", icon: "file-text" as const },
+const examBoards = [
   {
-    label: "Result Checker",
-    value: "result_checker",
-    icon: "file-text" as const,
+    id: "1",
+    label: "JAMB",
+    screen: "Jamb",
+    icon: "school-outline",
+    color: "#4C6FFF",
+  },
+  {
+    id: "2",
+    label: "WAEC",
+    screen: "Waec",
+    icon: "document-text-outline",
+    color: "#FF6B6B",
+  },
+  {
+    id: "3",
+    label: "NECO",
+    screen: "Neco",
+    icon: "ribbon-outline",
+    color: "#6BCB77",
+  },
+  {
+    id: "4",
+    label: "NABTEB",
+    screen: "Nabteb",
+    icon: "medal-outline",
+    color: "#FFD93D",
   },
 ];
 
 const Education = () => {
-  const navigation = useNavigation();
-  const [examBoard, setExamBoard] = useState("jamb");
-  const [examType, setExamType] = useState("");
-  const [registrationNumber, setRegistrationNumber] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [amount, setAmount] = useState("");
-
-  const handleExamTypeSelect = (value: string) => {
-    setExamType(value);
-    // Set amount based on exam type
-    const examPrices: Record<string, string> = {
-      utme: "5500",
-      direct_entry: "4000",
-      result_checker: "1000",
-    };
-    setAmount(examPrices[value] || "");
-  };
+  const navigation = useNavigation<any>();
 
   return (
-    <ContactsProvider>
-      <View style={styles.root}>
-        <CommonHeader title="Education" back />
+    <View style={styles.root}>
+      <CommonHeader title="Education" back />
+      <View style={styles.container}>
+        <Text style={styles.sectionTitle}>Select Exam Board</Text>
+        <Text style={styles.sectionSubtitle}>
+          Choose the exam board you want to purchase a pin for
+        </Text>
 
-        {/* Form Content */}
-        <View style={styles.tabContent}>
-          {/* Exam Board Selector */}
-          <View style={styles.selectorContainer}>
-            <BottomSheetSelector
-              icon="book"
-              options={examBoardOptions}
-              selectedValue={examBoard}
-              onSelect={setExamBoard}
-              placeholder="Select Exam Board"
-              sheetTitle="Select Exam Board"
-            />
-          </View>
-
-          {/* Exam Type Selector */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Select Exam Type</Text>
-            <BottomSheetSelector
-              options={examTypeOptions}
-              selectedValue={examType}
-              onSelect={handleExamTypeSelect}
-              placeholder="Select exam type"
-              sheetTitle="Select Exam Type"
-              variant="field"
-            />
-          </View>
-
-          {/* Registration Number Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Enter Registration Number</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter registration number"
-              placeholderTextColor="#999"
-              value={registrationNumber}
-              onChangeText={setRegistrationNumber}
-            />
-          </View>
-
-          {/* Phone Number Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Enter Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter phone number"
-              placeholderTextColor="#999"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          {/* Amount Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Amount</Text>
-            <View style={styles.phoneInputWrapper}>
-              <View style={styles.phoneIconContainer}>
-                <Text style={styles.currencySymbol}>₦</Text>
+        <View style={styles.grid}>
+          {examBoards.map((board) => (
+            <TouchableOpacity
+              key={board.id}
+              style={styles.card}
+              onPress={() => navigation.navigate(board.screen)}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: board.color + "20" },
+                ]}
+              >
+                <Ionicons
+                  name={board.icon as any}
+                  size={32}
+                  color={board.color}
+                />
               </View>
-              <TextInput
-                style={styles.phoneInput}
-                placeholder="Amount"
-                placeholderTextColor="#999"
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType="numeric"
-                editable={false}
-              />
-            </View>
-          </View>
-
-          {/* Continue Button */}
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={() => navigation.navigate("Confirmation")}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </TouchableOpacity>
+              <Text style={styles.cardLabel}>{board.label}</Text>
+              <Text style={styles.cardSub}>Buy PIN</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
-    </ContactsProvider>
+    </View>
   );
 };
 
 export default Education;
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: wp(4),
+    paddingTop: hp(4),
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111",
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: "#888",
+    marginBottom: hp(3),
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: wp(4),
+  },
+  card: {
+    width: (wp(100) - wp(8) - wp(4)) / 2,
+    backgroundColor: "#F8F8F8",
+    borderRadius: 16,
+    paddingVertical: hp(2.5),
+    paddingHorizontal: wp(4),
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardLabel: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#111",
+  },
+  cardSub: {
+    fontSize: 12,
+    color: "#888",
+  },
+});

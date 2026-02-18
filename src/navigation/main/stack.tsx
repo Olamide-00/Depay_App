@@ -21,6 +21,8 @@ import Receipt from "../../screens/main/receipt";
 import TV from "../../screens/main/tv";
 import Education from "../../screens/main/education";
 import ComingSoon from "../../screens/main/comingSoon";
+import Jamb from "../../screens/main/jamb";
+import Waec from "../../screens/main/waec";
 
 export default function StackNavigation() {
   const Stack = createNativeStackNavigator();
@@ -54,6 +56,8 @@ export default function StackNavigation() {
       <Stack.Screen name="TV" component={TV} />
       <Stack.Screen name="Education" component={Education} />
       <Stack.Screen name="ComingSoon" component={ComingSoon} />
+      <Stack.Screen name="Jamb" component={Jamb} />
+      <Stack.Screen name="Waec" component={Waec} />
     </Stack.Navigator>
   );
 }
