@@ -6,13 +6,16 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "../../constants/Colors";
 
 interface Option {
   label: string;
   value: string;
   icon?: keyof typeof Ionicons.glyphMap;
+  image?: string; // NEW: support image URL
 }
 
 interface BottomSheetSelectorProps {
@@ -22,7 +25,7 @@ interface BottomSheetSelectorProps {
   onSelect: (value: string) => void;
   placeholder?: string;
   sheetTitle?: string;
-  variant?: "inline" | "field"; // New prop for styling variant
+  variant?: "inline" | "field";
 }
 
 const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
@@ -32,7 +35,7 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
   onSelect,
   placeholder = "Select an option",
   sheetTitle = "Select Option",
-  variant = "inline", // Default to inline (like the network selector)
+  variant = "inline",
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -51,7 +54,15 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
           style={styles.selectorButton}
           onPress={() => setIsVisible(true)}
         >
-          <Ionicons name={icon} size={16} color="#6C2BD9" />
+          {/* Show selected network image or fallback icon */}
+          {selectedOption?.image ? (
+            <Image
+              source={{ uri: selectedOption.image }}
+              style={styles.inlineImage}
+            />
+          ) : (
+            <Ionicons name={icon} size={16} color="#6C2BD9" />
+          )}
           <Text style={styles.selectorText}>{displayText}</Text>
           <Ionicons
             name="chevron-down"
@@ -65,14 +76,22 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
           style={styles.fieldButton}
           onPress={() => setIsVisible(true)}
         >
-          <Text
-            style={[
-              styles.fieldText,
-              !selectedOption && styles.fieldPlaceholder,
-            ]}
-          >
-            {displayText}
-          </Text>
+          <View style={styles.fieldLeft}>
+            {selectedOption?.image && (
+              <Image
+                source={{ uri: selectedOption.image }}
+                style={styles.fieldImage}
+              />
+            )}
+            <Text
+              style={[
+                styles.fieldText,
+                !selectedOption && styles.fieldPlaceholder,
+              ]}
+            >
+              {displayText}
+            </Text>
+          </View>
           <Ionicons name="chevron-down" size={16} color="#999" />
         </TouchableOpacity>
       )}
@@ -103,7 +122,13 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
                       ]}
                       onPress={() => handleSelect(option.value)}
                     >
-                      {option.icon && (
+                      {/* Image takes priority over icon */}
+                      {option.image ? (
+                        <Image
+                          source={{ uri: option.image }}
+                          style={styles.optionImage}
+                        />
+                      ) : option.icon ? (
                         <Ionicons
                           name={option.icon}
                           size={20}
@@ -112,7 +137,8 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
                           }
                           style={styles.optionIcon}
                         />
-                      )}
+                      ) : null}
+
                       <Text
                         style={[
                           styles.optionText,
@@ -156,6 +182,11 @@ const styles = StyleSheet.create({
   chevronIcon: {
     marginLeft: 4,
   },
+  inlineImage: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+  },
   fieldButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -164,6 +195,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 50,
+  },
+  fieldLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  fieldImage: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   fieldText: {
     fontSize: 15,
@@ -216,6 +257,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#6C2BD9",
   },
+  optionImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    marginRight: 12,
+  },
   optionIcon: {
     marginRight: 12,
   },
@@ -226,7 +273,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   selectedOptionText: {
-    color: "#6C2BD9",
+    color: COLORS.brand,
     fontWeight: "600",
   },
 });

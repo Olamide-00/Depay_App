@@ -5,6 +5,7 @@ import CommonHeader from "../../../components/ui/commonHeader";
 import AirtimeTab from "./component/airtimeTab";
 import DataTab from "./component/dataTab";
 import { ContactsProvider } from "../../../utils/contactProvider";
+import { useGetAllServices } from "../../../api/hooks/useBills";
 
 const Airtime = () => {
   const [activeTab, setActiveTab] = useState<"airtime" | "data">("airtime");

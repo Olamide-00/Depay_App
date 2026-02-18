@@ -125,4 +125,14 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
+  // Add to your existing styles
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
 });

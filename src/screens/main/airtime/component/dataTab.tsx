@@ -1,52 +1,118 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { styles } from "../style";
 import BottomSheetSelector from "../../../../components/common/bottomsheet";
 import PhoneInputWithContact from "../../../../components/common/numberSelector";
 import { useNavigation } from "@react-navigation/native";
-
-const networkOptions = [
-  { label: "MTN", value: "mtn", icon: "call" as const },
-  { label: "Glo", value: "glo", icon: "call" as const },
-  { label: "Airtel", value: "airtel", icon: "call" as const },
-  { label: "9mobile", value: "9mobile", icon: "call" as const },
-];
-
-const dataPlanOptions = [
-  { label: "1GB - ₦500 (30 days)", value: "1gb_500" },
-  { label: "2GB - ₦1,000 (30 days)", value: "2gb_1000" },
-  { label: "5GB - ₦2,000 (30 days)", value: "5gb_2000" },
-  { label: "10GB - ₦3,500 (30 days)", value: "10gb_3500" },
-  { label: "20GB - ₦6,000 (30 days)", value: "20gb_6000" },
-];
+import {
+  useGetAllServices,
+  useGetServicePLan,
+} from "../../../../api/hooks/useBills";
 
 const DataTab = () => {
   const navigation = useNavigation();
-  const [selectedNetwork, setSelectedNetwork] = useState("9mobile");
+  const { data, isLoading } = useGetAllServices("data");
+
+  const [selectedNetwork, setSelectedNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedDataPlan, setSelectedDataPlan] = useState("");
+  const [networks, setNetworks] = useState([]);
+  const [dataPlans, setDataPlans] = useState([]);
+  const [errors, setErrors] = useState({
+    phoneNumber: "",
+    selectedNetwork: "",
+    selectedDataPlan: "",
+  });
+
+  // Build network options from API
+  useEffect(() => {
+    if (data?.data?.content) {
+      const mapped = data.data.content.map((item) => ({
+        label: item.name ? item.name.split(" ")[0] : "Unknown",
+        value: item.serviceID,
+        image: item.image, // use actual logo from API
+      }));
+
+      // Deduplicate by label
+      const unique = mapped.filter(
+        (provider, index, self) =>
+          index === self.findIndex((p) => p.label === provider.label),
+      );
+
+      setNetworks(unique);
+    }
+  }, [data]);
+
+  // Fetch data plans for the selected network
+  const { data: dataPackage, isLoading: dataPackageLoading } =
+    useGetServicePLan(selectedNetwork);
+
+  // Build data plan options from API
+  useEffect(() => {
+    if (dataPackage?.data?.content?.variations) {
+      const plans = dataPackage.data.content.variations.map((plan) => ({
+        label: plan.name,
+        value: plan.variation_code,
+        icon: undefined,
+      }));
+      setDataPlans(plans);
+    } else {
+      setDataPlans([]);
+    }
+  }, [dataPackage]);
+
+  // Find selected plan details for navigation
+  const selectedPlanObject = dataPackage?.data?.content?.variations?.find(
+    (plan) => plan.variation_code === selectedDataPlan,
+  );
+
+  const handleContinue = () => {
+    navigation.navigate("ReviewScreen1", {
+      serviceID: selectedNetwork,
+      phoneNumber,
+      amount: selectedPlanObject?.variation_amount,
+      variation_code: selectedPlanObject?.variation_code,
+      plan: selectedPlanObject,
+    });
+  };
+
+  const disable =
+    !selectedNetwork ||
+    !phoneNumber ||
+    phoneNumber.length < 10 ||
+    !selectedDataPlan;
 
   return (
     <View style={styles.tabContent}>
-      {/* Change Network Selector */}
+      {/* Network Selector */}
       <View style={styles.selectorContainer}>
         <BottomSheetSelector
           icon="wifi"
-          options={networkOptions}
+          options={networks}
           selectedValue={selectedNetwork}
-          onSelect={setSelectedNetwork}
-          placeholder="Change Network"
+          onSelect={(value) => {
+            setSelectedNetwork(value);
+            setSelectedDataPlan(""); // reset plan on network change
+            setErrors((prev) => ({ ...prev, selectedNetwork: "" }));
+          }}
+          placeholder={isLoading ? "Loading networks..." : "Change Network"}
           sheetTitle="Select Network"
         />
+        {errors.selectedNetwork ? (
+          <Text style={styles.errorText}>{errors.selectedNetwork}</Text>
+        ) : null}
       </View>
 
-      {/* Phone Number Input with Contact Picker */}
+      {/* Phone Number Input */}
       <View style={styles.inputContainer}>
         <PhoneInputWithContact
           label="Phone Number"
           value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          placeholder={selectedNetwork}
+          onChangeText={(text) => {
+            setPhoneNumber(text);
+            setErrors((prev) => ({ ...prev, phoneNumber: "" }));
+          }}
+          placeholder="Enter phone number"
         />
       </View>
 
@@ -54,19 +120,34 @@ const DataTab = () => {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Data Plan</Text>
         <BottomSheetSelector
-          options={dataPlanOptions}
+          options={dataPlans}
           selectedValue={selectedDataPlan}
-          onSelect={setSelectedDataPlan}
-          placeholder="Select Data Plan"
+          onSelect={(value) => {
+            setSelectedDataPlan(value);
+            setErrors((prev) => ({ ...prev, selectedDataPlan: "" }));
+          }}
+          placeholder={
+            !selectedNetwork
+              ? "Select a network first"
+              : dataPackageLoading
+                ? "Loading plans..."
+                : dataPlans.length === 0
+                  ? "No plans available"
+                  : "Select Data Plan"
+          }
           sheetTitle="Select Data Plan"
           variant="field"
         />
+        {errors.selectedDataPlan ? (
+          <Text style={styles.errorText}>{errors.selectedDataPlan}</Text>
+        ) : null}
       </View>
 
       {/* Continue Button */}
       <TouchableOpacity
-        style={styles.continueButton}
-        onPress={() => navigation.navigate("Confirmation")}
+        style={[styles.continueButton, disable && styles.disabledButton]}
+        onPress={handleContinue}
+        disabled={disable}
       >
         <Text style={styles.continueButtonText}>Continue</Text>
       </TouchableOpacity>
