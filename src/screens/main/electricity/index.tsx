@@ -1,51 +1,101 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import BottomSheetSelector from "../../../components/common/bottomsheet";
 import { ContactsProvider } from "../../../utils/contactProvider";
 import { useNavigation } from "@react-navigation/native";
-
-const paymentTypeOptions = [
-  { label: "Prepaid", value: "prepaid", icon: "zap" as const },
-  { label: "Postpaid", value: "postpaid", icon: "zap" as const },
-];
-
-const serviceProviderOptions = [
-  {
-    label: "AEDC - Abuja Electricity Distribution Company",
-    value: "aedc",
-    icon: "zap" as const,
-  },
-  { label: "IKEDC - Ikeja Electric", value: "ikedc", icon: "zap" as const },
-  { label: "EKEDC - Eko Electricity", value: "ekedc", icon: "zap" as const },
-  {
-    label: "PHED - Port Harcourt Electricity",
-    value: "phed",
-    icon: "zap" as const,
-  },
-];
+import { useGetAllServices } from "../../../api/hooks/useBills";
+import useVerify from "../../../api/hooks/useVerify";
 
 const Electricity = () => {
-  const navigation = useNavigation();
-  const [paymentType, setPaymentType] = useState("prepaid");
+  const navigation = useNavigation<any>();
+
+  // const userData = useAuthStore((state: any) => state.userData);
+  const phoneNumber = "09036018013";
+
+  // Fetch disco providers from API
+  const { data: servicesData, isLoading: servicesLoading } =
+    useGetAllServices("electricity-bill");
+
+  const [paymentType, setPaymentType] = useState<"prepaid" | "postpaid">(
+    "prepaid",
+  );
   const [serviceProvider, setServiceProvider] = useState("");
   const [meterNumber, setMeterNumber] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [amount, setAmount] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [providers, setProviders] = useState([]);
 
-  const quickAmounts = [100, 200, 500, 1000, 2000, 5000];
+  const quickAmounts = [500, 1000, 2000, 5000, 10000, 20000];
+
+  // Build provider options from API
+  useEffect(() => {
+    if (servicesData?.data?.content) {
+      const mapped = servicesData.data.content.map((item: any) => ({
+        label: item.name,
+        value: item.serviceID,
+        image: item.image,
+      }));
+      setProviders(mapped);
+    }
+  }, [servicesData]);
+
+  // Meter verification
+  const { mutate: verify, isPending: isVerifying } = useVerify();
+
+  useEffect(() => {
+    const meterLen = meterNumber.length;
+    if (serviceProvider && (meterLen === 12 || meterLen === 13)) {
+      setCustomerName("");
+      verify(
+        { serviceID: serviceProvider, billersCode: meterNumber },
+        {
+          onSuccess: (data: any) => {
+            setCustomerName(data?.data?.content?.Customer_Name || "");
+          },
+          onError: () => {
+            setCustomerName("");
+          },
+        },
+      );
+    } else {
+      setCustomerName("");
+    }
+  }, [serviceProvider, meterNumber]);
 
   const handleQuickAmount = (value: number) => {
     setAmount(value.toString());
   };
+
+  const handleContinue = () => {
+    navigation.navigate("Confirmation", {
+      serviceID: serviceProvider,
+      billersCode: meterNumber,
+      variation_code: paymentType,
+      amount,
+      phoneNumber,
+      type: "electricity",
+    });
+  };
+
+  const meterLen = meterNumber.length;
+  const meterValid = meterLen === 12 || meterLen === 13;
+  const isFormValid =
+    serviceProvider && meterValid && customerName && amount && !isVerifying;
 
   return (
     <ContactsProvider>
       <View style={styles.root}>
         <CommonHeader title="Electricity" back />
 
-        {/* Tabs - Now acts as selector */}
+        {/* Prepaid / Postpaid Tabs */}
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tab, paymentType === "prepaid" && styles.activeTab]}
@@ -81,11 +131,18 @@ const Electricity = () => {
           {/* Service Provider Selector */}
           <View style={styles.selectorContainer}>
             <BottomSheetSelector
-              icon="zap"
-              options={serviceProviderOptions}
+              icon="flash"
+              options={providers}
               selectedValue={serviceProvider}
-              onSelect={setServiceProvider}
-              placeholder="Change Service Provider"
+              onSelect={(value) => {
+                setServiceProvider(value);
+                setCustomerName("");
+              }}
+              placeholder={
+                servicesLoading
+                  ? "Loading providers..."
+                  : "Change Service Provider"
+              }
               sheetTitle="Select Service Provider"
             />
           </View>
@@ -95,25 +152,32 @@ const Electricity = () => {
             <Text style={styles.label}>Meter Number</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter meter number"
+              placeholder="Enter meter number (12 or 13 digits)"
               placeholderTextColor="#999"
               value={meterNumber}
-              onChangeText={setMeterNumber}
+              onChangeText={(text) => {
+                setMeterNumber(text);
+                setCustomerName("");
+              }}
               keyboardType="numeric"
+              maxLength={13}
             />
-          </View>
-
-          {/* Customer Phone Number Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Customer Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter phone number"
-              placeholderTextColor="#999"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-            />
+            {/* Verification feedback */}
+            <View
+              style={{ marginTop: 4, minHeight: 20, alignItems: "flex-end" }}
+            >
+              {isVerifying ? (
+                <ActivityIndicator size="small" color="#6C2BD9" />
+              ) : customerName ? (
+                <Text style={{ color: "#22c55e", fontSize: 13 }}>
+                  ✓ {customerName}
+                </Text>
+              ) : meterValid && !isVerifying ? (
+                <Text style={{ color: "#ef4444", fontSize: 13 }}>
+                  Could not verify meter number
+                </Text>
+              ) : null}
+            </View>
           </View>
 
           {/* Amount Input */}
@@ -159,8 +223,12 @@ const Electricity = () => {
 
           {/* Continue Button */}
           <TouchableOpacity
-            style={styles.continueButton}
-            onPress={() => navigation.navigate("Confirmation")}
+            style={[
+              styles.continueButton,
+              !isFormValid && styles.disabledButton,
+            ]}
+            onPress={handleContinue}
+            disabled={!isFormValid}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
