@@ -36,7 +36,7 @@ const AirtimeTab = () => {
   );
 
   const handleContinue = () => {
-    navigation.navigate("ReviewScreen1", {
+    navigation.navigate("Confirmation", {
       serviceID: selectedService?.serviceID,
       phoneNumber,
       amount,

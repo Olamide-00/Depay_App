@@ -30,7 +30,7 @@ const DataTab = () => {
       const mapped = data.data.content.map((item) => ({
         label: item.name ? item.name.split(" ")[0] : "Unknown",
         value: item.serviceID,
-        image: item.image, // use actual logo from API
+        image: item.image,
       }));
 
       // Deduplicate by label
@@ -67,7 +67,7 @@ const DataTab = () => {
   );
 
   const handleContinue = () => {
-    navigation.navigate("ReviewScreen1", {
+    navigation.navigate("Confirmation", {
       serviceID: selectedNetwork,
       phoneNumber,
       amount: selectedPlanObject?.variation_amount,
