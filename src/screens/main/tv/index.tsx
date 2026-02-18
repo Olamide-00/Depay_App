@@ -1,74 +1,136 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import React, { useState, useEffect } from "react";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import BottomSheetSelector from "../../../components/common/bottomsheet";
 import { ContactsProvider } from "../../../utils/contactProvider";
 import { useNavigation } from "@react-navigation/native";
-
-const serviceProviderOptions = [
-  { label: "DSTV", value: "dstv", icon: "tv" as const },
-  { label: "GOtv", value: "gotv", icon: "tv" as const },
-  { label: "Startimes", value: "startimes", icon: "tv" as const },
-  { label: "Showmax", value: "showmax", icon: "tv" as const },
-];
-
-// These would typically come from an API based on selected provider
-const packageOptions = [
-  {
-    label: "DSTV Premium - ₦24,500",
-    value: "premium",
-    icon: "package" as const,
-  },
-  {
-    label: "DSTV Compact Plus - ₦16,200",
-    value: "compact_plus",
-    icon: "package" as const,
-  },
-  {
-    label: "DSTV Compact - ₦10,500",
-    value: "compact",
-    icon: "package" as const,
-  },
-  { label: "DSTV Confam - ₦6,200", value: "confam", icon: "package" as const },
-  { label: "DSTV Yanga - ₦3,500", value: "yanga", icon: "package" as const },
-];
+import {
+  useGetAllServices,
+  useGetServicePLan,
+} from "../../../api/hooks/useBills";
+import useVerify from "../../../api/hooks/useVerify";
 
 const TV = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+
+  // Fetch all TV providers from API
+  const { data: servicesData, isLoading: servicesLoading } =
+    useGetAllServices("tv-subscription");
+
   const [serviceProvider, setServiceProvider] = useState("");
   const [smartCardNumber, setSmartCardNumber] = useState("");
   const [selectedPackage, setSelectedPackage] = useState("");
   const [amount, setAmount] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [providers, setProviders] = useState([]);
+  const [packages, setPackages] = useState([]);
+
+  // Build provider options from API
+  useEffect(() => {
+    if (servicesData?.data?.content) {
+      const mapped = servicesData.data.content.map((item: any) => ({
+        label: item.name,
+        value: item.serviceID,
+        image: item.image,
+      }));
+      setProviders(mapped);
+    }
+  }, [servicesData]);
+
+  // Fetch packages when provider is selected
+  const { data: packagesData, isLoading: packagesLoading } =
+    useGetServicePLan(serviceProvider);
+
+  useEffect(() => {
+    if (packagesData?.data?.content?.variations) {
+      const mapped = packagesData.data.content.variations.map((pkg: any) => ({
+        label: `${pkg.name} — ₦${parseFloat(pkg.variation_amount).toLocaleString()}`,
+        value: pkg.variation_code,
+        amount: pkg.variation_amount,
+      }));
+      setPackages(mapped);
+    } else {
+      setPackages([]);
+    }
+  }, [packagesData]);
+
+  // Smartcard verification
+  const { mutate: verify, isPending: isVerifying } = useVerify();
+
+  useEffect(() => {
+    if (serviceProvider && smartCardNumber.length === 10) {
+      setCustomerName("");
+      verify(
+        { serviceID: serviceProvider, billersCode: smartCardNumber },
+        {
+          onSuccess: (data: any) => {
+            setCustomerName(data?.data?.content?.Customer_Name || "");
+          },
+          onError: () => {
+            setCustomerName("");
+          },
+        },
+      );
+    } else {
+      setCustomerName("");
+    }
+  }, [serviceProvider, smartCardNumber]);
 
   const handlePackageSelect = (value: string) => {
     setSelectedPackage(value);
-    // Set amount based on package - you'd typically get this from API
-    const packagePrices: Record<string, string> = {
-      premium: "24500",
-      compact_plus: "16200",
-      compact: "10500",
-      confam: "6200",
-      yanga: "3500",
-    };
-    setAmount(packagePrices[value] || "");
+    const selected = packages.find((p: any) => p.value === value) as any;
+    setAmount(selected?.amount || "");
   };
+
+  const handleContinue = () => {
+    navigation.navigate("Confirmation", {
+      serviceID: serviceProvider,
+      billersCode: smartCardNumber,
+      variation_code: selectedPackage,
+      amount,
+      phoneNumber: null,
+      type: "tv",
+    });
+  };
+
+  const disable =
+    !serviceProvider ||
+    !smartCardNumber ||
+    !selectedPackage ||
+    !customerName ||
+    isVerifying ||
+    packages.length === 0;
 
   return (
     <ContactsProvider>
       <View style={styles.root}>
         <CommonHeader title="TV" back />
 
-        {/* Form Content */}
         <View style={styles.tabContent}>
           {/* Service Provider Selector */}
           <View style={styles.selectorContainer}>
             <BottomSheetSelector
               icon="tv"
-              options={serviceProviderOptions}
+              options={providers}
               selectedValue={serviceProvider}
-              onSelect={setServiceProvider}
-              placeholder="Change Service Provider"
+              onSelect={(value) => {
+                setServiceProvider(value);
+                setSelectedPackage("");
+                setAmount("");
+                setCustomerName("");
+              }}
+              placeholder={
+                servicesLoading
+                  ? "Loading providers..."
+                  : "Change Service Provider"
+              }
               sheetTitle="Select Service Provider"
             />
           </View>
@@ -81,25 +143,53 @@ const TV = () => {
               placeholder="Enter smart card number"
               placeholderTextColor="#999"
               value={smartCardNumber}
-              onChangeText={setSmartCardNumber}
+              onChangeText={(text) => {
+                setSmartCardNumber(text);
+                setCustomerName("");
+              }}
               keyboardType="numeric"
+              maxLength={10}
             />
+            {/* Customer name verification feedback */}
+            <View
+              style={{ marginTop: 4, minHeight: 20, alignItems: "flex-end" }}
+            >
+              {isVerifying ? (
+                <ActivityIndicator size="small" color="#6C2BD9" />
+              ) : customerName ? (
+                <Text style={{ color: "#22c55e", fontSize: 13 }}>
+                  ✓ {customerName}
+                </Text>
+              ) : smartCardNumber.length === 10 && !isVerifying ? (
+                <Text style={{ color: "#ef4444", fontSize: 13 }}>
+                  Could not verify smartcard
+                </Text>
+              ) : null}
+            </View>
           </View>
 
-          {/* Package Selector - Field Variant */}
+          {/* Package Selector */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Select Service Package</Text>
             <BottomSheetSelector
-              options={packageOptions}
+              options={packages}
               selectedValue={selectedPackage}
               onSelect={handlePackageSelect}
-              placeholder="Select package"
+              placeholder={
+                !serviceProvider
+                  ? "Select a provider first"
+                  : packagesLoading
+                    ? "Loading packages..."
+                    : packages.length === 0
+                      ? "No packages available"
+                      : "Select package"
+              }
               sheetTitle="Select Package"
               variant="field"
             />
           </View>
 
-          {/* Amount Input */}
+          {/* Amount — auto-filled from selected package */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Amount</Text>
             <View style={styles.phoneInputWrapper}>
@@ -110,9 +200,7 @@ const TV = () => {
                 style={styles.phoneInput}
                 placeholder="Amount"
                 placeholderTextColor="#999"
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType="numeric"
+                value={amount ? parseFloat(amount).toLocaleString("en-NG") : ""}
                 editable={false}
               />
             </View>
@@ -120,8 +208,9 @@ const TV = () => {
 
           {/* Continue Button */}
           <TouchableOpacity
-            style={styles.continueButton}
-            onPress={() => navigation.navigate("Confirmation")}
+            style={[styles.continueButton, disable && styles.disabledButton]}
+            onPress={handleContinue}
+            disabled={disable}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>

@@ -1,42 +1,152 @@
-import { View } from "react-native";
-import React, { useState } from "react";
+import { View, ActivityIndicator } from "react-native";
+import React, { useEffect, useState } from "react";
 import { styles } from "./style";
 import Text from "../../../components/common/txt";
 import CommonHeader from "../../../components/ui/commonHeader";
 import CustomKeypad from "../../../components/keypad/customKeyPad";
 import { COLORS } from "../../../constants/Colors";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useVerifyPIN } from "../../../api/hooks/usePIN";
+import { usePayBills } from "../../../api/hooks/useBills";
+
+type RouteParams = {
+  serviceID?: string;
+  variation_code?: string;
+  amount?: any;
+  phoneNumber?: string;
+  billersCode?: string;
+  type?: string;
+};
 
 const OTP = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+
+  const { serviceID, variation_code, amount, phoneNumber, billersCode, type } =
+    (route.params as RouteParams) || {};
+
+  // const userData = useAuthStore((state: any) => state.userData);
+  const email = "john.doe@example.com"; //change later////////
+
   const [pin, setPin] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSuccess, setToastSuccess] = useState(false);
+
   const maxPinLength = 4;
+
+  const { mutate: verifyPin } = useVerifyPIN();
+  const { mutate: payBill } = usePayBills();
+
+  const showToast = (message: string, success: boolean) => {
+    setToastMessage(message);
+    setToastSuccess(success);
+    setToastVisible(true);
+  };
+
+  useEffect(() => {
+    if (pin.length === maxPinLength) {
+      setLoading(true);
+
+      verifyPin(
+        { email, pin },
+        {
+          onSuccess: () => {
+            payBill(
+              {
+                serviceID,
+                variation_code,
+                amount,
+                phone: phoneNumber,
+                email,
+                billersCode,
+                type,
+              },
+              {
+                onSuccess: (response: any) => {
+                  setLoading(false);
+
+                  const isSuccess =
+                    response?.success === true &&
+                    response?.data?.response_description?.includes(
+                      "TRANSACTION SUCCESSFUL",
+                    );
+
+                  const hasToken =
+                    typeof response?.data?.token === "string" &&
+                    response?.data?.token.trim() !== "";
+                  const hasUnits =
+                    typeof response?.data?.units === "string" &&
+                    response?.data?.units.trim() !== "";
+
+                  if (isSuccess && hasToken && hasUnits) {
+                    // Electricity with token
+                    showToast("Transaction Successful", true);
+                    setTimeout(() => {
+                      navigation.navigate("ElectReceipt", {
+                        data: response?.data,
+                      });
+                    }, 2000);
+                  } else if (isSuccess) {
+                    showToast("Transaction Completed", true);
+                    setTimeout(() => {
+                      navigation.navigate("Success", {
+                        message: "Transaction Completed",
+                      });
+                    }, 2000);
+                  } else {
+                    showToast("Payment Failed. Try again.", false);
+                    setTimeout(() => {
+                      navigation.navigate("BottomTabs");
+                    }, 2000);
+                  }
+                },
+                onError: (error: any) => {
+                  setLoading(false);
+                  const errorMessage =
+                    error?.response?.data?.message ||
+                    "Payment Failed. Try again.";
+                  showToast(errorMessage, false);
+                  setTimeout(() => {
+                    navigation.navigate("BottomTabs");
+                  }, 2000);
+                },
+              },
+            );
+          },
+          onError: () => {
+            setLoading(false);
+            showToast("Incorrect PIN.", false);
+            setPin(""); // clear PIN so user can retry
+          },
+        },
+      );
+    }
+  }, [pin]);
 
   const handleKeyPress = (key: string) => {
     if (pin.length < maxPinLength) {
-      setPin(pin + key);
+      setPin((prev) => prev + key);
     }
   };
 
   const handleDelete = () => {
-    setPin(pin.slice(0, -1));
+    setPin((prev) => prev.slice(0, -1));
   };
 
   const handleSubmit = () => {
-    if (pin.length === maxPinLength) {
-      console.log("PIN submitted:", pin);
-      navigation.navigate("Success");
-    }
+    // submission is handled automatically via useEffect when pin reaches 4 digits
   };
 
   const handleForgotPin = () => {
-    console.log("Forgot PIN clicked");
     // Navigate to forgot PIN screen
+    console.log("Forgot PIN clicked");
   };
 
   return (
     <View style={styles.root}>
-      <CommonHeader title="Airtime & Data" back />
+      <CommonHeader title="Transaction PIN" back />
       <View style={styles.container}>
         <View style={styles.desc}>
           <Text variant="bold" size="3xl">
@@ -59,6 +169,25 @@ const OTP = () => {
             />
           ))}
         </View>
+
+        {/* Loading indicator */}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.brand} />
+          </View>
+        )}
+
+        {/* Toast */}
+        {toastVisible && (
+          <View
+            style={[
+              styles.toast,
+              { backgroundColor: toastSuccess ? "#22c55e" : "#ef4444" },
+            ]}
+          >
+            <Text style={{ color: "#fff" }}>{toastMessage}</Text>
+          </View>
+        )}
       </View>
 
       {/* Keypad at Bottom */}
