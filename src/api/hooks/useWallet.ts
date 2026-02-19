@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../axiosInstance";
 import { API_ENDPOINTS } from "../endpoints";
-import useAuthStore from "@/src/store/userStore";
+import useAuthStore from "../../store/userStore"
 import { useEffect } from "react";
 import { isLoading } from "expo-font";
 

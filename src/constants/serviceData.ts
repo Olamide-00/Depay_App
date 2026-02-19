@@ -34,7 +34,7 @@ export const serviceData = [
     id: 4,
     name: "Cable TV",
     icon: "Receipt21",
-    screen: "Cable",
+    screen: "TV",
   },
   {
     id: 5,
@@ -46,25 +46,25 @@ export const serviceData = [
     id: 6,
     name: "Betting",
     icon: "Game",
-    screen: "Betting",
+    screen: "ComingSoon",
   },
   {
     id: 7,
     name: "Intl",
     icon: "AddCircle",
-    screen: "TopUp",
+    screen: "ComingSoon",
   },
   {
     id: 8,
     name: "Gift Card",
     icon: "Card",
-    screen: "Card",
+    screen: "ComingSoon",
   },
   {
     id: 10,
     name: "E-sim",
     icon: "Simcard2",
-    screen: "Esim",
+    screen: "ComingSoon",
   },
   {
     id: 9,

@@ -8,6 +8,8 @@ import QuickAction from "./component/quickAction";
 import Ad from "./component/ad";
 import RecentTransaction from "./component/recentTransaction";
 
+// Dashboard now manages its own socket connection internally
+// matching the pattern from the completed project
 export class Home extends Component {
   render() {
     return (
