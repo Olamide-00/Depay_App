@@ -1,16 +1,19 @@
-import { View, ScrollView, Image, TouchableOpacity } from "react-native";
+import { View, ScrollView, TouchableOpacity } from "react-native";
 import React from "react";
 import { styles } from "./style";
 import { Ionicons } from "@expo/vector-icons";
 import ProfileInfoItem from "./component/item";
 import Text from "../../../components/common/txt";
 import { useNavigation } from "@react-navigation/native";
+import { Image } from "expo-image";
+import useAuthStore from "../../../store/userStore";
 
 const User = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const userData = useAuthStore((state: any) => state.userData);
+
   const handleBack = () => {
-    console.log("Go back");
-    // navigation.goBack();
+    navigation.goBack();
   };
 
   const handleEdit = () => {
@@ -25,10 +28,7 @@ const User = () => {
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity
-          onPress={handleEdit}
-          style={styles.editButtonContainer}
-        >
+        <TouchableOpacity onPress={handleEdit} style={styles.editButtonContainer}>
           <Text style={styles.editButton}>Edit</Text>
         </TouchableOpacity>
       </View>
@@ -36,61 +36,76 @@ const User = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/100" }}
-            style={styles.profileImage}
-          />
+          {userData?.profilePicture ? (
+            <Image
+              source={{ uri: userData.profilePicture }}
+              style={styles.profileImage}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[styles.profileImage, styles.placeholderImage]}>
+              <Ionicons name="person" size={40} color="#999" />
+            </View>
+          )}
         </View>
 
         {/* User Information */}
         <View style={styles.infoContainer}>
           <ProfileInfoItem
             icon="person-outline"
-            label="User Name"
-            value="Olamide"
+            label="Full Name"
+            value={userData?.fullName || userData?.name || "---"}
             iconColor="#6C2BD9"
           />
 
-          <ProfileInfoItem
-            icon="person-outline"
-            label="Full Name"
-            value="Olamide Oladele"
+          {/* <ProfileInfoItem
+            icon="at-outline"
+            label="Username"
+            value={userData?.tag ? `@${userData.tag}` : "---"}
             iconColor="#6C2BD9"
-          />
+          /> */}
 
           <ProfileInfoItem
             icon="mail-outline"
             label="E-Mail Address"
-            value="Olamide@gmail.com"
+            value={userData?.email || "---"}
             iconColor="#6C2BD9"
           />
 
           <ProfileInfoItem
             icon="call-outline"
             label="Phone Number"
-            value="09036018013"
+            value={userData?.phoneNumber || "---"}
             iconColor="#6C2BD9"
           />
 
           <ProfileInfoItem
             icon="calendar-outline"
             label="Date Of Birth"
-            value="01/01/2000"
-            iconColor="#6C2BD9"
-          />
-
-          <ProfileInfoItem
-            icon="home-outline"
-            label="Residential Address"
-            value="House 2 Musa Aminu Street, Surdere, La..."
+            value={
+              userData?.dateOfBirth
+                ? new Date(userData.dateOfBirth).toLocaleDateString("en-NG")
+                : "---"
+            }
             iconColor="#6C2BD9"
           />
 
           <ProfileInfoItem
             icon="male-female-outline"
             label="Gender"
-            value="Male"
+            value={
+              userData?.gender
+                ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
+                : "---"
+            }
             iconColor="#6C2BD9"
+          />
+
+          <ProfileInfoItem
+            icon="shield-checkmark-outline"
+            label="KYC Status"
+            value={userData?.isWalletCreated ? "Verified ✓" : "Not Verified"}
+            iconColor={userData?.isWalletCreated ? "#22c55e" : "#ef4444"}
           />
         </View>
       </ScrollView>
