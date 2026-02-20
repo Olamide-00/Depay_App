@@ -150,4 +150,24 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
   },
+  charCount: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginTop: 4,
+    textAlign: 'right',
+  },
+  
+  checkboxDisabled: {
+    opacity: 0.5,
+    borderColor: '#D1D5DB',
+  },
+  
+  textDisabled: {
+    opacity: 0.5,
+  },
+  
+  buttonDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#9CA3AF',
+  },
 });

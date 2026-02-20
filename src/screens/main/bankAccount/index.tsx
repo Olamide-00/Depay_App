@@ -1,18 +1,117 @@
-import { View, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { View, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
 import React, { useState } from "react";
 import { styles } from "./style";
 import Text from "../../../components/common/txt";
 import CommonHeader from "../../../components/ui/commonHeader";
+import useAuthStore from "../../../store/userStore";
 import { Ionicons } from "@expo/vector-icons";
+import { useCreateWallet } from "../../../api/hooks/useWallet";
 
 const Wallet = () => {
-  const [selectedType, setSelectedType] = useState("NIN"); // NIN or BVN
+  const [selectedType, setSelectedType] = useState("NIN"); 
   const [idNumber, setIdNumber] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  const userData = useAuthStore((state) => state.userData);
+  const name = userData?.name;
+  const email = userData?.email;
+
+  // Use the create wallet hook
+  const { mutate: createWallet, isPending } = useCreateWallet();
+
+  const handleGenerateWallet = () => {
+    // Validate ID number
+    if (!idNumber || idNumber.length < 11) {
+      Alert.alert(
+        "Validation Error", 
+        `Please enter a valid ${selectedType} (11 digits)`
+      );
+      return;
+    }
+
+    if (!agreedToTerms) {
+      Alert.alert("Terms Required", "Please agree to the terms and conditions");
+      return;
+    }
+
+    // Prepare request data
+    const requestData = {
+      email,
+      customerName: name,
+    };
+
+    // Add either BVN or NIN based on selection
+    if (selectedType === "BVN") {
+      requestData.bvn = idNumber;
+    } else {
+      requestData.nin = idNumber;
+    }
+
+    // Call the API
+    createWallet(requestData, {
+      onSuccess: (response) => {
+        Alert.alert(
+          "Success",
+          "Bank account created successfully!",
+          [
+            {
+              text: "View Details",
+              onPress: () => {
+                // Navigate to account details screen
+                console.log("Account details:", response.data);
+              }
+            }
+          ]
+        );
+        
+        // Reset form
+        setIdNumber("");
+        setAgreedToTerms(false);
+      },
+      onError: (error) => {
+        // 👇 IMPROVED ERROR HANDLING 👇
+        console.log("Full error object:", error);
+        
+        // Check if error has response data with validation errors
+        if (error.response?.data) {
+          const errorData = error.response.data;
+          
+          // Handle validation errors array
+          if (errorData.errors && Array.isArray(errorData.errors)) {
+            Alert.alert(
+              "Validation Error",
+              errorData.errors.join("\n") // Join multiple errors with new lines
+            );
+          } 
+          // Handle single message error
+          else if (errorData.message) {
+            Alert.alert(
+              errorData.message.includes("failed") ? "Error" : "Validation Error",
+              errorData.message
+            );
+          }
+          // Fallback
+          else {
+            Alert.alert(
+              "Error",
+              error.message || "Failed to create bank account. Please try again."
+            );
+          }
+        } else {
+          // Handle network errors or other issues
+          Alert.alert(
+            "Error",
+            error.message || "Failed to create bank account. Please try again."
+          );
+        }
+      }
+    });
+  };
 
   return (
     <View style={styles.root}>
       <CommonHeader title="Generate Bank Account" back />
+      
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -26,7 +125,10 @@ const Wallet = () => {
                 styles.toggleButton,
                 selectedType === "NIN" && styles.toggleButtonActive,
               ]}
-              onPress={() => setSelectedType("NIN")}
+              onPress={() => {
+                setSelectedType("NIN");
+                setIdNumber(""); // Clear input when switching
+              }}
             >
               <Text
                 style={[
@@ -43,7 +145,10 @@ const Wallet = () => {
                 styles.toggleButton,
                 selectedType === "BVN" && styles.toggleButtonActive,
               ]}
-              onPress={() => setSelectedType("BVN")}
+              onPress={() => {
+                setSelectedType("BVN");
+                setIdNumber(""); // Clear input when switching
+              }}
             >
               <Text
                 style={[
@@ -72,12 +177,18 @@ const Wallet = () => {
               </Text>
               <TextInput
                 style={styles.input}
-                placeholder="32445724458788098"
+                placeholder={selectedType === "NIN" ? "Enter 11-digit NIN" : "Enter 11-digit BVN"}
                 placeholderTextColor="#D1D5DB"
                 value={idNumber}
                 onChangeText={setIdNumber}
                 keyboardType="numeric"
+                maxLength={11}
+                editable={!isPending}
               />
+              {/* Show character count */}
+              <Text style={styles.charCount}>
+                {idNumber.length}/11 digits
+              </Text>
             </View>
           </View>
 
@@ -85,7 +196,16 @@ const Wallet = () => {
           <View style={styles.warningBox}>
             <Ionicons name="alert-circle" size={20} color="#EF4444" />
             <Text style={styles.warningText}>Forget your {selectedType}?</Text>
-            <TouchableOpacity style={styles.clickButton}>
+            <TouchableOpacity 
+              style={styles.clickButton}
+              onPress={() => {
+                // Navigate to help screen or show info
+                Alert.alert(
+                  "Need Help?",
+                  `Please contact support if you've forgotten your ${selectedType} or visit the nearest NIMC/BVN enrollment center.`
+                );
+              }}
+            >
               <Text style={styles.clickButtonText}>Click here</Text>
             </TouchableOpacity>
           </View>
@@ -93,14 +213,15 @@ const Wallet = () => {
           {/* Terms Checkbox */}
           <TouchableOpacity
             style={styles.checkboxContainer}
-            onPress={() => setAgreedToTerms(!agreedToTerms)}
+            onPress={() => !isPending && setAgreedToTerms(!agreedToTerms)}
+            disabled={isPending}
           >
-            <View style={styles.checkbox}>
+            <View style={[styles.checkbox, isPending && styles.checkboxDisabled]}>
               {agreedToTerms && (
                 <Ionicons name="checkmark" size={16} color="#7C3AED" />
               )}
             </View>
-            <Text style={styles.checkboxText}>
+            <Text style={[styles.checkboxText, isPending && styles.textDisabled]}>
               In line with the latest regulatory requirement from the CBN, we
               will collect your face, name, phone number, home address, and
               birthday or BVN and NIN to verify your account. JARA will not
@@ -115,11 +236,14 @@ const Wallet = () => {
         <TouchableOpacity
           style={[
             styles.generateButton,
-            !agreedToTerms && styles.buttonDisabled,
+            (!agreedToTerms || !idNumber || idNumber.length < 11 || isPending) && styles.buttonDisabled,
           ]}
-          disabled={!agreedToTerms}
+          onPress={handleGenerateWallet}
+          disabled={!agreedToTerms || !idNumber || idNumber.length < 11 || isPending}
         >
-          <Text style={styles.generateButtonText}>Generate</Text>
+          <Text style={styles.generateButtonText}>
+            {isPending ? "Creating..." : "Generate"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

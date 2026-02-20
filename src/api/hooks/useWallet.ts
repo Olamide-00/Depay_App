@@ -10,9 +10,8 @@ interface CreateWalletData {
   email: string;
   customerName: string;
   bvn: string;
-  accountName: string;
-  customerEmail: string;
-  dob: string;
+  email: string;
+  
 }
 
 interface Account {
@@ -97,13 +96,5 @@ export const useWalletDetails = () => {
   };
 };
 
-export const usePercentage = () => {
-  return useQuery({
-    queryKey: ["percentage"],
-    queryFn: async () => {
-      const response = await axiosInstance.get(API_ENDPOINTS.PERCENTAGE);
-      return response.data;
-    },
-  });
-};
+
 export { useCreateWallet };

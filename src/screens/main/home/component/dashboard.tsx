@@ -30,8 +30,11 @@ const Dashboard = () => {
 
   // Account details from store
   const account = accountDetails?.[0]; 
-  const accountNumber = account?.accountNumber || "—";
-  const bankName = account?.bankName || "JAAN";
+  const accountNumber = account?.accountNumber || "";
+  const bankName = account?.bankName || "";
+
+  // ✅ Check if bank account exists (both bankName AND accountNumber must exist)
+  const hasBankAccount = !!(bankName && accountNumber);
 
   // Truncate long names cleanly
   const truncate = (str: string, max: number) =>
@@ -112,7 +115,7 @@ const Dashboard = () => {
                 {displayBalance}
               </Text>
 
-              {account ? (
+              {hasBankAccount ? (
                 <>
                   <View style={styles.accountInfo}>
                     <MaterialCommunityIcons

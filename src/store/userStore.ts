@@ -23,8 +23,10 @@ interface UserData {
   balance: number;
   profilePicture: string;
   tag: string;
-  dateOfBirth?: string; // ← added
-  gender?: string;      // ← added
+  dateOfBirth?: string; 
+  gender?: string;      
+  bankName?: string;
+  account?: string
 }
 
 interface Account {
