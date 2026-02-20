@@ -20,7 +20,7 @@ const ChangePIN1 = () => {
             Change Transaction Pin
           </Text>
           <Text style={styles.subtitle}>
-            Create a new pin to secure your JARA account.
+            Create a new pin to secure your JAA account.
           </Text>
         </View>
 

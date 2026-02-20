@@ -15,8 +15,10 @@ import CommonHeader from "../../../components/ui/commonHeader";
 import { COLORS } from "../../../constants/Colors";
 import useAuthStore from "../../../store/userStore";
 import { useGetBillsHistory } from "../../../api/hooks/useBills";
+import { useNavigation } from "@react-navigation/native";
 
 type TransactionItem = {
+  _id?: string;
   label: string;
   amount: string;
   status: string;
@@ -24,6 +26,8 @@ type TransactionItem = {
   transaction_date?: string;
   type?: "debit" | "credit";
   category?: string;
+  phone?: string;
+  phoneNumber?: string;
 };
 
 const getCategoryIcon = (category: string) => {
@@ -39,7 +43,7 @@ const getCategoryIcon = (category: string) => {
     education: "school",
     transfer: "bank-transfer",
   };
-  return iconMap[category] || "wallet";
+  return iconMap[category?.toLowerCase()] || "wallet";
 };
 
 const getCategoryColor = (category: string) => {
@@ -55,7 +59,7 @@ const getCategoryColor = (category: string) => {
     education: "#4C6FFF",
     transfer: "#22c55e",
   };
-  return colorMap[category] || COLORS.brand;
+  return colorMap[category?.toLowerCase()] || COLORS.brand;
 };
 
 const formatDate = (dateString?: string) => {
@@ -64,34 +68,28 @@ const formatDate = (dateString?: string) => {
 };
 
 const Transaction = () => {
+  const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState<"all" | "expenses" | "funding">("all");
-  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const userData = useAuthStore((state: any) => state.userData);
   const email = userData?.email || "";
 
   const { data: histories = [], isLoading } = useGetBillsHistory(email);
 
-  // Filter by tab
   const tabFiltered = histories.filter((item: TransactionItem) => {
     if (activeTab === "expenses") return item.type === "debit";
     if (activeTab === "funding") return item.type === "credit";
     return true;
   });
 
-  // Filter by selected date
-  const filteredData = selectedDate
-    ? tabFiltered.filter((item: TransactionItem) => {
-        const itemDate = formatDate(item.transaction_date || item.date);
-        return itemDate === selectedDate;
-      })
-    : tabFiltered;
-
   const renderItem = ({ item }: { item: TransactionItem }) => {
-    const category = item.category || "wallet";
+    const category = typeof item.category === "string" ? item.category : "wallet";
     const isCredit = item.type === "credit";
     const amount = parseFloat(item.amount) || 0;
     const dateStr = item.transaction_date || item.date || "";
+    const status = typeof item.status === "string" ? item.status : "pending";
+    const isSuccess = status === "success";
+
     const displayDate = dateStr
       ? new Date(dateStr).toLocaleString("en-NG", {
           day: "numeric",
@@ -103,7 +101,16 @@ const Transaction = () => {
       : "---";
 
     return (
-      <TouchableOpacity style={styles.transactionItem} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.transactionItem}
+        activeOpacity={0.7}
+        onPress={() =>
+          navigation.navigate("StackNav", {
+            screen: "Receipt",
+            params: { transaction: item },
+          })
+        }
+      >
         {/* Icon */}
         <View
           style={[
@@ -114,32 +121,31 @@ const Transaction = () => {
           <MaterialCommunityIcons
             name={getCategoryIcon(category) as any}
             size={22}
-            color={getCategoryColor(category)}
+            color={COLORS.white}
           />
         </View>
 
         {/* Details */}
         <View style={styles.transactionDetails}>
-          <Text style={styles.transactionTitle}>{item.label || "Transaction"}</Text>
+          <Text style={styles.transactionTitle}>
+            {typeof item.label === "string" && item.label.length > 0
+              ? item.label
+              : category.charAt(0).toUpperCase() + category.slice(1)}
+          </Text>
           <Text style={styles.transactionDate}>{displayDate}</Text>
           <View
             style={[
               styles.statusBadge,
-              {
-                backgroundColor:
-                  item.status === "success" ? "#22c55e20" : "#ef444420",
-              },
+              { backgroundColor: isSuccess ? "#22c55e20" : "#ef444420" },
             ]}
           >
             <Text
               style={[
                 styles.statusText,
-                {
-                  color: item.status === "success" ? "#22c55e" : "#ef4444",
-                },
+                { color: isSuccess ? "#22c55e" : "#ef4444" },
               ]}
             >
-              {item.status || "pending"}
+              {status.charAt(0).toUpperCase() + status.slice(1)}
             </Text>
           </View>
         </View>
@@ -151,7 +157,11 @@ const Transaction = () => {
             isCredit ? styles.amountCredit : styles.amountDebit,
           ]}
         >
-          {isCredit ? "+" : "-"}₦{amount.toLocaleString()}
+          {isCredit ? "+" : "-"}₦
+          {amount.toLocaleString("en-NG", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </Text>
       </TouchableOpacity>
     );
@@ -170,10 +180,7 @@ const Transaction = () => {
             onPress={() => setActiveTab(tab)}
           >
             <Text
-              style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText,
-              ]}
+              style={[styles.tabText, activeTab === tab && styles.activeTabText]}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </Text>
@@ -181,20 +188,21 @@ const Transaction = () => {
         ))}
       </View>
 
-      {/* Transaction List */}
+      {/* List */}
       {isLoading ? (
         <View style={styles.emptyState}>
+          <MaterialCommunityIcons name="loading" size={32} color="#ddd" />
           <Text style={styles.emptyText}>Loading transactions...</Text>
         </View>
-      ) : filteredData.length === 0 ? (
+      ) : tabFiltered.length === 0 ? (
         <View style={styles.emptyState}>
           <MaterialCommunityIcons name="receipt" size={48} color="#ddd" />
           <Text style={styles.emptyText}>No transactions found</Text>
         </View>
       ) : (
         <FlatList
-          data={filteredData}
-          keyExtractor={(_, index) => index.toString()}
+          data={tabFiltered}
+          keyExtractor={(item, index) => item._id || index.toString()}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
@@ -299,10 +307,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   amountDebit: {
-    color: "#FF6B6B",
+    color: "#ef4444",
   },
   amountCredit: {
-    color: "#4CAF50",
+    color: "#22c55e",
   },
   emptyState: {
     flex: 1,

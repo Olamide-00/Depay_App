@@ -1,9 +1,9 @@
 import {
-  FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
 } from "react-native";
 import React from "react";
 import {
@@ -25,24 +25,15 @@ const RecentTransaction = () => {
 
   const { data: history = [], isLoading } = useGetBillsHistory(email);
 
-  // Only show 5 latest
   const recentTransactions = history.slice(0, 5);
 
-  const renderItem = ({ item }: { item: any }) => <Item data={item} />;
-
-  const EmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <MaterialCommunityIcons
-        name="receipt-text-outline"
-        size={40}
-        color="rgba(108, 43, 217, 0.2)"
-      />
-      <Text style={styles.emptyTitle}>No Transactions Yet</Text>
-      <Text style={styles.emptySubtitle}>
-        Your recent transactions will appear here
-      </Text>
-    </View>
-  );
+  const sanitize = (item: any) => ({
+    ...item,
+    label: typeof item.label === "string" ? item.label : "Transaction",
+    status: typeof item.status === "string" ? item.status : "pending",
+    category: typeof item.category === "string" ? item.category : "wallet",
+    type: typeof item.type === "string" ? item.type : "debit",
+  });
 
   const SkeletonRow = () => (
     <View style={styles.skeletonRow}>
@@ -57,6 +48,7 @@ const RecentTransaction = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Recent Transactions</Text>
         <TouchableOpacity onPress={() => navigation.navigate("Service")}>
@@ -64,6 +56,7 @@ const RecentTransaction = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Scrollable list area */}
       {isLoading ? (
         <View>
           {[1, 2, 3].map((i) => (
@@ -71,16 +64,30 @@ const RecentTransaction = () => {
           ))}
         </View>
       ) : recentTransactions.length === 0 ? (
-        <EmptyState />
+        <View style={styles.emptyContainer}>
+          <MaterialCommunityIcons
+            name="receipt-text-outline"
+            size={40}
+            color="rgba(108, 43, 217, 0.2)"
+          />
+          <Text style={styles.emptyTitle}>No Transactions Yet</Text>
+          <Text style={styles.emptySubtitle}>
+            Your recent transactions will appear here
+          </Text>
+        </View>
       ) : (
-        <FlatList
-          data={recentTransactions}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => item._id || item.id || index.toString()}
+        <ScrollView
+          style={styles.scrollArea}
           showsVerticalScrollIndicator={false}
-          scrollEnabled={false}
-          contentContainerStyle={styles.flatListContent}
-        />
+          nestedScrollEnabled={true}
+        >
+          {recentTransactions.map((item: any, index: number) => (
+            <Item
+              key={item._id || item.id || index.toString()}
+              data={sanitize(item)}
+            />
+          ))}
+        </ScrollView>
       )}
     </View>
   );
@@ -89,7 +96,9 @@ const RecentTransaction = () => {
 export default RecentTransaction;
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    paddingBottom: hp("2%"),
+  },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -107,11 +116,9 @@ const styles = StyleSheet.create({
     color: COLORS.brand,
     fontWeight: "500",
   },
-  flatListContent: {
-    paddingHorizontal: wp("0%"),
+  scrollArea: {
+    height: hp("35%"), // fixed height — adjust to fit your screen
   },
-
-  // Empty state
   emptyContainer: {
     alignItems: "center",
     paddingVertical: hp("4%"),
@@ -127,14 +134,13 @@ const styles = StyleSheet.create({
     color: "#d1d5db",
     textAlign: "center",
   },
-
-  // Skeleton
   skeletonRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: hp("1.2%"),
     paddingHorizontal: wp("2%"),
     gap: wp("3%"),
+    marginBottom: hp("0.5%"),
   },
   skeletonIcon: {
     width: hp("5%"),

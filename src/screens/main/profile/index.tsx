@@ -20,7 +20,7 @@ const Profile = () => {
   const account = accountDetails?.[0];
   const accountNumber = account?.accountNumber || "No account yet";
   const balance = userData?.balance ?? 0;
-  const gender = userData?.gender
+  const gender = typeof userData?.gender === "string" && userData.gender.length > 0
     ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
     : null;
   const dateOfBirth = userData?.dateOfBirth

@@ -99,7 +99,7 @@ const OTP = () => {
                   } else {
                     showToast("Payment Failed. Try again.", false);
                     setTimeout(() => {
-                      navigation.navigate("BottomTabs");
+                      navigation.navigate("TabNav", {screen: "HomeTab"} );
                     }, 2000);
                   }
                 },
@@ -110,7 +110,7 @@ const OTP = () => {
                     "Payment Failed. Try again.";
                   showToast(errorMessage, false);
                   setTimeout(() => {
-                    navigation.navigate("BottomTabs");
+                    navigation.navigate("TabNav", {screen: "HomeTab"} );
                   }, 2000);
                 },
               },
@@ -119,7 +119,7 @@ const OTP = () => {
           onError: () => {
             setLoading(false);
             showToast("Incorrect PIN.", false);
-            setPin(""); // clear PIN so user can retry
+            setPin(""); 
           },
         },
       );
@@ -141,8 +141,7 @@ const OTP = () => {
   };
 
   const handleForgotPin = () => {
-    // Navigate to forgot PIN screen
-    console.log("Forgot PIN clicked");
+    navigation.navigate("ChangePIN1")
   };
 
   return (
