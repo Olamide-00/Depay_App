@@ -16,15 +16,16 @@ export const styles = StyleSheet.create({
   iconSection: {
     alignItems: "center",
     paddingVertical: hp("2%"),
+    marginTop: hp("-4%")
   },
   iconContainer: {
-    width: 90,
-    height: 90,
+    width: 70,
+    height: 70,
     borderRadius: 45,
     backgroundColor: "#F0E6FF",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: hp("2%"),
+    marginBottom: hp("1%"),
   },
   reviewText: {
     fontSize: 22,

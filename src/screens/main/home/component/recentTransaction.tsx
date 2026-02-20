@@ -30,9 +30,10 @@ const RecentTransaction = () => {
   const sanitize = (item: any) => ({
     ...item,
     label: typeof item.label === "string" ? item.label : "Transaction",
-    status: typeof item.status === "string" ? item.status : "pending",
-    category: typeof item.category === "string" ? item.category : "wallet",
-    type: typeof item.type === "string" ? item.type : "debit",
+    // Normalize to lowercase so "SUCCESS" / "FAILED" / "success" all match
+    status: typeof item.status === "string" ? item.status.toLowerCase() : "pending",
+    category: typeof item.category === "string" ? item.category.toLowerCase() : "wallet",
+    type: typeof item.type === "string" ? item.type.toLowerCase() : "debit",
   });
 
   const SkeletonRow = () => (

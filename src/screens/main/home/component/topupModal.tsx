@@ -36,9 +36,12 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
   const accountDetails = useAuthStore((state) => state.accountDetails);
   const account = accountDetails?.[0];
 
-  const accountName = userData?.name || "—";
+  const accountName = account?.accountName || userData?.name || "—";
   const bankName = account?.bankName || "—";
   const accountNumber = account?.accountNumber || "—";
+
+  // Show account details if accountDetails exists OR wallet was created
+  const hasAccount = !!(account?.accountNumber && account?.bankName);
 
   useEffect(() => {
     if (visible) {
@@ -139,7 +142,7 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                 </View>
 
                 {/* No account state */}
-                {!account ? (
+                {!hasAccount ? (
                   <View style={styles.noAccountCard}>
                     <MaterialCommunityIcons
                       name="bank-off-outline"

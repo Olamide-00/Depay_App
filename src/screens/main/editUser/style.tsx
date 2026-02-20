@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#F5F5F5",
+    paddingTop: hp("4%")
   },
   header: {
     flexDirection: "row",
@@ -29,7 +30,7 @@ export const styles = StyleSheet.create({
     color: "#000",
     flex: 1,
     textAlign: "center",
-    marginRight: 50, // To center the title properly
+    marginRight: 50, 
   },
   saveButton: {
     padding: 4,

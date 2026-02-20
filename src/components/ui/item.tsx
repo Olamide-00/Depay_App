@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: wp("10%"),
     height: wp("10%"),
-    borderRadius: 100,
+    borderRadius: wp("5%"),
     justifyContent: "center",
     alignItems: "center",
   },

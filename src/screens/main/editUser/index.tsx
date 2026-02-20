@@ -4,6 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { styles } from "./style";
@@ -12,26 +13,55 @@ import Text from "../../../components/common/txt";
 import DatePickerModal from "./component/datePicker";
 import GenderSelector from "./component/gender";
 import PhoneNumberInput from "./component/phoneNumber";
+import { useNavigation } from "@react-navigation/native";
+import useAuthStore from "../../../store/userStore";
+import { useUpdateProfile } from "../../../api/hooks/useAuth";
 
 const EditUser = () => {
-  const [userName, setUserName] = useState("Sebi");
-  const [fullName, setFullName] = useState("Sebi Raheem");
-  const [email, setEmail] = useState("sebiraheem@gmail.com");
-  const [phoneNumber, setPhoneNumber] = useState("901 234 5678");
-  const [dateOfBirth, setDateOfBirth] = useState("01/01/2000");
-  const [address, setAddress] = useState(
-    "House 2 Musa Aminu street, Surdere, Lagos",
-  );
-  const [gender, setGender] = useState("male");
+  const navigation = useNavigation<any>();
+  const userData = useAuthStore((state) => state.userData);
 
-  const handleBack = () => {
-    console.log("Go back");
-    // navigation.goBack();
-  };
+  // Pre-fill from store
+  const [fullName, setFullName] = useState(userData?.name || "");
+  const [phoneNumber, setPhoneNumber] = useState(userData?.phoneNumber || "");
+  const [dateOfBirth, setDateOfBirth] = useState(userData?.dateOfBirth || "");
+  const [gender, setGender] = useState(userData?.gender || "");
+
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
 
   const handleSave = () => {
-    console.log("Save profile");
-    // Save profile data
+    if (!userData?.email) return;
+
+    const updateData: any = {};
+    if (fullName) updateData.fullName = fullName;
+    if (phoneNumber) updateData.phoneNumber = phoneNumber;
+    if (gender) updateData.gender = gender;
+    if (dateOfBirth) updateData.dateOfBirth = dateOfBirth;
+
+    updateProfile(
+      { email: userData.email, data: updateData },
+      {
+        onSuccess: (response) => {
+          // Sync updated fields back to store
+          useAuthStore.getState().setUserData({
+            ...useAuthStore.getState().userData!,
+            name: response.user?.name || fullName,
+            phoneNumber: response.user?.phoneNumber || phoneNumber,
+            gender: response.user?.gender || gender,
+            dateOfBirth: response.user?.dateOfBirth || dateOfBirth,
+          });
+
+          Alert.alert("Success", "Profile updated successfully");
+          navigation.goBack();
+        },
+        onError: (err: any) => {
+          Alert.alert(
+            "Error",
+            err?.response?.data?.message || "Failed to update profile"
+          );
+        },
+      }
+    );
   };
 
   const handleChangeImage = () => {
@@ -43,12 +73,18 @@ const EditUser = () => {
     <View style={styles.root}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-          <Text style={styles.saveText}>Save</Text>
+        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <TouchableOpacity
+          onPress={handleSave}
+          style={styles.saveButton}
+          disabled={isPending}
+        >
+          <Text style={[styles.saveText, isPending && { opacity: 0.5 }]}>
+            {isPending ? "Saving..." : "Save"}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -59,7 +95,11 @@ const EditUser = () => {
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
           <Image
-            source={{ uri: "https://via.placeholder.com/100" }}
+            source={
+              userData?.profilePicture
+                ? { uri: userData.profilePicture }
+                : { uri: "https://via.placeholder.com/100" }
+            }
             style={styles.profileImage}
           />
           <TouchableOpacity
@@ -72,18 +112,6 @@ const EditUser = () => {
 
         {/* Form Fields */}
         <View style={styles.formContainer}>
-          {/* User Name */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>User Name</Text>
-            <TextInput
-              style={styles.input}
-              value={userName}
-              onChangeText={setUserName}
-              placeholder="Enter user name"
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-
           {/* Full Name */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Full Name</Text>
@@ -93,20 +121,6 @@ const EditUser = () => {
               onChangeText={setFullName}
               placeholder="Enter full name"
               placeholderTextColor="#9CA3AF"
-            />
-          </View>
-
-          {/* Email Address */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter email address"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="email-address"
-              autoCapitalize="none"
             />
           </View>
 
@@ -125,20 +139,6 @@ const EditUser = () => {
             onDateChange={setDateOfBirth}
             placeholder="01/01/2000"
           />
-
-          {/* Residential Address */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Residential Address</Text>
-            <TextInput
-              style={[styles.input, styles.multilineInput]}
-              value={address}
-              onChangeText={setAddress}
-              placeholder="Enter address"
-              placeholderTextColor="#9CA3AF"
-              multiline
-              numberOfLines={2}
-            />
-          </View>
 
           {/* Gender */}
           <GenderSelector

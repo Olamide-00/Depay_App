@@ -77,17 +77,19 @@ const Transaction = () => {
   const { data: histories = [], isLoading } = useGetBillsHistory(email);
 
   const tabFiltered = histories.filter((item: TransactionItem) => {
-    if (activeTab === "expenses") return item.type === "debit";
-    if (activeTab === "funding") return item.type === "credit";
+    const type = typeof item.type === "string" ? item.type.toLowerCase() : "debit";
+    if (activeTab === "expenses") return type === "debit";
+    if (activeTab === "funding") return type === "credit";
     return true;
   });
 
   const renderItem = ({ item }: { item: TransactionItem }) => {
-    const category = typeof item.category === "string" ? item.category : "wallet";
-    const isCredit = item.type === "credit";
+    const category = typeof item.category === "string" ? item.category.toLowerCase() : "wallet";
+    const type = typeof item.type === "string" ? item.type.toLowerCase() : "debit";
+    const isCredit = type === "credit";
     const amount = parseFloat(item.amount) || 0;
     const dateStr = item.transaction_date || item.date || "";
-    const status = typeof item.status === "string" ? item.status : "pending";
+    const status = typeof item.status === "string" ? item.status.toLowerCase() : "pending";
     const isSuccess = status === "success";
 
     const displayDate = dateStr

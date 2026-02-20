@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCreateWallet } from "../../../api/hooks/useWallet";
 
 const Wallet = () => {
-  const [selectedType, setSelectedType] = useState("NIN"); 
+  const [selectedType, setSelectedType] = useState("NIN");
   const [idNumber, setIdNumber] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
@@ -16,16 +16,11 @@ const Wallet = () => {
   const name = userData?.name;
   const email = userData?.email;
 
-  // Use the create wallet hook
   const { mutate: createWallet, isPending } = useCreateWallet();
 
   const handleGenerateWallet = () => {
-    // Validate ID number
     if (!idNumber || idNumber.length < 11) {
-      Alert.alert(
-        "Validation Error", 
-        `Please enter a valid ${selectedType} (11 digits)`
-      );
+      Alert.alert("Validation Error", `Please enter a valid ${selectedType} (11 digits)`);
       return;
     }
 
@@ -34,84 +29,62 @@ const Wallet = () => {
       return;
     }
 
-    // Prepare request data
-    const requestData = {
-      email,
-      customerName: name,
-    };
+    const requestData: any = { email, customerName: name };
 
-    // Add either BVN or NIN based on selection
     if (selectedType === "BVN") {
       requestData.bvn = idNumber;
     } else {
       requestData.nin = idNumber;
     }
 
-    // Call the API
     createWallet(requestData, {
       onSuccess: (response) => {
-        Alert.alert(
-          "Success",
-          "Bank account created successfully!",
-          [
-            {
-              text: "View Details",
-              onPress: () => {
-                // Navigate to account details screen
-                console.log("Account details:", response.data);
-              }
-            }
-          ]
-        );
-        
-        // Reset form
+        // ✅ Update store with Monnify account details
+        const accounts = response.data?.accounts || [];
+        if (accounts.length > 0) {
+          useAuthStore.getState().setAccountDetails(
+            accounts.map((acc: any) => ({
+              accountName: acc.accountName || name || "",
+              accountNumber: acc.accountNumber || "",
+              bankCode: acc.bankCode || "",
+              bankName: acc.bankName || "",
+            }))
+          );
+        }
+        useAuthStore.getState().setIsWalletCreated(true);
+
+        Alert.alert("Success", "Bank account created successfully!");
+
         setIdNumber("");
         setAgreedToTerms(false);
       },
-      onError: (error) => {
-        // 👇 IMPROVED ERROR HANDLING 👇
+      onError: (error: any) => {
         console.log("Full error object:", error);
-        
-        // Check if error has response data with validation errors
+
         if (error.response?.data) {
           const errorData = error.response.data;
-          
-          // Handle validation errors array
+
           if (errorData.errors && Array.isArray(errorData.errors)) {
-            Alert.alert(
-              "Validation Error",
-              errorData.errors.join("\n") // Join multiple errors with new lines
-            );
-          } 
-          // Handle single message error
-          else if (errorData.message) {
+            Alert.alert("Validation Error", errorData.errors.join("\n"));
+          } else if (errorData.message) {
             Alert.alert(
               errorData.message.includes("failed") ? "Error" : "Validation Error",
               errorData.message
             );
-          }
-          // Fallback
-          else {
-            Alert.alert(
-              "Error",
-              error.message || "Failed to create bank account. Please try again."
-            );
+          } else {
+            Alert.alert("Error", error.message || "Failed to create bank account. Please try again.");
           }
         } else {
-          // Handle network errors or other issues
-          Alert.alert(
-            "Error",
-            error.message || "Failed to create bank account. Please try again."
-          );
+          Alert.alert("Error", error.message || "Failed to create bank account. Please try again.");
         }
-      }
+      },
     });
   };
 
   return (
     <View style={styles.root}>
       <CommonHeader title="Generate Bank Account" back />
-      
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -121,41 +94,19 @@ const Wallet = () => {
           {/* Toggle Buttons */}
           <View style={styles.toggleContainer}>
             <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                selectedType === "NIN" && styles.toggleButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedType("NIN");
-                setIdNumber(""); // Clear input when switching
-              }}
+              style={[styles.toggleButton, selectedType === "NIN" && styles.toggleButtonActive]}
+              onPress={() => { setSelectedType("NIN"); setIdNumber(""); }}
             >
-              <Text
-                style={[
-                  styles.toggleText,
-                  selectedType === "NIN" && styles.toggleTextActive,
-                ]}
-              >
+              <Text style={[styles.toggleText, selectedType === "NIN" && styles.toggleTextActive]}>
                 NIN
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                selectedType === "BVN" && styles.toggleButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedType("BVN");
-                setIdNumber(""); // Clear input when switching
-              }}
+              style={[styles.toggleButton, selectedType === "BVN" && styles.toggleButtonActive]}
+              onPress={() => { setSelectedType("BVN"); setIdNumber(""); }}
             >
-              <Text
-                style={[
-                  styles.toggleText,
-                  selectedType === "BVN" && styles.toggleTextActive,
-                ]}
-              >
+              <Text style={[styles.toggleText, selectedType === "BVN" && styles.toggleTextActive]}>
                 BVN
               </Text>
             </TouchableOpacity>
@@ -168,12 +119,9 @@ const Wallet = () => {
               Please enter your own {selectedType} to Generate Bank Account.
             </Text>
 
-            {/* ID Number Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>
-                {selectedType === "NIN"
-                  ? "National Identification Number*"
-                  : "Bank Verification Number*"}
+                {selectedType === "NIN" ? "National Identification Number*" : "Bank Verification Number*"}
               </Text>
               <TextInput
                 style={styles.input}
@@ -185,10 +133,7 @@ const Wallet = () => {
                 maxLength={11}
                 editable={!isPending}
               />
-              {/* Show character count */}
-              <Text style={styles.charCount}>
-                {idNumber.length}/11 digits
-              </Text>
+              <Text style={styles.charCount}>{idNumber.length}/11 digits</Text>
             </View>
           </View>
 
@@ -196,15 +141,14 @@ const Wallet = () => {
           <View style={styles.warningBox}>
             <Ionicons name="alert-circle" size={20} color="#EF4444" />
             <Text style={styles.warningText}>Forget your {selectedType}?</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.clickButton}
-              onPress={() => {
-                // Navigate to help screen or show info
+              onPress={() =>
                 Alert.alert(
                   "Need Help?",
                   `Please contact support if you've forgotten your ${selectedType} or visit the nearest NIMC/BVN enrollment center.`
-                );
-              }}
+                )
+              }
             >
               <Text style={styles.clickButtonText}>Click here</Text>
             </TouchableOpacity>
@@ -217,15 +161,12 @@ const Wallet = () => {
             disabled={isPending}
           >
             <View style={[styles.checkbox, isPending && styles.checkboxDisabled]}>
-              {agreedToTerms && (
-                <Ionicons name="checkmark" size={16} color="#7C3AED" />
-              )}
+              {agreedToTerms && <Ionicons name="checkmark" size={16} color="#7C3AED" />}
             </View>
             <Text style={[styles.checkboxText, isPending && styles.textDisabled]}>
-              In line with the latest regulatory requirement from the CBN, we
-              will collect your face, name, phone number, home address, and
-              birthday or BVN and NIN to verify your account. JARA will not
-              share or sell your personal information securely.
+              In line with the latest regulatory requirement from the CBN, we will collect your
+              face, name, phone number, home address, and birthday or BVN and NIN to verify your
+              account. JAAN will not share or sell your personal information securely.
             </Text>
           </TouchableOpacity>
         </View>
@@ -236,7 +177,8 @@ const Wallet = () => {
         <TouchableOpacity
           style={[
             styles.generateButton,
-            (!agreedToTerms || !idNumber || idNumber.length < 11 || isPending) && styles.buttonDisabled,
+            (!agreedToTerms || !idNumber || idNumber.length < 11 || isPending) &&
+              styles.buttonDisabled,
           ]}
           onPress={handleGenerateWallet}
           disabled={!agreedToTerms || !idNumber || idNumber.length < 11 || isPending}

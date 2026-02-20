@@ -23,17 +23,15 @@ interface UserData {
   balance: number;
   profilePicture: string;
   tag: string;
-  dateOfBirth?: string; 
-  gender?: string;      
-  bankName?: string;
-  account?: string
+  dateOfBirth?: string;
+  gender?: string;
 }
 
 interface Account {
   accountName: string;
-  accountNumber: string;
+  accountNumber: string;  // ← account number lives here
   bankCode: string;
-  bankName: string;
+  bankName: string;       // ← bank name lives here
 }
 
 interface AuthState {
@@ -102,7 +100,6 @@ const useAuthStore = create<AuthState>()(
       logout: async () => {
         await secureStorage.removeItem("auth-storage");
         set({
-          // isOnboarded: false,
           isAuthenticated: false,
           isActivated: false,
           isBioEnable: false,

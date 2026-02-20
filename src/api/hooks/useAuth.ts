@@ -46,6 +46,15 @@ interface UpdatePasswordRequest {
   password: string;
 }
 
+interface UpdateProfileData {
+  fullName?: string;
+  phoneNumber?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  profilePicture?: string;
+  pushToken?: string;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -177,6 +186,19 @@ const useUpdateNumber = () => {
   });
 };
 
+// ─── Update profile ──────────────────────────────────────────
+const useUpdateProfile = () => {
+  return useMutation<ApiResponse<any>, AxiosError, { email: string; data: UpdateProfileData }>({
+    mutationFn: async ({ email, data }) => {
+      const response = await axiosInstance.put<ApiResponse<any>>(
+        `${API_ENDPOINTS.UPDATE_PROFILE}/${email}`,
+        data
+      );
+      return response.data;
+    },
+  });
+};
+
 // ─── Reset password OTP ───────────────────────────────────────
 const useResetOTP = () => {
   return useMutation<ApiResponse<any>, AxiosError, ResetOTPRequest>({
@@ -242,4 +264,5 @@ export {
   useUpdatePassword,
   useSetProfilePicture,
   useDeleteAccount,
+  useUpdateProfile,
 };

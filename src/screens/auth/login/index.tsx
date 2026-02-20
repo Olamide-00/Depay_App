@@ -64,10 +64,8 @@ export default function Login() {
             balance: data.user.balance,
             profilePicture: data.user.profilePicture,
             tag: data.user.tag,
-            dateOfBirth: data.user.dateOfBirth,  
-            gender: data.user.gender,  
-            bankName: data.user.bankName,
-            accountNumber: data.user.accountNumber,            
+            dateOfBirth: data.user.dateOfBirth,  // ← added
+            gender: data.user.gender,              // ← added
           };
 
           useAuthStore.getState().login(data.token, userData);

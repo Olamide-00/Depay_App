@@ -103,7 +103,7 @@ const Confirmation = () => {
           <View style={styles.iconContainer}>
             <MaterialCommunityIcons
               name="check-circle"
-              size={50}
+              size={40}
               color={COLORS.brand}
             />
           </View>

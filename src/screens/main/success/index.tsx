@@ -10,6 +10,7 @@ const { width, height } = Dimensions.get("window");
 
 const Success = () => {
   const navigation = useNavigation();
+  
   // Main animations
   const imageScale = useRef(new Animated.Value(0.5)).current;
   const imageOpacity = useRef(new Animated.Value(0)).current;
@@ -222,11 +223,9 @@ const Success = () => {
         </Text>
         <View style={styles.desc}>
           <Text variant="regular" color="#fff">
-            Airtime top-up completed
+            Transaction completed
           </Text>
-          <Text variant="regular" color="#fff">
-            Enjoy your $1,000 airtime
-          </Text>
+         
         </View>
       </Animated.View>
 

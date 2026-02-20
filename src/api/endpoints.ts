@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   RESET_OTP: "/user/init-OTP",
   UPDATE_PASSWORD: "/user/verify-reset-OTP",
   SET_PROFILE_PICTURE: "/user/set-profile-picture",
+  UPDATE_PROFILE: "/user/update-profile",
 
   // wallets endpoint
   CREATE_WALLET: "/wallet/create-account",

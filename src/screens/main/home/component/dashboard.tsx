@@ -29,12 +29,9 @@ const Dashboard = () => {
   const displayName = userData?.name || "User";
 
   // Account details from store
-  const account = accountDetails?.[0]; 
-  const accountNumber = account?.accountNumber || "";
-  const bankName = account?.bankName || "";
-
-  // ✅ Check if bank account exists (both bankName AND accountNumber must exist)
-  const hasBankAccount = !!(bankName && accountNumber);
+  const account = accountDetails?.[0]; // first account
+  const accountNumber = account?.accountNumber || "—";
+  const bankName = account?.bankName || "JAAN";
 
   // Truncate long names cleanly
   const truncate = (str: string, max: number) =>
@@ -115,7 +112,7 @@ const Dashboard = () => {
                 {displayBalance}
               </Text>
 
-              {hasBankAccount ? (
+              {account ? (
                 <>
                   <View style={styles.accountInfo}>
                     <MaterialCommunityIcons
@@ -152,7 +149,7 @@ const Dashboard = () => {
                     color="rgba(255,255,255,0.9)"
                   />
                   <Text variant="light" color="rgba(255,255,255,0.9)" size="xs">
-                    Create Account to fund wallet
+                    Create Account to receive money
                   </Text>
                 </TouchableOpacity>
               )}
