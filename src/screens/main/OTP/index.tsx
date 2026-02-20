@@ -8,6 +8,7 @@ import { COLORS } from "../../../constants/Colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useVerifyPIN } from "../../../api/hooks/usePIN";
 import { usePayBills } from "../../../api/hooks/useBills";
+import useAuthStore  from "../../../store/userStore"
 
 type RouteParams = {
   serviceID?: string;
@@ -25,8 +26,8 @@ const OTP = () => {
   const { serviceID, variation_code, amount, phoneNumber, billersCode, type } =
     (route.params as RouteParams) || {};
 
-  // const userData = useAuthStore((state: any) => state.userData);
-  const email = "john.doe@example.com"; //change later////////
+  const userData = useAuthStore((state: any) => state.userData);
+  const email = userData.email
 
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);

@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import * as SecureStore from "expo-secure-store";
 
-// Custom storage object for Expo SecureStore
 const secureStorage = {
   getItem: async (name: string) => {
     const value = await SecureStore.getItemAsync(name);
@@ -16,7 +15,6 @@ const secureStorage = {
   },
 };
 
-// Interface for user data
 interface UserData {
   email: string;
   name: string;
@@ -25,9 +23,10 @@ interface UserData {
   balance: number;
   profilePicture: string;
   tag: string;
+  dateOfBirth?: string; // ← added
+  gender?: string;      // ← added
 }
 
-// Interface for account details
 interface Account {
   accountName: string;
   accountNumber: string;
@@ -35,7 +34,6 @@ interface Account {
   bankName: string;
 }
 
-// Interface for the store state
 interface AuthState {
   isOnboarded: boolean;
   isAuthenticated: boolean;
@@ -49,7 +47,6 @@ interface AuthState {
   accountDetails: Account[];
   loginDate: string | null;
 
-  // Actions
   setIsOnboarded: (value: boolean) => void;
   setIsAuthenticated: (value: boolean) => void;
   setIsActivated: (value: boolean) => void;
@@ -66,11 +63,9 @@ interface AuthState {
   deactivateAccount: () => void;
 }
 
-// Create the store
 const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      // Initial state
       isOnboarded: false,
       isAuthenticated: false,
       isActivated: false,
@@ -83,20 +78,17 @@ const useAuthStore = create<AuthState>()(
       token: null,
       loginDate: null,
 
-      // Actions
       setIsOnboarded: (value) => set({ isOnboarded: value }),
       setIsAuthenticated: (value) => set({ isAuthenticated: value }),
       setIsActivated: (value) => set({ isActivated: value }),
       setIsBioEnable: (value) => set({ isBioEnable: value }),
       setEnableNotification: (value) => set({ enableNotification: value }),
       setIsWalletCreated: (value) => set({ isWalletCreated: value }),
-      setIsWalletCreatedLocally: (value) =>
-        set({ isWalletCreatedLocally: value }),
+      setIsWalletCreatedLocally: (value) => set({ isWalletCreatedLocally: value }),
       setAccountDetails: (accounts) => set({ accountDetails: accounts }),
       setUserData: (data) => set({ userData: data }),
       setToken: (token) => set({ token }),
 
-      // Composite actions
       login: (token, userData) =>
         set({
           isAuthenticated: true,
@@ -122,15 +114,8 @@ const useAuthStore = create<AuthState>()(
         });
       },
 
-      activateAccount: () =>
-        set({
-          isActivated: true,
-        }),
-
-      deactivateAccount: () =>
-        set({
-          isActivated: false,
-        }),
+      activateAccount: () => set({ isActivated: true }),
+      deactivateAccount: () => set({ isActivated: false }),
     }),
     {
       name: "auth-storage",
@@ -154,15 +139,11 @@ const useAuthStore = create<AuthState>()(
 
 export default useAuthStore;
 
-// Optional: Export selectors for better performance
 export const selectIsOnboarded = (state: AuthState) => state.isOnboarded;
-export const selectIsAuthenticated = (state: AuthState) =>
-  state.isAuthenticated;
+export const selectIsAuthenticated = (state: AuthState) => state.isAuthenticated;
 export const selectIsActivated = (state: AuthState) => state.isActivated;
 export const selectIsBioEnable = (state: AuthState) => state.isBioEnable;
-export const selectEnableNotification = (state: AuthState) =>
-  state.enableNotification;
+export const selectEnableNotification = (state: AuthState) => state.enableNotification;
 export const selectUserData = (state: AuthState) => state.userData;
 export const selectToken = (state: AuthState) => state.token;
-export const selectIsWalletCreatedLocally = (state: AuthState) =>
-  state.isWalletCreatedLocally;
+export const selectIsWalletCreatedLocally = (state: AuthState) => state.isWalletCreatedLocally;

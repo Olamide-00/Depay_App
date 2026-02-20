@@ -5,11 +5,14 @@ import Stepper from "./stepper";
 import Input from "../../../../components/common/input";
 import Btn from "../../../../components/common/btn";
 import { COLORS } from "../../../../constants/Colors";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const SignUpPassword = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { email } = route.params;
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,13 +30,11 @@ const SignUpPassword = () => {
   const handleContinue = () => {
     setError("");
 
-    // Validate password requirements
     if (!allRequirementsMet) {
       setError("Please meet all password requirements");
       return;
     }
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -44,8 +45,8 @@ const SignUpPassword = () => {
       return;
     }
 
-    // Navigate to next step
-    navigation.navigate("SignUpDetails");
+    // Pass email + password forward to final step
+    navigation.navigate("SignUpDetails", { email, password });
   };
 
   return (

@@ -17,14 +17,16 @@ import Input from "../../../../components/common/input";
 import Btn from "../../../../components/common/btn";
 import BottomSheetSelector from "../../../../components/common/bottomsheet";
 import { COLORS } from "../../../../constants/Colors";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 const SignUpDetails = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { email, password } = route.params;
+
   const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -48,7 +50,6 @@ const SignUpDetails = () => {
     if (Platform.OS === "android") {
       setShowDatePicker(false);
     }
-
     if (selectedDate) {
       setDateOfBirth(selectedDate);
       setError("");
@@ -56,10 +57,7 @@ const SignUpDetails = () => {
   };
 
   const handlePhoneChange = (text: string) => {
-    // Remove non-numeric characters
     const cleaned = text.replace(/\D/g, "");
-
-    // Limit to 10 digits
     if (cleaned.length <= 10) {
       setPhoneNumber(cleaned);
       setError("");
@@ -67,7 +65,6 @@ const SignUpDetails = () => {
   };
 
   const formatPhoneDisplay = (phone: string) => {
-    // Format as: 090 3601 8013
     if (phone.length <= 3) return phone;
     if (phone.length <= 7) return `${phone.slice(0, 3)} ${phone.slice(3)}`;
     return `${phone.slice(0, 3)} ${phone.slice(3, 7)} ${phone.slice(7)}`;
@@ -76,7 +73,6 @@ const SignUpDetails = () => {
   const handleContinue = () => {
     setError("");
 
-    // Validation
     if (!fullName.trim()) {
       setError("Please enter your full name");
       return;
@@ -97,7 +93,6 @@ const SignUpDetails = () => {
       return;
     }
 
-    // Check if user is at least 13 years old
     const age = new Date().getFullYear() - dateOfBirth.getFullYear();
     if (age < 13) {
       setError("You must be at least 13 years old to register");
@@ -105,14 +100,22 @@ const SignUpDetails = () => {
     }
 
     Keyboard.dismiss();
-    navigation.navigate("SignUpTransactionPin");
+
+    // Pass everything collected so far to the next screen
+    navigation.navigate("SignUpTransactionPin", {
+      email,
+      password,
+      fullName: fullName.trim(),
+      phoneNumber,
+      gender,
+      dateOfBirth: dateOfBirth.toISOString().split("T")[0], // "YYYY-MM-DD"
+    });
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.root}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.root}>
@@ -136,7 +139,6 @@ const SignUpDetails = () => {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Content */}
             <View style={styles.content}>
               {/* Logo */}
               <View style={styles.logoContainer}>
@@ -169,7 +171,7 @@ const SignUpDetails = () => {
                 </View>
               ) : null}
 
-              {/* Form Inputs */}
+              {/* Form */}
               <View style={styles.formContainer}>
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Full Name*</Text>
@@ -182,18 +184,7 @@ const SignUpDetails = () => {
                   />
                 </View>
 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>User Name</Text>
-                  <Input
-                    placeholder="This Can Be A Fun Nickname"
-                    value={username}
-                    onChangeText={setUsername}
-                    width="100%"
-                    returnKeyType="next"
-                  />
-                </View>
-
-                {/* Custom Phone Number Input */}
+                {/* Phone Number */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Phone Number*</Text>
                   <View style={styles.phoneInputContainer}>
@@ -209,14 +200,14 @@ const SignUpDetails = () => {
                       value={formatPhoneDisplay(phoneNumber)}
                       onChangeText={handlePhoneChange}
                       keyboardType="phone-pad"
-                      maxLength={12} // Including spaces
+                      maxLength={12}
                       returnKeyType="done"
                       onSubmitEditing={Keyboard.dismiss}
                     />
                   </View>
                 </View>
 
-                {/* Date of Birth Input */}
+                {/* Date of Birth */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Date of Birth*</Text>
                   <TouchableOpacity
@@ -244,7 +235,6 @@ const SignUpDetails = () => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Date Picker */}
                 {showDatePicker && (
                   <DateTimePicker
                     value={dateOfBirth || new Date(2000, 0, 1)}
@@ -256,7 +246,6 @@ const SignUpDetails = () => {
                   />
                 )}
 
-                {/* iOS Date Picker Done Button */}
                 {showDatePicker && Platform.OS === "ios" && (
                   <TouchableOpacity
                     style={styles.datePickerDoneButton}
@@ -266,6 +255,7 @@ const SignUpDetails = () => {
                   </TouchableOpacity>
                 )}
 
+                {/* Gender */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Gender*</Text>
                   <BottomSheetSelector

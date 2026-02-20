@@ -1,4 +1,4 @@
-import { View, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, FlatList, TouchableOpacity, StyleSheet,  Animated  } from "react-native";
 import React, { useState } from "react";
 import {
   widthPercentageToDP as wp,
@@ -6,7 +6,6 @@ import {
 } from "react-native-responsive-screen";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { MotiView } from "moti";
 import Text from "../../../components/common/txt";
 import { COLORS } from "../../../constants/Colors";
 import useAuthStore from "../../../store/userStore";
@@ -42,24 +41,32 @@ const formatAmount = (amount?: string | number) => {
   }).format(Number(amount));
 };
 
-// Skeleton loader — matches completed project
-const SkeletonLoader = () => (
-  <MotiView
-    from={{ opacity: 0.3 }}
-    animate={{ opacity: 0.8 }}
-    transition={{ loop: true, type: "timing", duration: 1000 }}
-    style={styles.skeletonCard}
-  >
-    <View style={styles.skeletonLeft}>
-      <View style={styles.skeletonTitle} />
-      <View style={styles.skeletonSubtitle} />
-    </View>
-    <View style={styles.skeletonRight}>
-      <View style={styles.skeletonAmount} />
-      <View style={styles.skeletonStatus} />
-    </View>
-  </MotiView>
-);
+// Skeleton loader using React Native's built-in Animated API
+const SkeletonLoader = () => {
+  const opacity = React.useRef(new Animated.Value(0.3)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.8, duration: 800, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View style={[styles.skeletonCard, { opacity }]}>
+      <View style={styles.skeletonLeft}>
+        <View style={styles.skeletonTitle} />
+        <View style={styles.skeletonSubtitle} />
+      </View>
+      <View style={styles.skeletonRight}>
+        <View style={styles.skeletonAmount} />
+        <View style={styles.skeletonStatus} />
+      </View>
+    </Animated.View>
+  );
+};
 
 const EmptyState = ({ message, showDateHint = false }: { message: string; showDateHint?: boolean }) => (
   <View style={styles.emptyContainer}>

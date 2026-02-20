@@ -31,7 +31,7 @@ export default function AuthNavigation() {
       <Stack.Screen name="Onboarding" component={Onboarding} />
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="SignUp" component={SignUp} />
-      <Stack.Screen name="OTP" component={SignUpOTP} />
+      <Stack.Screen name="SignUpOTP" component={SignUpOTP} />
       <Stack.Screen name="SignUpPassword" component={SignUpPassword} />
       <Stack.Screen name="SignUpDetails" component={SignUpDetails} />
       <Stack.Screen

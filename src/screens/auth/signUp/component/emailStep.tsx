@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
 import { styles } from "../style";
 import Stepper from "./stepper";
@@ -7,14 +7,34 @@ import Btn from "../../../../components/common/btn";
 import { COLORS } from "../../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSendRegistrationOTP } from "../../../../api/hooks/useAuth";
 
 const SignUpEmail = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [email, setEmail] = useState("");
 
+  const { mutate: sendOTP, isPending } = useSendRegistrationOTP();
+
   const handleContinue = () => {
-    // Validate email and proceed
-    navigation.navigate("SignUpOTP", { email });
+    if (!email.trim()) {
+      Alert.alert("Error", "Please enter your email address");
+      return;
+    }
+
+    sendOTP(
+      { email: email.trim().toLowerCase() },
+      {
+        onSuccess: () => {
+          // OTP sent — move to verification screen, carry email forward
+          navigation.navigate("SignUpOTP", { email: email.trim().toLowerCase() });
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message || "Failed to send OTP. Please try again.";
+          Alert.alert("Error", message);
+        },
+      }
+    );
   };
 
   return (
@@ -32,11 +52,7 @@ const SignUpEmail = () => {
 
       {/* Content */}
       <View style={styles.content}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          {/* <Text style={styles.emoji}>👋</Text>
-          <Text style={styles.logoText}>JAAN</Text> */}
-        </View>
+        <View style={styles.logoContainer} />
 
         {/* Title */}
         <Text style={styles.title}>Unlock Seamless Digital Living</Text>
@@ -69,10 +85,11 @@ const SignUpEmail = () => {
 
         {/* Continue Button */}
         <Btn
-          title="Continue"
-          style={styles.continueButton}
+          title={isPending ? "Sending..." : "Continue"}
+          style={[styles.continueButton, isPending && { opacity: 0.7 }]}
           textStyle={{ color: COLORS.white }}
           onPress={handleContinue}
+          disabled={isPending}
         />
 
         {/* Sign In Link */}
@@ -104,11 +121,7 @@ const SignUpEmail = () => {
               <MaterialCommunityIcons name="google" size={28} color="#DB4437" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
-              <MaterialCommunityIcons
-                name="facebook"
-                size={28}
-                color="#1877F2"
-              />
+              <MaterialCommunityIcons name="facebook" size={28} color="#1877F2" />
             </TouchableOpacity>
           </View>
         </View>

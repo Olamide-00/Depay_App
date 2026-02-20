@@ -9,6 +9,8 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
   ScrollView,
+  Clipboard,
+  Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
@@ -16,6 +18,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { COLORS } from "../../../../constants/Colors";
+import useAuthStore from "../../../../store/userStore";
 
 const { height } = Dimensions.get("window");
 
@@ -29,9 +32,16 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
+  const userData = useAuthStore((state) => state.userData);
+  const accountDetails = useAuthStore((state) => state.accountDetails);
+  const account = accountDetails?.[0];
+
+  const accountName = userData?.name || "—";
+  const bankName = account?.bankName || "—";
+  const accountNumber = account?.accountNumber || "—";
+
   useEffect(() => {
     if (visible) {
-      // Open animations
       Animated.parallel([
         Animated.spring(slideAnim, {
           toValue: 0,
@@ -52,7 +62,6 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
         }),
       ]).start();
     } else {
-      // Close animations
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: height,
@@ -74,8 +83,8 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
   }, [visible]);
 
   const handleCopy = (text: string) => {
-    // Implement copy to clipboard
-    console.log("Copied:", text);
+    Clipboard.setString(text);
+    Alert.alert("Copied", "Account number copied to clipboard");
   };
 
   return (
@@ -97,7 +106,6 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                 },
               ]}
             >
-              {/* Handle Bar */}
               <View style={styles.handleBar} />
 
               <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
@@ -112,15 +120,11 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                     style={styles.closeButton}
                     activeOpacity={0.7}
                   >
-                    <MaterialCommunityIcons
-                      name="close"
-                      size={24}
-                      color="#666"
-                    />
+                    <MaterialCommunityIcons name="close" size={24} color="#666" />
                   </TouchableOpacity>
                 </View>
 
-                {/* Bank Transfer Icon Section */}
+                {/* Icon Section */}
                 <View style={styles.iconSection}>
                   <View style={styles.iconContainer}>
                     <MaterialCommunityIcons
@@ -134,110 +138,125 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                   </Text>
                 </View>
 
-                {/* Bank Details Card */}
-                <View style={styles.bankDetailsCard}>
-                  {/* Account Name */}
-                  <View style={styles.bankDetailRow}>
-                    <View style={styles.bankDetailLeft}>
-                      <View style={styles.iconWrapper}>
-                        <MaterialCommunityIcons
-                          name="account"
-                          size={22}
-                          color={COLORS.brand}
-                        />
-                      </View>
-                      <View style={styles.bankDetailTextContainer}>
-                        <Text style={styles.bankDetailLabel}>Account Name</Text>
-                        <Text style={styles.bankDetailValue}>
-                          Olamide Oladele
-                        </Text>
-                      </View>
-                    </View>
+                {/* No account state */}
+                {!account ? (
+                  <View style={styles.noAccountCard}>
+                    <MaterialCommunityIcons
+                      name="bank-off-outline"
+                      size={36}
+                      color={COLORS.brand}
+                    />
+                    <Text style={styles.noAccountTitle}>No Account Yet</Text>
+                    <Text style={styles.noAccountSubtitle}>
+                      You haven't created a wallet account yet. Create one to
+                      start receiving money.
+                    </Text>
                   </View>
-
-                  <View style={styles.divider} />
-
-                  {/* Bank Name */}
-                  <View style={styles.bankDetailRow}>
-                    <View style={styles.bankDetailLeft}>
-                      <View style={styles.iconWrapper}>
-                        <MaterialCommunityIcons
-                          name="bank"
-                          size={22}
-                          color={COLORS.brand}
-                        />
+                ) : (
+                  <>
+                    {/* Bank Details Card */}
+                    <View style={styles.bankDetailsCard}>
+                      {/* Account Name */}
+                      <View style={styles.bankDetailRow}>
+                        <View style={styles.bankDetailLeft}>
+                          <View style={styles.iconWrapper}>
+                            <MaterialCommunityIcons
+                              name="account"
+                              size={22}
+                              color={COLORS.brand}
+                            />
+                          </View>
+                          <View style={styles.bankDetailTextContainer}>
+                            <Text style={styles.bankDetailLabel}>Account Name</Text>
+                            <Text style={styles.bankDetailValue}>{accountName}</Text>
+                          </View>
+                        </View>
                       </View>
-                      <View style={styles.bankDetailTextContainer}>
-                        <Text style={styles.bankDetailLabel}>Bank Name</Text>
-                        <Text style={styles.bankDetailValue}>Wema Bank</Text>
+
+                      <View style={styles.divider} />
+
+                      {/* Bank Name */}
+                      <View style={styles.bankDetailRow}>
+                        <View style={styles.bankDetailLeft}>
+                          <View style={styles.iconWrapper}>
+                            <MaterialCommunityIcons
+                              name="bank"
+                              size={22}
+                              color={COLORS.brand}
+                            />
+                          </View>
+                          <View style={styles.bankDetailTextContainer}>
+                            <Text style={styles.bankDetailLabel}>Bank Name</Text>
+                            <Text style={styles.bankDetailValue}>{bankName}</Text>
+                          </View>
+                        </View>
+                      </View>
+
+                      <View style={styles.divider} />
+
+                      {/* Account Number */}
+                      <View style={styles.bankDetailRow}>
+                        <View style={styles.bankDetailLeft}>
+                          <View style={styles.iconWrapper}>
+                            <MaterialCommunityIcons
+                              name="credit-card-outline"
+                              size={22}
+                              color={COLORS.brand}
+                            />
+                          </View>
+                          <View style={styles.bankDetailTextContainer}>
+                            <Text style={styles.bankDetailLabel}>Account Number</Text>
+                            <Text style={styles.bankDetailValue}>{accountNumber}</Text>
+                          </View>
+                        </View>
+                        <TouchableOpacity
+                          style={styles.copyButton}
+                          onPress={() => handleCopy(accountNumber)}
+                          activeOpacity={0.7}
+                        >
+                          <MaterialCommunityIcons
+                            name="content-copy"
+                            size={20}
+                            color={COLORS.brand}
+                          />
+                        </TouchableOpacity>
                       </View>
                     </View>
-                  </View>
 
-                  <View style={styles.divider} />
-
-                  {/* Account Number */}
-                  <View style={styles.bankDetailRow}>
-                    <View style={styles.bankDetailLeft}>
-                      <View style={styles.iconWrapper}>
-                        <MaterialCommunityIcons
-                          name="credit-card-outline"
-                          size={22}
-                          color={COLORS.brand}
-                        />
-                      </View>
-                      <View style={styles.bankDetailTextContainer}>
-                        <Text style={styles.bankDetailLabel}>
-                          Account Number
-                        </Text>
-                        <Text style={styles.bankDetailValue}>0123456780</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.copyButton}
-                      onPress={() => handleCopy("0123456780")}
-                      activeOpacity={0.7}
-                    >
+                    {/* Info Note */}
+                    <View style={styles.infoCard}>
                       <MaterialCommunityIcons
-                        name="content-copy"
+                        name="information"
                         size={20}
                         color={COLORS.brand}
                       />
+                      <Text style={styles.infoText}>
+                        Your wallet will be funded automatically within 2 minutes
+                        after sending money from your bank app
+                      </Text>
+                    </View>
+
+                    {/* Money Sent Button */}
+                    <TouchableOpacity
+                      style={styles.moneySentButton}
+                      onPress={onClose}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.moneySentButtonText}>
+                        I've Sent The Money
+                      </Text>
                     </TouchableOpacity>
-                  </View>
-                </View>
 
-                {/* Info Note */}
-                <View style={styles.infoCard}>
-                  <MaterialCommunityIcons
-                    name="information"
-                    size={20}
-                    color={COLORS.brand}
-                  />
-                  <Text style={styles.infoText}>
-                    Your wallet will be funded automatically within 2 minutes
-                    after sending money from your bank app
-                  </Text>
-                </View>
-
-                {/* Money Sent Button */}
-                <TouchableOpacity
-                  style={styles.moneySentButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.moneySentButtonText}>
-                    I've Sent The Money
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={styles.waitingContainer}>
-                  <View style={styles.dotContainer}>
-                    <View style={styles.dot} />
-                    <View style={[styles.dot, styles.dotDelay1]} />
-                    <View style={[styles.dot, styles.dotDelay2]} />
-                  </View>
-                  <Text style={styles.waitingText}>Waiting for transfer</Text>
-                </View>
+                    <View style={styles.waitingContainer}>
+                      <View style={styles.dotContainer}>
+                        <View style={styles.dot} />
+                        <View style={[styles.dot, styles.dotDelay1]} />
+                        <View style={[styles.dot, styles.dotDelay2]} />
+                      </View>
+                      <Text style={styles.waitingText}>Waiting for transfer</Text>
+                    </View>
+                  </>
+                )}
 
                 <View style={styles.bottomSpacer} />
               </ScrollView>
@@ -314,16 +333,41 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     paddingHorizontal: wp("5%"),
   },
+
+  // No account state
+  noAccountCard: {
+    alignItems: "center",
+    marginHorizontal: wp("5%"),
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: wp("6%"),
+    gap: hp("1%"),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  noAccountTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#333",
+    marginTop: hp("0.5%"),
+  },
+  noAccountSubtitle: {
+    fontSize: 13,
+    color: "#999",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+
   bankDetailsCard: {
     backgroundColor: "#FFFFFF",
     marginHorizontal: wp("5%"),
     borderRadius: 16,
     padding: wp("5%"),
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
@@ -348,9 +392,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: wp("3%"),
   },
-  bankDetailTextContainer: {
-    flex: 1,
-  },
+  bankDetailTextContainer: { flex: 1 },
   bankDetailLabel: {
     fontSize: 13,
     color: "#999",
@@ -398,10 +440,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     shadowColor: COLORS.brand,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
@@ -427,19 +466,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.brand,
     opacity: 0.3,
   },
-  dotDelay1: {
-    opacity: 0.6,
-  },
-  dotDelay2: {
-    opacity: 0.9,
-  },
+  dotDelay1: { opacity: 0.6 },
+  dotDelay2: { opacity: 0.9 },
   waitingText: {
     fontSize: 13,
     color: "#999",
   },
-  bottomSpacer: {
-    height: hp("3%"),
-  },
+  bottomSpacer: { height: hp("3%") },
 });
 
 export default TopUpModal;

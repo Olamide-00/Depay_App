@@ -2,25 +2,34 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../axiosInstance";
 import { AxiosError } from "axios";
 import { API_ENDPOINTS } from "../endpoints";
-import { useEffect } from "react";
 
-// Define types for each request payload and response
-interface RegisterData {
-  name: string;
+// ─── Types ────────────────────────────────────────────────────
+
+// Step 1: email only
+interface SendRegistrationOTPData {
   email: string;
+}
+
+// Step 2: email + otp
+interface OtpData {
+  email: string;
+  otp: string;
+}
+
+// Step 3: full details
+interface CompleteRegistrationData {
+  email: string;
+  fullName: string;
   password: string;
-  pushToken: string | null;
-  referralCode?: string;
+  pushToken?: string | null;
+  gender?: string;
+  dateOfBirth?: string;
+  // referralCode?: string;
 }
 
 interface LoginData {
   email: string;
   password: string;
-}
-
-interface OtpData {
-  email: string;
-  otp: string;
 }
 
 interface ResendOtpData {
@@ -37,39 +46,28 @@ interface UpdatePasswordRequest {
   password: string;
 }
 
-// Generic API response type
 interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
 }
 
-const useRegister = () => {
-  return useMutation<ApiResponse<any>, Error, RegisterData>({
-    mutationFn: async (userData) => {
+// ─── Step 1: Send registration OTP ───────────────────────────
+const useSendRegistrationOTP = () => {
+  return useMutation<ApiResponse<any>, AxiosError, SendRegistrationOTPData>({
+    mutationFn: async (data) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
-        API_ENDPOINTS.REGISTER,
-        userData
+        API_ENDPOINTS.SEND_REGISTRATION_OTP,
+        data
       );
       return response.data;
     },
   });
 };
 
-const useLogin = () => {
-  return useMutation<ApiResponse<{ token: string }>, Error, LoginData>({
-    mutationFn: async (credentials) => {
-      const response = await axiosInstance.post<ApiResponse<{ token: string }>>(
-        API_ENDPOINTS.LOGIN,
-        credentials
-      );
-      return response.data;
-    },
-  });
-};
-
+// ─── Step 2: Verify OTP ───────────────────────────────────────
 const useVerifyOtp = () => {
-  return useMutation<ApiResponse<any>, Error, OtpData>({
+  return useMutation<ApiResponse<any>, AxiosError, OtpData>({
     mutationFn: async (otpData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.VERIFY_OTP,
@@ -83,8 +81,33 @@ const useVerifyOtp = () => {
   });
 };
 
+// ─── Step 3: Complete registration ───────────────────────────
+const useCompleteRegistration = () => {
+  return useMutation<ApiResponse<any>, AxiosError, CompleteRegistrationData>({
+    mutationFn: async (userData) => {
+      const response = await axiosInstance.post<ApiResponse<any>>(
+        API_ENDPOINTS.REGISTER,
+        userData
+      );
+      return response.data;
+    },
+  });
+};
 
-//Resend OTP
+// ─── Login ────────────────────────────────────────────────────
+const useLogin = () => {
+  return useMutation<ApiResponse<{ token: string }>, AxiosError, LoginData>({
+    mutationFn: async (credentials) => {
+      const response = await axiosInstance.post<ApiResponse<{ token: string }>>(
+        API_ENDPOINTS.LOGIN,
+        credentials
+      );
+      return response.data;
+    },
+  });
+};
+
+// ─── Resend OTP ───────────────────────────────────────────────
 const useResendOtp = () => {
   return useMutation<ApiResponse<any>, AxiosError, ResendOtpData>({
     mutationFn: async (emailData) => {
@@ -97,15 +120,9 @@ const useResendOtp = () => {
   });
 };
 
-
-//get instant wallet ballances
+// ─── Get wallet balance ───────────────────────────────────────
 const useGetBalance = (email: string) => {
-  const {
-    data: balance,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
+  const { data: balance, isLoading, isError, refetch } = useQuery({
     queryKey: ["balance", email],
     queryFn: async () => {
       if (!email) throw new Error("Email is required");
@@ -114,7 +131,6 @@ const useGetBalance = (email: string) => {
       );
       return response.data;
     },
-    // Nuclear option - always refetch on mount
     staleTime: 0,
     cacheTime: 0,
   });
@@ -122,8 +138,9 @@ const useGetBalance = (email: string) => {
   return { balance, isLoading, isError, refetch };
 };
 
+// ─── PIN OTP ──────────────────────────────────────────────────
 const usePINOtp = () => {
-  return useMutation<ApiResponse<any>, Error>({
+  return useMutation<ApiResponse<any>, AxiosError>({
     mutationFn: async (emailData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.PIN_OTP,
@@ -134,8 +151,9 @@ const usePINOtp = () => {
   });
 };
 
+// ─── Update PIN ───────────────────────────────────────────────
 const useUpdatePIN = () => {
-  return useMutation<ApiResponse<any>, Error>({
+  return useMutation<ApiResponse<any>, AxiosError>({
     mutationFn: async (pinData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.UPDATE_PIN,
@@ -146,8 +164,9 @@ const useUpdatePIN = () => {
   });
 };
 
+// ─── Update phone number ──────────────────────────────────────
 const useUpdateNumber = () => {
-  return useMutation<ApiResponse<any>, Error>({
+  return useMutation<ApiResponse<any>, AxiosError>({
     mutationFn: async (phoneData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.UPDATE_NUMBER,
@@ -158,9 +177,9 @@ const useUpdateNumber = () => {
   });
 };
 
-// reset password otp
+// ─── Reset password OTP ───────────────────────────────────────
 const useResetOTP = () => {
-  return useMutation<ApiResponse<any>, Error, ResetOTPRequest>({
+  return useMutation<ApiResponse<any>, AxiosError, ResetOTPRequest>({
     mutationFn: async (otpData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.RESET_OTP,
@@ -171,9 +190,9 @@ const useResetOTP = () => {
   });
 };
 
-// update password
+// ─── Update password ──────────────────────────────────────────
 const useUpdatePassword = () => {
-  return useMutation<ApiResponse<any>, Error, UpdatePasswordRequest>({
+  return useMutation<ApiResponse<any>, AxiosError, UpdatePasswordRequest>({
     mutationFn: async (passwordData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.UPDATE_PASSWORD,
@@ -184,9 +203,9 @@ const useUpdatePassword = () => {
   });
 };
 
-// set profile picture
+// ─── Set profile picture ──────────────────────────────────────
 const useSetProfilePicture = () => {
-  return useMutation<ApiResponse<any>, Error>({
+  return useMutation<ApiResponse<any>, AxiosError>({
     mutationFn: async (profilePictureData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.SET_PROFILE_PICTURE,
@@ -197,9 +216,9 @@ const useSetProfilePicture = () => {
   });
 };
 
-// delete account
+// ─── Delete account ───────────────────────────────────────────
 const useDeleteAccount = () => {
-  return useMutation<ApiResponse<any>, Error, string>({
+  return useMutation<ApiResponse<any>, AxiosError, string>({
     mutationFn: async (email: string) => {
       const response = await axiosInstance.delete<ApiResponse<any>>(
         `${API_ENDPOINTS.DELETE_ACCOUNT}/${email}`
@@ -210,9 +229,10 @@ const useDeleteAccount = () => {
 };
 
 export {
-  useRegister,
-  useLogin,
+  useSendRegistrationOTP,
   useVerifyOtp,
+  useCompleteRegistration,
+  useLogin,
   useResendOtp,
   useGetBalance,
   usePINOtp,

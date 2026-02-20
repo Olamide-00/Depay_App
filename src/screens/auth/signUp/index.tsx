@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { styles } from "./style";
@@ -15,15 +16,36 @@ import { COLORS } from "../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Spacer from "../../../components/common/spacer";
-import { useAuthStore } from "../../../context/userContext";
+import { useSendRegistrationOTP } from "../../../api/hooks/useAuth";
 
 const SignUp = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [email, setEmail] = useState("");
 
-  const { login } = useAuthStore();
+  const { mutate: sendOTP, isPending } = useSendRegistrationOTP();
+
   const handleContinue = () => {
-    login();
+    if (!email.trim()) {
+      Alert.alert("Error", "Please enter your email address");
+      return;
+    }
+
+    sendOTP(
+      { email: email.trim().toLowerCase() },
+      {
+        onSuccess: () => {
+          navigation.navigate("SignUpOTP", {
+            email: email.trim().toLowerCase(),
+          });
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            "Failed to send OTP. Please try again.";
+          Alert.alert("Error", message);
+        },
+      }
+    );
   };
 
   return (
@@ -74,6 +96,7 @@ const SignUp = () => {
             </Text>
           </View>
           <Spacer size={4} />
+
           {/* Privacy Policy */}
           <Text style={styles.privacyText}>
             By tapping continue, you agree to our{" "}
@@ -83,10 +106,11 @@ const SignUp = () => {
 
           {/* Continue Button */}
           <Btn
-            title="Continue"
-            style={styles.continueButton}
+            title={isPending ? "Sending..." : "Continue"}
+            style={[styles.continueButton, isPending && { opacity: 0.7 }]}
             textStyle={{ color: COLORS.white }}
             onPress={handleContinue}
+            disabled={isPending}
           />
 
           {/* Sign In Link */}

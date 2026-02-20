@@ -13,25 +13,47 @@ import {
 import Item from "../../../../components/ui/item";
 import { COLORS } from "../../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import useAuthStore from "../../../../store/userStore";
+import { useGetBillsHistory } from "../../../../api/hooks/useBills";
 
 const RecentTransaction = () => {
-  const navigation = useNavigation();
-  // Sample transaction data
-  const transactionData = [
-    { id: 1, type: "airtime", amount: "$500.00", time: "Today, 10:30am" },
-    { id: 2, type: "data", amount: "$300.00", time: "Today, 9:15am" },
-    {
-      id: 3,
-      type: "electricity",
-      amount: "$250.00",
-      time: "Yesterday, 3:45pm",
-    },
-    { id: 4, type: "transfer", amount: "$1000.00", time: "Yesterday, 11:20am" },
-    { id: 5, type: "cable", amount: "$150.00", time: "2 days ago, 7:30pm" },
-  ];
+  const navigation = useNavigation<any>();
 
-  // If your Item component expects a data prop, pass the item data
+  const userData = useAuthStore((state) => state.userData);
+  const email = userData?.email || "";
+
+  const { data: history = [], isLoading } = useGetBillsHistory(email);
+
+  // Only show 5 latest
+  const recentTransactions = history.slice(0, 5);
+
   const renderItem = ({ item }: { item: any }) => <Item data={item} />;
+
+  const EmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <MaterialCommunityIcons
+        name="receipt-text-outline"
+        size={40}
+        color="rgba(108, 43, 217, 0.2)"
+      />
+      <Text style={styles.emptyTitle}>No Transactions Yet</Text>
+      <Text style={styles.emptySubtitle}>
+        Your recent transactions will appear here
+      </Text>
+    </View>
+  );
+
+  const SkeletonRow = () => (
+    <View style={styles.skeletonRow}>
+      <View style={styles.skeletonIcon} />
+      <View style={styles.skeletonContent}>
+        <View style={styles.skeletonLine} />
+        <View style={styles.skeletonLineShort} />
+      </View>
+      <View style={styles.skeletonAmount} />
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -41,15 +63,25 @@ const RecentTransaction = () => {
           <Text style={styles.viewAllText}>View All</Text>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={transactionData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={true}
-        style={styles.flatList}
-        contentContainerStyle={styles.flatListContent}
-      />
+
+      {isLoading ? (
+        <View>
+          {[1, 2, 3].map((i) => (
+            <SkeletonRow key={i} />
+          ))}
+        </View>
+      ) : recentTransactions.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <FlatList
+          data={recentTransactions}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item._id || item.id || index.toString()}
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={false}
+          contentContainerStyle={styles.flatListContent}
+        />
+      )}
     </View>
   );
 };
@@ -57,9 +89,7 @@ const RecentTransaction = () => {
 export default RecentTransaction;
 
 const styles = StyleSheet.create({
-  container: {
-    // marginTop: hp("3%"),
-  },
+  container: {},
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -77,10 +107,61 @@ const styles = StyleSheet.create({
     color: COLORS.brand,
     fontWeight: "500",
   },
-  flatList: {
-    height: hp("35%"),
-  },
   flatListContent: {
     paddingHorizontal: wp("0%"),
+  },
+
+  // Empty state
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: hp("4%"),
+    gap: hp("1%"),
+  },
+  emptyTitle: {
+    fontSize: wp("4%"),
+    fontWeight: "600",
+    color: "#9ca3af",
+  },
+  emptySubtitle: {
+    fontSize: wp("3.3%"),
+    color: "#d1d5db",
+    textAlign: "center",
+  },
+
+  // Skeleton
+  skeletonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: hp("1.2%"),
+    paddingHorizontal: wp("2%"),
+    gap: wp("3%"),
+  },
+  skeletonIcon: {
+    width: hp("5%"),
+    height: hp("5%"),
+    borderRadius: hp("2.5%"),
+    backgroundColor: "#f3f4f6",
+  },
+  skeletonContent: {
+    flex: 1,
+    gap: hp("0.5%"),
+  },
+  skeletonLine: {
+    width: wp("35%"),
+    height: 13,
+    backgroundColor: "#f3f4f6",
+    borderRadius: 4,
+  },
+  skeletonLineShort: {
+    width: wp("22%"),
+    height: 11,
+    backgroundColor: "#f9fafb",
+    borderRadius: 4,
+  },
+  skeletonAmount: {
+    width: wp("18%"),
+    height: 13,
+    backgroundColor: "#f3f4f6",
+    borderRadius: 4,
   },
 });

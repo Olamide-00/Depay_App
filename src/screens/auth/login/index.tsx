@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { styles } from "./style";
@@ -14,24 +15,86 @@ import { COLORS } from "../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Spacer from "../../../components/common/spacer";
-import { useAuthStore } from "../../../context/userContext";
+import useAuthStore from "../../../store/userStore";
+import { useLogin } from "../../../api/hooks/useAuth";
+import * as SecureStore from "expo-secure-store";
 
 export default function Login() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
-  const { login } = useAuthStore();
+  const { setIsAuthenticated } = useAuthStore();
+  const { mutate: login, isPending } = useLogin();
+
+  const validate = () => {
+    const newErrors = { email: "", password: "" };
+
+    if (!email || !email.includes("@")) {
+      newErrors.email = "Enter a valid email";
+    }
+    if (!password || password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some((e) => e !== "");
+  };
 
   const handleLogin = () => {
-    login();
+    if (!validate()) return;
+
+    login(
+      { email: email.trim().toLowerCase(), password: password.trim() },
+      {
+        onSuccess: async (data) => {
+          const now = new Date().toISOString();
+
+          await SecureStore.setItemAsync("token", data.token);
+          await SecureStore.setItemAsync("loginDate", now);
+          await SecureStore.setItemAsync("isFreshLogin", "true");
+
+          const userData = {
+            email: data.user.email,
+            name: data.user.name,
+            phoneNumber: data.user.phoneNumber,
+            isWalletCreated: data.user.isWalletCreated,
+            balance: data.user.balance,
+            profilePicture: data.user.profilePicture,
+            tag: data.user.tag,
+            dateOfBirth: data.user.dateOfBirth,  
+            gender: data.user.gender,              
+          };
+
+          useAuthStore.getState().login(data.token, userData);
+          setIsAuthenticated(true);
+        },
+        onError: (err: any) => {
+          const errorMessage =
+            err?.response?.data?.message ||
+            "An error occurred. Please try again.";
+
+          Alert.alert("Login Failed", errorMessage);
+
+          if (errorMessage.includes("Please verify your account first")) {
+            setTimeout(() => {
+              navigation.navigate("SignUpOTP", {
+                email: email.trim().toLowerCase(),
+              });
+            }, 1500);
+          }
+        },
+      }
+    );
   };
+
+  const disabled = !email || !password || isPending;
 
   return (
     <View style={styles.root}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Content */}
         <View style={styles.content}>
           {/* Logo */}
           <View style={styles.logoContainer}>
@@ -50,26 +113,33 @@ export default function Login() {
 
           {/* Form */}
           <View style={styles.formContainer}>
-            {/* Email Input */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email*</Text>
               <Input
                 placeholder="Olamide@email.com"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text.trim().toLowerCase());
+                  setErrors((prev) => ({ ...prev, email: "" }));
+                }}
                 width="100%"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
+              {errors.email ? (
+                <Text style={styles.errorText}>{errors.email}</Text>
+              ) : null}
             </View>
 
-            {/* Password Input */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Password*</Text>
               <Input
                 placeholder="Enter your password"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setErrors((prev) => ({ ...prev, password: "" }));
+                }}
                 width="100%"
                 secureTextEntry={!showPassword}
                 rightIcon={
@@ -84,9 +154,11 @@ export default function Login() {
                   </TouchableOpacity>
                 }
               />
+              {errors.password ? (
+                <Text style={styles.errorText}>{errors.password}</Text>
+              ) : null}
             </View>
 
-            {/* Forgot Password */}
             <TouchableOpacity
               onPress={() => navigation.navigate("ForgotPassword")}
               style={styles.forgotPassword}
@@ -94,23 +166,23 @@ export default function Login() {
               <Text style={styles.forgotPasswordText}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
+
           <Spacer size={5} />
-          {/* Login Button */}
+
           <Btn
-            title="Log In"
-            style={styles.loginButton}
+            title={isPending ? "Logging in..." : "Log In"}
+            style={[styles.loginButton, disabled && { opacity: 0.7 }]}
             textStyle={{ color: COLORS.white }}
             onPress={handleLogin}
+            disabled={disabled}
           />
 
-          {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
             <Text style={styles.dividerText}>or</Text>
             <View style={styles.divider} />
           </View>
 
-          {/* Social Login */}
           <View style={styles.socialContainer}>
             <Text style={styles.socialTitle}>Sign in with</Text>
             <View style={styles.socialButtons}>
@@ -118,23 +190,14 @@ export default function Login() {
                 <MaterialCommunityIcons name="apple" size={28} color="#000" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons
-                  name="google"
-                  size={28}
-                  color="#DB4437"
-                />
+                <MaterialCommunityIcons name="google" size={28} color="#DB4437" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons
-                  name="facebook"
-                  size={28}
-                  color="#1877F2"
-                />
+                <MaterialCommunityIcons name="facebook" size={28} color="#1877F2" />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Sign Up Link */}
           <View style={styles.footer}>
             <Text style={styles.signUpText}>
               Don't have an account?{" "}

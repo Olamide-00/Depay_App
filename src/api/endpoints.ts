@@ -1,11 +1,14 @@
 export const API_ENDPOINTS = {
   // auth endpoint
 
-  REGISTER: "/user/register",
+  SEND_REGISTRATION_OTP: "/user/send-registration-otp", 
+  VERIFY_OTP: "/user/verify-otp",                       
+  REGISTER: "/user/register",                            
+  RESEND_OTP: "/user/resend-otp",
   LOGIN: "/user/login",
   DELETE_ACCOUNT: "/user/delete",
-  VERIFY_OTP: "/user/verify-otp",
-  RESEND_OTP: "/user/resend-otp",
+
+  //
   PROFILE_PICTURE: "/user/set-profile-picture",
   GET_BALANCE: "/user/balance",
   PIN_OTP: "/user/forgotOTP",
@@ -20,7 +23,6 @@ export const API_ENDPOINTS = {
   WALLET_DETAILS: (email: string) => `/wallet/account-details/${email}`,
 
   // PIN endpoints
-  SET_PIN: "PIN/set-PIN",
   VERIFY_PIN: "/PIN/verify-PIN",
 
   //bills endpoints

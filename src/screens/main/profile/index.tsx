@@ -1,67 +1,69 @@
-import { View, ScrollView, TouchableOpacity, Image } from "react-native";
+import { View, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
 import React from "react";
 import Text from "../../../components/common/txt";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import ProfileMenuItem from "./component/item";
 import { useNavigation } from "@react-navigation/native";
+import useAuthStore from "../../../store/userStore";
+import * as SecureStore from "expo-secure-store";
 
 const Profile = () => {
-  const navigation = useNavigation();
-  // Navigation handlers
-  const handleViewProfile = () => {
-    navigation.navigate("StackNav", { screen: "User" });
-  };
+  const navigation = useNavigation<any>();
 
-  const handleReferrals = () => {
-    navigation.navigate("StackNav", { screen: "Refer" });
-  };
+  const userData = useAuthStore((state) => state.userData);
+  const accountDetails = useAuthStore((state) => state.accountDetails);
+  const logout = useAuthStore((state) => state.logout);
 
-  const handleAnalytics = () => {
-    console.log("Navigate to Analytics");
-    // navigation.navigate("Analytics");
-  };
+  const displayName = userData?.name || "User";
+  const profilePicture = userData?.profilePicture;
+  const account = accountDetails?.[0];
+  const accountNumber = account?.accountNumber || "No account yet";
+  const balance = userData?.balance ?? 0;
+  const gender = userData?.gender
+    ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
+    : null;
+  const dateOfBirth = userData?.dateOfBirth
+    ? new Date(userData.dateOfBirth).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
 
-  const handleSecurity = () => {
-    navigation.navigate("StackNav", { screen: "Security" });
-  };
-
-  const handleTheme = () => {
-    console.log("Navigate to Theme");
-    // navigation.navigate("Theme");
-  };
-
-  const handleNotifications = () => {
-    console.log("Navigate to Notifications");
-    // navigation.navigate("Notifications");
-  };
-
-  const handleGenerateBankAccount = () => {
-    navigation.navigate("StackNav", { screen: "Wallet" });
-  };
-
-  const handleSupport = () => {
-    navigation.navigate("StackNav", { screen: "Support" });
-  };
-
-  const handleLegal = () => {
-    navigation.navigate("StackNav", { screen: "Legal" });
-  };
-
-  const handleJoinCommunity = () => {
-    console.log("Navigate to Join Community");
-    // navigation.navigate("JoinCommunity");
-  };
-
-  const handleRateApp = () => {
-    console.log("Rate App");
-    // Open app store rating
-  };
+  const formatBalance = (amount: number) =>
+    `₦${Number(amount).toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
 
   const handleLogout = () => {
-    console.log("Logout");
-    // Show logout confirmation
+    Alert.alert("Log Out", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: async () => {
+          await SecureStore.deleteItemAsync("token");
+          await SecureStore.deleteItemAsync("loginDate");
+          await SecureStore.deleteItemAsync("isFreshLogin");
+          logout();
+        },
+      },
+    ]);
   };
+
+  const handleViewProfile = () => navigation.navigate("StackNav", { screen: "User" });
+  const handleReferrals = () => navigation.navigate("StackNav", { screen: "Refer" });
+  const handleAnalytics = () => console.log("Navigate to Analytics");
+  const handleSecurity = () => navigation.navigate("StackNav", { screen: "Security" });
+  const handleTheme = () => console.log("Navigate to Theme");
+  const handleNotifications = () => console.log("Navigate to Notifications");
+  const handleGenerateBankAccount = () => navigation.navigate("StackNav", { screen: "Wallet" });
+  const handleSupport = () => navigation.navigate("StackNav", { screen: "Support" });
+  const handleLegal = () => navigation.navigate("StackNav", { screen: "Legal" });
+  const handleJoinCommunity = () => console.log("Navigate to Join Community");
+  const handleRateApp = () => console.log("Rate App");
 
   return (
     <View style={styles.root}>
@@ -71,19 +73,33 @@ const Profile = () => {
         <View style={styles.profileHeader}>
           <View style={styles.profileInfo}>
             <Image
-              source={{ uri: "https://via.placeholder.com/50" }}
+              source={
+                profilePicture
+                  ? { uri: profilePicture }
+                  : { uri: "https://via.placeholder.com/50" }
+              }
               style={styles.profileImage}
             />
             <View style={styles.userInfo}>
               <Text variant="bold" size="lg">
-                Olamide Oladele
+                {displayName}
               </Text>
               <Text size="sm" style={styles.accountNumber}>
-                Account Number: 9036018013
+                Account: {accountNumber}
               </Text>
               <Text size="sm" style={styles.walletBalance}>
-                Wallet Balance: ₦18,288.00
+                Balance: {formatBalance(balance)}
               </Text>
+              {gender && (
+                <Text size="sm" style={styles.accountNumber}>
+                  Gender: {gender}
+                </Text>
+              )}
+              {dateOfBirth && (
+                <Text size="sm" style={styles.accountNumber}>
+                  DOB: {dateOfBirth}
+                </Text>
+              )}
             </View>
           </View>
           <TouchableOpacity

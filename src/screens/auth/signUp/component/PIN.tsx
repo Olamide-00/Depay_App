@@ -1,19 +1,25 @@
-import { View, Text, TouchableOpacity, TextInput, Image } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, Image, Alert } from "react-native";
 import React, { useState, useRef } from "react";
 import { styles } from "../style";
 import Stepper from "./stepper";
 import Btn from "../../../../components/common/btn";
 import { COLORS } from "../../../../constants/Colors";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useCompleteRegistration } from "../../../../api/hooks/useAuth";
 
 const SignUpTransactionPin = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { email, password, fullName, phoneNumber, gender, dateOfBirth } = route.params;
+
   const [pin, setPin] = useState(["", "", "", ""]);
   const [confirmPin, setConfirmPin] = useState(["", "", "", ""]);
   const [isPinSet, setIsPinSet] = useState(false);
-  const pinInputRefs = useRef([]);
-  const confirmPinInputRefs = useRef([]);
+  const pinInputRefs = useRef<any[]>([]);
+  const confirmPinInputRefs = useRef<any[]>([]);
+
+  const { mutate: completeRegistration, isPending } = useCompleteRegistration();
 
   const handlePinChange = (value: string, index: number, isConfirm = false) => {
     const currentPin = isConfirm ? [...confirmPin] : [...pin];
@@ -35,16 +41,51 @@ const SignUpTransactionPin = () => {
     }
   };
 
+  const handleKeyPress = (e: any, index: number, isConfirm = false) => {
+    const currentPin = isConfirm ? confirmPin : pin;
+    const refs = isConfirm ? confirmPinInputRefs : pinInputRefs;
+    if (e.nativeEvent.key === "Backspace" && !currentPin[index] && index > 0) {
+      refs.current[index - 1]?.focus();
+    }
+  };
+
   const handleComplete = () => {
     const pinCode = pin.join("");
     const confirmPinCode = confirmPin.join("");
 
-    if (pinCode === confirmPinCode) {
-      // Complete registration
-      navigation.navigate("Home");
-    } else {
-      alert("PINs do not match");
+    if (pinCode.length < 4) {
+      Alert.alert("Error", "Please enter a 4-digit PIN");
+      return;
     }
+
+    if (pinCode !== confirmPinCode) {
+      Alert.alert("Error", "PINs do not match");
+      setConfirmPin(["", "", "", ""]);
+      confirmPinInputRefs.current[0]?.focus();
+      return;
+    }
+
+    completeRegistration(
+      {
+        email,
+        password,
+        fullName,
+        gender,
+        dateOfBirth,
+        transactionPIN: pinCode,
+      },
+      {
+        onSuccess: () => {
+          navigation.navigate("Login");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            "Registration failed. Please try again.";
+          Alert.alert("Error", message);
+        },
+      }
+    );
   };
 
   return (
@@ -88,6 +129,7 @@ const SignUpTransactionPin = () => {
                 style={styles.pinInput}
                 value={digit}
                 onChangeText={(value) => handlePinChange(value, index, false)}
+                onKeyPress={(e) => handleKeyPress(e, index, false)}
                 keyboardType="number-pad"
                 maxLength={1}
                 secureTextEntry
@@ -109,6 +151,7 @@ const SignUpTransactionPin = () => {
                   style={styles.pinInput}
                   value={digit}
                   onChangeText={(value) => handlePinChange(value, index, true)}
+                  onKeyPress={(e) => handleKeyPress(e, index, true)}
                   keyboardType="number-pad"
                   maxLength={1}
                   secureTextEntry
@@ -133,10 +176,11 @@ const SignUpTransactionPin = () => {
 
         {/* Complete Button */}
         <Btn
-          title="Complete Registration"
-          style={styles.continueButton}
+          title={isPending ? "Creating Account..." : "Complete Registration"}
+          style={[styles.continueButton, isPending && { opacity: 0.7 }]}
           textStyle={{ color: COLORS.white }}
           onPress={handleComplete}
+          disabled={isPending}
         />
       </View>
     </View>

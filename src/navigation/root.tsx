@@ -4,7 +4,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View } from "react-native";
 import AuthNavigation from "./auth";
 import MainNavigation from "./main/mainNavigation";
-import { useAuthStore } from "../context/userContext";
+import useAuthStore from "../store/userStore";
+import * as SecureStore from "expo-secure-store";
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -23,11 +24,8 @@ export default function RootNavigation() {
 
   const checkAuthStatus = async () => {
     try {
-      // Check if user is authenticated (e.g., check AsyncStorage for token)
-      // const token = await AsyncStorage.getItem('userToken');
-      // setIsAuthenticated(!!token);
-
-      setIsAuthenticated(false); // For now, default to false
+      const token = await SecureStore.getItemAsync("token");
+      setIsAuthenticated(!!token);
     } catch (error) {
       setIsAuthenticated(false);
     } finally {
