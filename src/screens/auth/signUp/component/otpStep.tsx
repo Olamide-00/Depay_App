@@ -1,4 +1,11 @@
-import { View, Text, TouchableOpacity, TextInput, Image, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  Alert,
+} from "react-native";
 import React, { useState, useRef } from "react";
 import { styles } from "../style";
 import Stepper from "../component/stepper";
@@ -59,7 +66,7 @@ const SignUpOTP = () => {
           setOtp(["", "", "", "", "", ""]);
           inputRefs.current[0]?.focus();
         },
-      }
+      },
     );
   };
 
@@ -74,10 +81,11 @@ const SignUpOTP = () => {
         },
         onError: (error: any) => {
           const message =
-            error?.response?.data?.message || "Failed to resend OTP. Please try again.";
+            error?.response?.data?.message ||
+            "Failed to resend OTP. Please try again.";
           Alert.alert("Error", message);
         },
-      }
+      },
     );
   };
 

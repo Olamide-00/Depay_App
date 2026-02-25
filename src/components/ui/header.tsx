@@ -14,12 +14,17 @@ import {
 } from "react-native-responsive-screen";
 import Text from "../common/txt";
 import { useNavigation } from "@react-navigation/native";
+import useAuthStore, { selectUserData } from "../../store/userStore";
 
 const Header = () => {
   const navigation = useNavigation();
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchText, setSearchText] = useState("");
   const slideAnim = useRef(new Animated.Value(-100)).current;
+
+  // details
+  const userData = useAuthStore(selectUserData);
+  const name = userData?.name || "User";
 
   const handleSearchPress = () => {
     if (!showSearchBar) {
@@ -63,7 +68,7 @@ const Header = () => {
             color="black"
           />
           <Text variant="bold" color="black" size="lg">
-            Hi, Olamide
+            Hi, {name}!
           </Text>
         </View>
         <View style={styles.row2}>
