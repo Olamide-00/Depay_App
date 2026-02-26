@@ -13,8 +13,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import useAuthStore from "../../../../store/userStore";
 import { useGetBalance } from "../../../../api/hooks/useAuth";
 
-const SOCKET_URL =
-  process.env.EXPO_PUBLIC_API_URL || "https://your-backend.up.railway.app";
+const SOCKET_URL = "https://jaa.up.railway.app";
 
 const Dashboard = () => {
   const navigation = useNavigation<any>();
@@ -62,7 +61,7 @@ const Dashboard = () => {
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch])
+    }, [refetch]),
   );
 
   const formatCurrency = (amount: number) =>
@@ -76,8 +75,8 @@ const Dashboard = () => {
   const displayBalance = balanceLoading
     ? "Loading..."
     : balanceVisible
-    ? `₦${formatCurrency(rawBalance)}`
-    : "₦****.**";
+      ? `₦${formatCurrency(rawBalance)}`
+      : "₦****.**";
 
   return (
     <>
@@ -121,7 +120,11 @@ const Dashboard = () => {
                       color="rgba(255,255,255,0.7)"
                       style={styles.accountIcon}
                     />
-                    <Text variant="light" color="rgba(255,255,255,0.8)" size="xs">
+                    <Text
+                      variant="light"
+                      color="rgba(255,255,255,0.8)"
+                      size="xs"
+                    >
                       {truncate(bankName, 20)}
                     </Text>
                   </View>
@@ -140,7 +143,9 @@ const Dashboard = () => {
               ) : (
                 <TouchableOpacity
                   style={styles.createAccountBtn}
-                  onPress={() => navigation.navigate("StackNav", {screen: "Wallet"})}
+                  onPress={() =>
+                    navigation.navigate("StackNav", { screen: "Wallet" })
+                  }
                   activeOpacity={0.8}
                 >
                   <MaterialCommunityIcons

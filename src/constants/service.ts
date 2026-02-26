@@ -4,8 +4,8 @@ export const services = [
   {
     id: 1,
     label: "BET 9JA",
-    screen: "Betting",
-    image: require("../../assets/services/bet.png"),
+    screen: "ComingSoon",
+    image: require("../../assets/service2/bet99ja.png"),
   },
   {
     id: 2,
@@ -51,79 +51,56 @@ export const services = [
     screen: "Airtime",
     image: require("../../assets/services/9mobile.png"),
   },
-  {
-    id: 13,
-    label: "MTN Data",
-    screen: "Data",
-    image: require("../../assets/services/mtn.png"),
-  },
-  {
-    id: 14,
-    label: "Airtel Data",
-    screen: "Data",
-    image: require("../../assets/services/airtel.png"),
-  },
-  {
-    id: 15,
-    label: "Glo Data",
-    screen: "Data",
-    image: require("../../assets/services/glo.png"),
-  },
-  {
-    id: 16,
-    label: "9mobile Data",
-    screen: "Data",
-    image: require("../../assets/services/9mobile.png"),
-  },
 
   // ================= BETTING (8 items) =================
   {
-    id: 17,
+    id: 14,
     label: "1XBET",
     screen: "ComingSoon",
-    image: require("../../assets/services/bet.png"),
+    image: require("../../assets/service2/ixbet.png"),
   },
   {
     id: 18,
-    label: "betway",
-    screen: "ComingSoon",
-    image: require("../../assets/services/bettings.png"),
-  },
-  {
-    id: 19,
     label: "BETKING",
     screen: "ComingSoon",
-    image: require("../../assets/services/bettings.png"),
+    image: require("../../assets/service2/betway.png"),
+  },
+
+  {
+    id: 19,
+    label: "MSPORTS",
+    screen: "ComingSoon",
+    image: require("../../assets/service2/msport.png"),
   },
   {
     id: 20,
     label: "Nairabet",
     screen: "ComingSoon",
-    image: require("../../assets/services/bettings.png"),
+    image: require("../../assets/service2/nairabet.png"),
   },
   {
     id: 21,
-    label: "Sportybet",
+    label: "BETKING",
     screen: "ComingSoon",
-    image: require("../../assets/services/bettings.png"),
+    image: require("../../assets/service2/kbet.png"),
   },
   {
     id: 22,
     label: "Merrybet",
     screen: "ComingSoon",
-    image: require("../../assets/services/bet.png"),
+    image: require("../../assets/service2/merrybet.png"),
   },
   {
     id: 23,
     label: "Bet9ja",
     screen: "ComingSoon",
-    image: require("../../assets/services/bet.png"),
+    image: require("../../assets/service2/bet99ja.png"),
   },
   {
     id: 24,
     label: "BetBonanza",
     screen: "ComingSoon",
-    image: require("../../assets/services/bet.png"),
+    image: require("../../assets/service2/betbonanza.png"),
   },
 
   {
@@ -136,19 +113,19 @@ export const services = [
     id: 6,
     label: "GOTV",
     screen: "TV",
-    image: require("../../assets/services/dstv.png"),
+    image: require("../../assets/service2/gotv.png"),
   },
   {
     id: 7,
     label: "StarTimes",
     screen: "TV",
-    image: require("../../assets/services/dstv.png"),
+    image: require("../../assets/service2/startime.png"),
   },
   {
     id: 8,
     label: "Showmax",
     screen: "TV",
-    image: require("../../assets/services/dstv.png"),
+    image: require("../../assets/service2/showmax.png"),
   },
 
   // ================= OTHER SERVICES (8 items) =================
@@ -156,13 +133,13 @@ export const services = [
     id: 25,
     label: "Electricity",
     screen: "Electricity",
-    image: require("../../assets/services/netflix.png"),
+    image: require("../../assets/service2/electricity.png"),
   },
   {
     id: 26,
     label: "WAEC",
     screen: "Education",
-    image: require("../../assets/images/logo.png"),
+    image: require("../../assets/service2/waec.png"),
   },
   {
     id: 27,
@@ -174,6 +151,6 @@ export const services = [
     id: 31,
     label: "Flight",
     screen: "ComingSoon",
-    image: require("../../assets/images/logo.png"),
+    image: require("../../assets/service2/flight.png"),
   },
 ];

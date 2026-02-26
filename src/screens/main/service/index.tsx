@@ -12,10 +12,10 @@ const Service = () => {
 
   const allSections = [
     { title: "Top Services", data: serviceData.slice(0, 4) },
-    { title: "Airtime & Data", data: serviceData.slice(4, 12) },
-    { title: "Betting", data: serviceData.slice(12, 20) },
-    { title: "Cable", data: serviceData.slice(20, 24) },
-    { title: "Other", data: serviceData.slice(24) },
+    { title: "Airtime & Data", data: serviceData.slice(4, 8) },
+    { title: "Betting", data: serviceData.slice(8, 16) },
+    { title: "Cable", data: serviceData.slice(16, 20) },
+    // { title: "Other", data: serviceData.slice(24) },
   ];
 
   // Filter sections based on search query
