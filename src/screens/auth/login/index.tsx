@@ -194,10 +194,14 @@ export default function Login() {
                 <MaterialCommunityIcons name="apple" size={28} color="#000" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons
+                {/* <
                   name="google"
                   size={28}
                   color="#DB4437"
+                /> */}
+                <Image
+                  source={require("../../../../assets/images/google.png")}
+                  style={{ width: 28, height: 28 }}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
