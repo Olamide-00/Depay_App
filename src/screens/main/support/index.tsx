@@ -11,11 +11,16 @@ import Text from "../../../components/common/txt";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import useAuthStore, { selectUserData } from "../../../store/userStore";
 
 const Support = () => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFaq, setExpandedFaq] = useState(null);
+
+  //data
+  const userData = useAuthStore(selectUserData);
+  const displayName = userData?.name ?? "there";
 
   const faqs = [
     {
@@ -93,7 +98,7 @@ const Support = () => {
             <Text style={styles.avatarText}>👋</Text>
           </View>
           <View style={styles.chatBotTextContainer}>
-            <Text style={styles.chatBotGreeting}>Hello, Olamide</Text>
+            <Text style={styles.chatBotGreeting}>Hello, {displayName}</Text>
             <Text style={styles.chatBotMessage}>
               How can we help to assist you?
             </Text>

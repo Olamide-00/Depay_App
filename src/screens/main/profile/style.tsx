@@ -42,9 +42,9 @@ export const styles = StyleSheet.create({
   viewProfileButton: {
     backgroundColor: COLORS.lightGray,
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     borderRadius: 20,
-    alignSelf: "flex-start",
+    alignSelf: "center",
   },
   viewProfileText: {
     fontSize: 13,

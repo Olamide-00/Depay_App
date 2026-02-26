@@ -20,9 +20,10 @@ const Profile = () => {
   const account = accountDetails?.[0];
   const accountNumber = account?.accountNumber || "No account yet";
   const balance = userData?.balance ?? 0;
-  const gender = typeof userData?.gender === "string" && userData.gender.length > 0
-    ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
-    : null;
+  const gender =
+    typeof userData?.gender === "string" && userData.gender.length > 0
+      ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
+      : null;
   const dateOfBirth = userData?.dateOfBirth
     ? new Date(userData.dateOfBirth).toLocaleDateString("en-GB", {
         day: "2-digit",
@@ -53,15 +54,21 @@ const Profile = () => {
     ]);
   };
 
-  const handleViewProfile = () => navigation.navigate("StackNav", { screen: "User" });
-  const handleReferrals = () => navigation.navigate("StackNav", { screen: "Refer" });
+  const handleViewProfile = () =>
+    navigation.navigate("StackNav", { screen: "User" });
+  const handleReferrals = () =>
+    navigation.navigate("StackNav", { screen: "Refer" });
   const handleAnalytics = () => console.log("Navigate to Analytics");
-  const handleSecurity = () => navigation.navigate("StackNav", { screen: "Security" });
+  const handleSecurity = () =>
+    navigation.navigate("StackNav", { screen: "Security" });
   const handleTheme = () => console.log("Navigate to Theme");
   const handleNotifications = () => console.log("Navigate to Notifications");
-  const handleGenerateBankAccount = () => navigation.navigate("StackNav", { screen: "Wallet" });
-  const handleSupport = () => navigation.navigate("StackNav", { screen: "Support" });
-  const handleLegal = () => navigation.navigate("StackNav", { screen: "Legal" });
+  const handleGenerateBankAccount = () =>
+    navigation.navigate("StackNav", { screen: "Wallet" });
+  const handleSupport = () =>
+    navigation.navigate("StackNav", { screen: "Support" });
+  const handleLegal = () =>
+    navigation.navigate("StackNav", { screen: "Legal" });
   const handleJoinCommunity = () => console.log("Navigate to Join Community");
   const handleRateApp = () => console.log("Rate App");
 
@@ -95,18 +102,13 @@ const Profile = () => {
                   Gender: {gender}
                 </Text>
               )}
-              {dateOfBirth && (
-                <Text size="sm" style={styles.accountNumber}>
-                  DOB: {dateOfBirth}
-                </Text>
-              )}
             </View>
           </View>
           <TouchableOpacity
             style={styles.viewProfileButton}
             onPress={handleViewProfile}
           >
-            <Text style={styles.viewProfileText}>View Profile</Text>
+            <Text style={styles.viewProfileText}>View</Text>
           </TouchableOpacity>
         </View>
 

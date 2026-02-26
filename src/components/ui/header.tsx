@@ -64,8 +64,9 @@ const Header = () => {
         <View style={styles.row1}>
           <MaterialCommunityIcons
             name="account-circle-outline"
-            size={30}
+            size={32}
             color="black"
+            onPress={() => navigation.navigate("StackNav", { screen: "User" })}
           />
           <Text variant="bold" color="black" size="lg">
             Hi, {name}!
