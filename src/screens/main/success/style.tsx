@@ -11,30 +11,28 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.brand,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
+    paddingHorizontal: wp("8%"),
   },
   image: {
-    width: wp("80%"),
-    height: hp("30%"),
-    maxWidth: 300,
-    maxHeight: 300,
-    zIndex: 10,
+    width: wp("50%"),
+    height: hp("25%"),
+    maxWidth: 280,
+    maxHeight: 280,
   },
   descContainer: {
-    marginTop: hp("8%"),
+    marginTop: hp("4%"),
     alignItems: "center",
     gap: hp("1%"),
   },
-  desc: {
-    gap: hp("1%"),
-    alignItems: "center",
+  btnContainer: {
+    width: "100%",
+    marginTop: hp("10%"),
   },
   btn: {
     backgroundColor: COLORS.white,
     borderWidth: 0,
     width: "100%",
     paddingVertical: hp("2.5%"),
-    marginTop: hp("10%"),
     borderRadius: 16,
     shadowColor: "#000",
     shadowOffset: {
@@ -44,13 +42,5 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 8,
-  },
-  // Confetti styles
-  confetti: {
-    position: "absolute",
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    zIndex: 5,
   },
 });

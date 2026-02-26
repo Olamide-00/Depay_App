@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "jaanApp",
-    "slug": "jaanApp",
+    "name": "jaan",
+    "slug": "jaan",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -27,10 +27,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "@react-native-community/datetimepicker",
-      "expo-secure-store"
-    ],
+    "plugins": ["@react-native-community/datetimepicker", "expo-secure-store"],
     "extra": {
       "eas": {
         "projectId": "20c4fdd4-f848-467b-b284-269791f15b1a"

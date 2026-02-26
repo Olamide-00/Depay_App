@@ -26,7 +26,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
 
-  const { setIsAuthenticated } = useAuthStore();
+  const { setIsAuthenticated, setAccountDetails } = useAuthStore();
   const { mutate: login, isPending } = useLogin();
 
   const validate = () => {
@@ -64,11 +64,15 @@ export default function Login() {
             balance: data.user.balance,
             profilePicture: data.user.profilePicture,
             tag: data.user.tag,
-            dateOfBirth: data.user.dateOfBirth,  // ← added
-            gender: data.user.gender,              // ← added
+            dateOfBirth: data.user.dateOfBirth,
+            gender: data.user.gender,
           };
 
           useAuthStore.getState().login(data.token, userData);
+
+          // Save account details so dashboard can read bankName + accountNumber
+          setAccountDetails(data.user.accountDetails || []);
+
           setIsAuthenticated(true);
         },
         onError: (err: any) => {
@@ -86,7 +90,7 @@ export default function Login() {
             }, 1500);
           }
         },
-      }
+      },
     );
   };
 
@@ -190,10 +194,18 @@ export default function Login() {
                 <MaterialCommunityIcons name="apple" size={28} color="#000" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="google" size={28} color="#DB4437" />
+                <MaterialCommunityIcons
+                  name="google"
+                  size={28}
+                  color="#DB4437"
+                />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="facebook" size={28} color="#1877F2" />
+                <MaterialCommunityIcons
+                  name="facebook"
+                  size={28}
+                  color="#1877F2"
+                />
               </TouchableOpacity>
             </View>
           </View>
