@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styles } from "./style";
 import Input from "../../../components/common/input";
 import Btn from "../../../components/common/btn";
@@ -21,7 +21,7 @@ import useAuthStore from "../../../store/userStore";
 import { useLogin } from "../../../api/hooks/useAuth";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
-import { useGoogleAppAuth } from "../../../hooks/useGoogleAppAuth";
+import { useGoogleSignIn } from "../../../hooks/useGoogleSignIn"; // Updated import
 
 const BASE_URL = "https://jaa.up.railway.app/api/v1";
 
@@ -35,23 +35,25 @@ export default function Login() {
 
   const { setIsAuthenticated, setAccountDetails } = useAuthStore();
   const { mutate: login, isPending } = useLogin();
-  const { signInWithGoogle, getGoogleUser } = useGoogleAppAuth();
+  const { configureGoogleSignIn, signIn } = useGoogleSignIn(); // Using the new hook
+
+  // Configure Google Sign-In on component mount
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
 
   // ─── Google login handler ─────────────────────────────────
-  const processGoogleLogin = async (accessToken: string) => {
+  const processGoogleLogin = async (idToken: string, user: any) => {
     try {
       setGoogleLoading(true);
-      console.log("Fetching Google user info...");
-
-      const googleUser = await getGoogleUser(accessToken);
-      console.log("Google user fetched:", googleUser.email);
+      console.log("Processing Google login with backend...");
 
       // Send Google user data to your backend
       const { data } = await axios.post(`${BASE_URL}/auth/google-login`, {
-        email: googleUser.email,
-        name: googleUser.name,
-        googleId: googleUser.id,
-        profilePicture: googleUser.picture,
+        email: user.email,
+        name: user.name,
+        googleId: user.id,
+        profilePicture: user.photo,
       });
 
       console.log("Backend response received");
@@ -104,7 +106,7 @@ export default function Login() {
               text: "Verify Now",
               onPress: () =>
                 navigation.navigate("SignUpOTP", {
-                  email: err?.response?.data?.email || googleUser?.email,
+                  email: err?.response?.data?.email || user?.email,
                 }),
             },
           ],
@@ -126,38 +128,26 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);
-      console.log("Initiating Google Sign-In...");
+      console.log("Starting Google Sign-In...");
 
-      const result = await signInWithGoogle();
+      const result = await signIn();
 
-      if (result?.type === "success" && result.accessToken) {
-        await processGoogleLogin(result.accessToken);
-      } else if (result?.type === "cancel") {
-        setGoogleLoading(false);
-        console.log("Google Sign-In cancelled");
+      if (result.type === "success" && result.user) {
+        const { idToken, user } = result.user;
+        await processGoogleLogin(idToken, user);
       } else {
         setGoogleLoading(false);
-        Alert.alert("Sign-In Failed", "Google Sign-In was not completed.");
+        if (result.type === "error") {
+          Alert.alert(
+            "Sign-In Failed",
+            result.error?.message || "Google Sign-In failed.",
+          );
+        }
       }
     } catch (error: any) {
       console.error("Google Sign-In error:", error);
       setGoogleLoading(false);
-
-      // Handle specific error messages
-      if (error.message?.includes("Network")) {
-        Alert.alert(
-          "Network Error",
-          "Please check your internet connection and try again.",
-        );
-      } else if (error.message?.includes("POPUP_CLOSED")) {
-        // User closed the popup, no need to show error
-        console.log("Sign-in popup closed");
-      } else {
-        Alert.alert(
-          "Error",
-          "Failed to sign in with Google. Please try again.",
-        );
-      }
+      Alert.alert("Error", "Failed to sign in with Google. Please try again.");
     }
   };
 

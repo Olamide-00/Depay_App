@@ -25,7 +25,6 @@
     "expo-contacts": "~15.0.11",
     "expo-crypto": "~15.0.8",
     "expo-dev-client": "~6.0.20",
-    "expo-google-app-auth": "~8.3.0",
     "expo-image": "~3.0.11",
     "expo-linear-gradient": "~15.0.8",
     "expo-media-library": "~18.2.1",
