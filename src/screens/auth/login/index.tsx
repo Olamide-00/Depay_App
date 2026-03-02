@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { styles } from "./style";
 import Input from "../../../components/common/input";
 import Btn from "../../../components/common/btn";
@@ -21,8 +21,7 @@ import useAuthStore from "../../../store/userStore";
 import { useLogin } from "../../../api/hooks/useAuth";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
-import { useGoogleLogin } from "../../../hooks/useGoogleLogin";
-import { Platform } from "react-native";
+import { useGoogleAppAuth } from "../../../hooks/useGoogleAppAuth";
 
 const BASE_URL = "https://jaa.up.railway.app/api/v1";
 
@@ -36,43 +35,7 @@ export default function Login() {
 
   const { setIsAuthenticated, setAccountDetails } = useAuthStore();
   const { mutate: login, isPending } = useLogin();
-  const {
-    request,
-    response,
-    promptAsync,
-    getGoogleUser,
-    isLoading: googleHookLoading,
-  } = useGoogleLogin();
-
-  // ─── Google OAuth response watcher ────────────────────────
-  useEffect(() => {
-    if (response === null) return;
-
-    if (response?.type === "success") {
-      const accessToken = response.params?.access_token;
-      if (accessToken) {
-        processGoogleLogin(accessToken);
-      } else {
-        setGoogleLoading(false);
-        Alert.alert(
-          "Error",
-          "Could not get Google access token. Please try again.",
-        );
-      }
-    }
-
-    if (response?.type === "error") {
-      setGoogleLoading(false);
-      Alert.alert(
-        "Google Sign-In Failed",
-        response.error?.message || "Please try again.",
-      );
-    }
-
-    if (response?.type === "dismiss" || response?.type === "cancel") {
-      setGoogleLoading(false);
-    }
-  }, [response]);
+  const { signInWithGoogle, getGoogleUser } = useGoogleAppAuth();
 
   // ─── Google login handler ─────────────────────────────────
   const processGoogleLogin = async (accessToken: string) => {
@@ -165,23 +128,36 @@ export default function Login() {
       setGoogleLoading(true);
       console.log("Initiating Google Sign-In...");
 
-      const result = await promptAsync();
+      const result = await signInWithGoogle();
 
-      if (result?.type !== "success") {
+      if (result?.type === "success" && result.accessToken) {
+        await processGoogleLogin(result.accessToken);
+      } else if (result?.type === "cancel") {
         setGoogleLoading(false);
-        if (result?.type === "cancel") {
-          console.log("Google Sign-In cancelled");
-        }
+        console.log("Google Sign-In cancelled");
+      } else {
+        setGoogleLoading(false);
+        Alert.alert("Sign-In Failed", "Google Sign-In was not completed.");
       }
-    } catch (error) {
-      console.error("Google Sign-In initiation error:", error);
+    } catch (error: any) {
+      console.error("Google Sign-In error:", error);
       setGoogleLoading(false);
-      Alert.alert(
-        "Error",
-        Platform.OS === "android"
-          ? "Failed to start Google Sign-In. Please make sure you have Google Play Services installed."
-          : "Failed to start Google Sign-In. Please try again.",
-      );
+
+      // Handle specific error messages
+      if (error.message?.includes("Network")) {
+        Alert.alert(
+          "Network Error",
+          "Please check your internet connection and try again.",
+        );
+      } else if (error.message?.includes("POPUP_CLOSED")) {
+        // User closed the popup, no need to show error
+        console.log("Sign-in popup closed");
+      } else {
+        Alert.alert(
+          "Error",
+          "Failed to sign in with Google. Please try again.",
+        );
+      }
     }
   };
 
@@ -242,7 +218,7 @@ export default function Login() {
   };
 
   const isFormDisabled = !email || !password || isPending;
-  const isLoading = isPending || googleLoading || googleHookLoading;
+  const isLoading = isPending || googleLoading;
 
   return (
     <View style={styles.root}>
@@ -368,7 +344,7 @@ export default function Login() {
                   ]}
                   activeOpacity={0.7}
                   onPress={handleGoogleSignIn}
-                  disabled={isLoading || googleHookLoading}
+                  disabled={isLoading}
                 >
                   {googleLoading ? (
                     <ActivityIndicator size="small" color="#DB4437" />
