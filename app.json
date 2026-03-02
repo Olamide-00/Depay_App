@@ -14,7 +14,8 @@
       "backgroundColor": "#6B34FF"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.olamide00.jaanApp"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +24,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.olamide00.jaanApp"
+      "package": "com.olamide00.jaanApp",
+      "googleServicesFile": "./google-services.json", // Add this if using Firebase
+      "permissions": [
+        "android.permission.GET_ACCOUNTS",
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
