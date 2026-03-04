@@ -15,7 +15,7 @@ const Service = () => {
     { title: "Airtime & Data", data: serviceData.slice(4, 8) },
     { title: "Betting", data: serviceData.slice(8, 16) },
     { title: "Cable", data: serviceData.slice(16, 20) },
-    // { title: "Other", data: serviceData.slice(24) },
+    { title: "Others", data: serviceData.slice(20) },
   ];
 
   // Filter sections based on search query
