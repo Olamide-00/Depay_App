@@ -21,7 +21,7 @@ import useAuthStore from "../../../store/userStore";
 import { useLogin } from "../../../api/hooks/useAuth";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
-import { useGoogleSignIn } from "../../../hooks/useGoogleSignIn"; // Updated import
+import { useGoogleSignIn } from "../../../hooks/useGoogleSignIn";
 
 const BASE_URL = "https://jaa.up.railway.app/api/v1";
 
@@ -43,17 +43,53 @@ export default function Login() {
   }, []);
 
   // ─── Google login handler ─────────────────────────────────
-  const processGoogleLogin = async (idToken: string, user: any) => {
+
+  // ─── Handle Google Sign-In button press ───────────────────
+  const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);
-      console.log("Processing Google login with backend...");
+      console.log("Starting Google Sign-In...");
 
-      // Send Google user data to your backend
-      const { data } = await axios.post(`${BASE_URL}/auth/google-login`, {
-        email: user.email,
-        name: user.name,
-        googleId: user.id,
-        profilePicture: user.photo,
+      const result = await signIn();
+
+      if (result.type === "success" && result.user?.data?.user) {
+        const { idToken } = result.user.data;
+        const googleUser = result.user.data.user;
+
+        console.log("Google user:", googleUser.email);
+        await processGoogleLogin(idToken, googleUser);
+      } else {
+        console.error("Sign-in failed or invalid data:", result);
+        setGoogleLoading(false);
+        Alert.alert(
+          "Sign-In Failed",
+          result.type === "error"
+            ? "Google Sign-In failed. Please try again."
+            : "Invalid response from Google",
+        );
+      }
+    } catch (error: any) {
+      console.error("Google Sign-In error:", error);
+      setGoogleLoading(false);
+      Alert.alert("Error", "Failed to sign in with Google. Please try again.");
+    }
+  };
+
+  // ─── Process Google login with your backend ───────────────
+  const processGoogleLogin = async (idToken: string, googleUser: any) => {
+    try {
+      console.log("Sending to backend:", {
+        email: googleUser.email,
+        name: googleUser.name,
+        googleId: googleUser.id,
+        profilePicture: googleUser.photo,
+      });
+
+      const { data } = await axios.post(`${BASE_URL}/user/auth/google-login`, {
+        email: googleUser.email,
+        name: googleUser.name,
+        googleId: googleUser.id,
+        profilePicture: googleUser.photo,
       });
 
       console.log("Backend response received");
@@ -79,11 +115,11 @@ export default function Login() {
 
       setAccountDetails(data.user.accountDetails || []);
       setIsAuthenticated(true);
-
       Alert.alert("Success", "Logged in successfully with Google!");
     } catch (err: any) {
       console.error("Google login error:", err?.response?.data || err);
 
+      // Handle specific error cases
       if (err?.response?.status === 404) {
         Alert.alert(
           "No Account Found",
@@ -93,10 +129,7 @@ export default function Login() {
             { text: "Sign Up", onPress: () => navigation.navigate("SignUp") },
           ],
         );
-        return;
-      }
-
-      if (err?.response?.status === 403) {
+      } else if (err?.response?.status === 403) {
         Alert.alert(
           "Account Not Verified",
           "Please verify your email before logging in.",
@@ -106,48 +139,20 @@ export default function Login() {
               text: "Verify Now",
               onPress: () =>
                 navigation.navigate("SignUpOTP", {
-                  email: err?.response?.data?.email || user?.email,
+                  email: googleUser?.email,
                 }),
             },
           ],
         );
-        return;
+      } else {
+        Alert.alert(
+          "Login Failed",
+          err?.response?.data?.message ||
+            "Something went wrong. Please try again.",
+        );
       }
-
-      Alert.alert(
-        "Login Failed",
-        err?.response?.data?.message ||
-          "Something went wrong. Please try again.",
-      );
     } finally {
       setGoogleLoading(false);
-    }
-  };
-
-  // ─── Handle Google Sign-In button press ───────────────────
-  const handleGoogleSignIn = async () => {
-    try {
-      setGoogleLoading(true);
-      console.log("Starting Google Sign-In...");
-
-      const result = await signIn();
-
-      if (result.type === "success" && result.user) {
-        const { idToken, user } = result.user;
-        await processGoogleLogin(idToken, user);
-      } else {
-        setGoogleLoading(false);
-        if (result.type === "error") {
-          Alert.alert(
-            "Sign-In Failed",
-            result.error?.message || "Google Sign-In failed.",
-          );
-        }
-      }
-    } catch (error: any) {
-      console.error("Google Sign-In error:", error);
-      setGoogleLoading(false);
-      Alert.alert("Error", "Failed to sign in with Google. Please try again.");
     }
   };
 

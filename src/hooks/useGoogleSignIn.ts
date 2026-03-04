@@ -5,10 +5,13 @@ import { Platform } from "react-native";
 const ANDROID_CLIENT_ID =
   "833928399680-43jvqo26115sebd71fv8pd35p7ag67p0.apps.googleusercontent.com";
 
+const WEB_CLIENT_ID =
+  "833928399680-hk2cmrl36601bbnmi5p2o77d7hdadd9n.apps.googleusercontent.com";
+
 export const useGoogleSignIn = () => {
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
-      webClientId: ANDROID_CLIENT_ID, // Required
+      webClientId: WEB_CLIENT_ID,
       offlineAccess: false,
       scopes: ["profile", "email"],
     });
