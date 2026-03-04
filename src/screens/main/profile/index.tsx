@@ -15,6 +15,8 @@ const Profile = () => {
   const accountDetails = useAuthStore((state) => state.accountDetails);
   const logout = useAuthStore((state) => state.logout);
 
+  console.log(userData);
+
   const displayName = userData?.name || "User";
   const profilePicture = userData?.profilePicture;
   const account = accountDetails?.[0];

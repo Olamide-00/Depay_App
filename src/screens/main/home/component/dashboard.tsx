@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   widthPercentageToDP as wp,
@@ -73,7 +73,7 @@ const Dashboard = () => {
   const rawBalance = currentBalance ?? balance?.data ?? "0.00";
 
   const displayBalance = balanceLoading
-    ? "Loading..."
+    ? <ActivityIndicator size="small"/>
     : balanceVisible
       ? `₦${formatCurrency(rawBalance)}`
       : "₦****.**";
