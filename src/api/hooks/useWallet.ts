@@ -1,17 +1,17 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../axiosInstance";
 import { API_ENDPOINTS } from "../endpoints";
-import useAuthStore from "../../store/userStore"
+import useAuthStore from "../../store/userStore";
 import { useEffect } from "react";
-import { isLoading } from "expo-font";
 
-// Define types for request payload and response
 interface CreateWalletData {
   email: string;
-  customerName: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
   bvn: string;
-  email: string;
-  
+  preferred_bank?: string;
+  country?: string;
 }
 
 interface Account {
@@ -35,42 +35,37 @@ interface ApiResponse<T> {
   data: T;
 }
 
-// Create wallet mutation
+// ✅ Fixed: interface matches backend exactly
 const useCreateWallet = () => {
   return useMutation<ApiResponse<any>, Error, CreateWalletData>({
     mutationFn: async (userData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.CREATE_WALLET,
-        userData
+        userData,
+        {
+          timeout: 90000, // 90s — backend can take 30-60s due to Paystack retries
+        },
       );
       return response.data;
     },
   });
 };
 
-// Query to fetch wallet details and update store
 export const useWalletDetails = () => {
-  // Get userData from store
   const userData = useAuthStore((state) => state.userData);
   const setAccountDetails = useAuthStore((state) => state.setAccountDetails);
   const email = userData?.email;
 
-  const { data, isSuccess, isError, error, refetch } = useQuery<
+  const { data, isSuccess, isError, isLoading, error, refetch } = useQuery<
     ApiResponse<WalletDetailsResponse>,
     Error
   >({
     queryKey: ["walletDetails", email],
     queryFn: async () => {
-      if (!email) {
-        throw new Error("Email not available");
-      }
-
-      const walletDetailsUrl = `/wallet/account-details/${email}`;
-
+      if (!email) throw new Error("Email not available");
       const response = await axiosInstance.get<
         ApiResponse<WalletDetailsResponse>
-      >(walletDetailsUrl);
-
+      >(`/wallet/account-details/${email}`);
       return response.data;
     },
     enabled: !!email,
@@ -80,21 +75,11 @@ export const useWalletDetails = () => {
 
   useEffect(() => {
     if (isSuccess && data?.data?.accounts) {
-      console.log("Setting account details:", data.data.accounts);
       setAccountDetails(data.data.accounts);
     }
   }, [isSuccess, data, setAccountDetails]);
 
-  // Return everything the component might need
-  return {
-    walletData: data,
-    isSuccess,
-    isError,
-    isLoading,
-    error,
-    refetch,
-  };
+  return { walletData: data, isSuccess, isError, isLoading, error, refetch };
 };
-
 
 export { useCreateWallet };
