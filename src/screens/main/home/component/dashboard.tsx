@@ -1,4 +1,11 @@
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Clipboard,
+  Alert,
+} from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   widthPercentageToDP as wp,
@@ -28,15 +35,20 @@ const Dashboard = () => {
   const displayName = userData?.name || "User";
 
   // Account details from store
-  const account = accountDetails?.[0]; // first account
+  const account = accountDetails?.[0];
   const accountNumber = account?.accountNumber || "—";
   const bankName = account?.bankName || "JAAN";
 
-  // Truncate long names cleanly
   const truncate = (str: string, max: number) =>
     str?.length > max ? str.slice(0, max) + "…" : str;
 
-  const accountLabel = `${accountNumber} (${bankName}/${truncate(displayName.toUpperCase(), 14)})`;
+  const accountLabel = accountNumber;
+
+  // ─── Copy handler ─────────────────────────────────────────────────────────
+  const handleCopy = (value: string, label: string) => {
+    Clipboard.setString(value);
+    Alert.alert("Copied", `${label} copied to clipboard`);
+  };
 
   // Socket
   useEffect(() => {
@@ -72,11 +84,13 @@ const Dashboard = () => {
 
   const rawBalance = currentBalance ?? balance?.data ?? "0.00";
 
-  const displayBalance = balanceLoading
-    ? <ActivityIndicator size="small"/>
-    : balanceVisible
-      ? `₦${formatCurrency(rawBalance)}`
-      : "₦****.**";
+  const displayBalance = balanceLoading ? (
+    <ActivityIndicator size="small" />
+  ) : balanceVisible ? (
+    `₦${formatCurrency(rawBalance)}`
+  ) : (
+    "₦****.**"
+  );
 
   return (
     <>
@@ -113,6 +127,7 @@ const Dashboard = () => {
 
               {account ? (
                 <>
+                  {/* Bank Name row */}
                   <View style={styles.accountInfo}>
                     <MaterialCommunityIcons
                       name="credit-card-outline"
@@ -128,7 +143,13 @@ const Dashboard = () => {
                       {truncate(bankName, 20)}
                     </Text>
                   </View>
-                  <View style={styles.accountInfo}>
+
+                  {/* Account Number row — with copy icon */}
+                  <TouchableOpacity
+                    style={styles.accountInfo}
+                    activeOpacity={0.7}
+                    onPress={() => handleCopy(accountNumber, "Account number")}
+                  >
                     <MaterialCommunityIcons
                       name="account-outline"
                       size={16}
@@ -138,7 +159,13 @@ const Dashboard = () => {
                     <Text variant="light" color="#fff" size="xs">
                       {accountLabel}
                     </Text>
-                  </View>
+                    <MaterialCommunityIcons
+                      name="content-copy"
+                      size={13}
+                      color="rgba(255,255,255,0.6)"
+                      style={styles.copyIcon}
+                    />
+                  </TouchableOpacity>
                 </>
               ) : (
                 <TouchableOpacity
@@ -246,6 +273,10 @@ const styles = StyleSheet.create({
     gap: wp("1.5%"),
   },
   accountIcon: { opacity: 0.8 },
+  copyIcon: {
+    marginLeft: wp("1%"),
+    opacity: 0.7,
+  },
   topUp: {
     flexDirection: "row",
     gap: wp("1.5%"),

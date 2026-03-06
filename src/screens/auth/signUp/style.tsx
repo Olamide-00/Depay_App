@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+    paddingTop: hp("2%"),
   },
   backButton: {
     paddingLeft: wp("5%"),
@@ -17,7 +18,7 @@ export const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: wp("5%"),
-    paddingTop: hp("3%"),
+    paddingTop: hp("8%"),
   },
   logoContainer: {
     flexDirection: "row",

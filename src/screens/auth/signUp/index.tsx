@@ -44,7 +44,7 @@ const SignUp = () => {
             "Failed to send OTP. Please try again.";
           Alert.alert("Error", message);
         },
-      }
+      },
     );
   };
 
@@ -122,14 +122,14 @@ const SignUp = () => {
           </Text>
 
           {/* Divider */}
-          <View style={styles.dividerContainer}>
+          {/* <View style={styles.dividerContainer}>
             <View style={styles.divider} />
             <Text style={styles.dividerText}>or</Text>
             <View style={styles.divider} />
-          </View>
+          </View> */}
 
           {/* Social Login */}
-          <View style={styles.socialContainer}>
+          {/* <View style={styles.socialContainer}>
             <Text style={styles.socialTitle}>Log in with</Text>
             <View style={styles.socialButtons}>
               <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
@@ -150,7 +150,7 @@ const SignUp = () => {
                 />
               </TouchableOpacity>
             </View>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     </View>

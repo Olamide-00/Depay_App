@@ -99,11 +99,6 @@ const Profile = () => {
               <Text size="sm" style={styles.walletBalance}>
                 Balance: {formatBalance(balance)}
               </Text>
-              {gender && (
-                <Text size="sm" style={styles.accountNumber}>
-                  Gender: {gender}
-                </Text>
-              )}
             </View>
           </View>
           <TouchableOpacity
