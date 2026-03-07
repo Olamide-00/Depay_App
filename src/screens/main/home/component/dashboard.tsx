@@ -118,7 +118,7 @@ const Dashboard = () => {
             <View style={styles.balanceDetails}>
               <Text
                 variant="bold"
-                size="4xl"
+                size="3xl"
                 color="#fff"
                 style={styles.amountText}
               >
@@ -265,8 +265,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#22c55e",
     marginLeft: "auto",
   },
-  balanceDetails: { gap: hp("0.5%") },
-  amountText: { letterSpacing: 0.5, marginBottom: hp("0.5%") },
+  balanceDetails: {
+    gap: hp("0.5%"),
+  },
+  amountText: {
+    letterSpacing: 0.5,
+    marginBottom: hp("0.5%"),
+  },
   accountInfo: {
     flexDirection: "row",
     alignItems: "center",
