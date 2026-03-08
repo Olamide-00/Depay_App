@@ -22,7 +22,11 @@ import { useGetBalance } from "../../../../api/hooks/useAuth";
 
 const SOCKET_URL = "https://jaa.up.railway.app";
 
-const Dashboard = () => {
+interface DashboardProps {
+  refreshTick?: number; // bumped by Home when user pulls to refresh
+}
+
+const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
   const navigation = useNavigation<any>();
   const [modalVisible, setModalVisible] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
@@ -34,7 +38,6 @@ const Dashboard = () => {
   const email = userData?.email || "";
   const displayName = userData?.name || "User";
 
-  // Account details from store
   const account = accountDetails?.[0];
   const accountNumber = account?.accountNumber || "—";
   const bankName = account?.bankName || "JAAN";
@@ -42,9 +45,6 @@ const Dashboard = () => {
   const truncate = (str: string, max: number) =>
     str?.length > max ? str.slice(0, max) + "…" : str;
 
-  const accountLabel = accountNumber;
-
-  // ─── Copy handler ─────────────────────────────────────────────────────────
   const handleCopy = (value: string, label: string) => {
     Clipboard.setString(value);
     Alert.alert("Copied", `${label} copied to clipboard`);
@@ -53,28 +53,33 @@ const Dashboard = () => {
   // Socket
   useEffect(() => {
     if (!email) return;
-
     const socket = io(SOCKET_URL);
     socket.emit("join", email);
-
     socket.on("balance_updated", (data) => {
       setCurrentBalance(data.newBalance);
     });
-
     return () => {
       socket.off("balance_updated");
       socket.disconnect();
     };
   }, [email]);
 
-  // Balance REST fetch
   const { balance, refetch, isLoading: balanceLoading } = useGetBalance(email);
 
+  // Refetch on screen focus
   useFocusEffect(
     useCallback(() => {
       refetch();
     }, [refetch]),
   );
+
+  // ✅ Refetch whenever Home triggers a pull-to-refresh
+  useEffect(() => {
+    if (refreshTick > 0) {
+      setCurrentBalance(null); // clear socket-cached value so REST result shows
+      refetch();
+    }
+  }, [refreshTick]);
 
   const formatCurrency = (amount: number) =>
     Number(amount).toLocaleString("en-NG", {
@@ -85,7 +90,7 @@ const Dashboard = () => {
   const rawBalance = currentBalance ?? balance?.data ?? "0.00";
 
   const displayBalance = balanceLoading ? (
-    <ActivityIndicator size="small" />
+    <ActivityIndicator size="small" color="#fff" />
   ) : balanceVisible ? (
     `₦${formatCurrency(rawBalance)}`
   ) : (
@@ -127,7 +132,6 @@ const Dashboard = () => {
 
               {account ? (
                 <>
-                  {/* Bank Name row */}
                   <View style={styles.accountInfo}>
                     <MaterialCommunityIcons
                       name="credit-card-outline"
@@ -144,7 +148,6 @@ const Dashboard = () => {
                     </Text>
                   </View>
 
-                  {/* Account Number row — with copy icon */}
                   <TouchableOpacity
                     style={styles.accountInfo}
                     activeOpacity={0.7}
@@ -157,7 +160,7 @@ const Dashboard = () => {
                       style={styles.accountIcon}
                     />
                     <Text variant="light" color="#fff" size="xs">
-                      {accountLabel}
+                      {accountNumber}
                     </Text>
                     <MaterialCommunityIcons
                       name="content-copy"
@@ -265,23 +268,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#22c55e",
     marginLeft: "auto",
   },
-  balanceDetails: {
-    gap: hp("0.5%"),
-  },
-  amountText: {
-    letterSpacing: 0.5,
-    marginBottom: hp("0.5%"),
-  },
+  balanceDetails: { gap: hp("0.5%") },
+  amountText: { letterSpacing: 0.5, marginBottom: hp("0.5%") },
   accountInfo: {
     flexDirection: "row",
     alignItems: "center",
     gap: wp("1.5%"),
   },
   accountIcon: { opacity: 0.8 },
-  copyIcon: {
-    marginLeft: wp("1%"),
-    opacity: 0.7,
-  },
+  copyIcon: { marginLeft: wp("1%"), opacity: 0.7 },
   topUp: {
     flexDirection: "row",
     gap: wp("1.5%"),

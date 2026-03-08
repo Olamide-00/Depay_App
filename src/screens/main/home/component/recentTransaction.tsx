@@ -31,8 +31,12 @@ const RecentTransaction = () => {
     ...item,
     label: typeof item.label === "string" ? item.label : "Transaction",
     // Normalize to lowercase so "SUCCESS" / "FAILED" / "success" all match
-    status: typeof item.status === "string" ? item.status.toLowerCase() : "pending",
-    category: typeof item.category === "string" ? item.category.toLowerCase() : "wallet",
+    status:
+      typeof item.status === "string" ? item.status.toLowerCase() : "pending",
+    category:
+      typeof item.category === "string"
+        ? item.category.toLowerCase()
+        : "wallet",
     type: typeof item.type === "string" ? item.type.toLowerCase() : "debit",
   });
 
@@ -52,7 +56,7 @@ const RecentTransaction = () => {
       {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Recent Transactions</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Service")}>
+        <TouchableOpacity onPress={() => navigation.navigate("Transaction")}>
           <Text style={styles.viewAllText}>View All</Text>
         </TouchableOpacity>
       </View>

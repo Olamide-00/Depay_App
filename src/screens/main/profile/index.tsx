@@ -64,7 +64,11 @@ const Profile = () => {
   const handleSecurity = () =>
     navigation.navigate("StackNav", { screen: "Security" });
   const handleTheme = () => console.log("Navigate to Theme");
-  const handleNotifications = () => console.log("Navigate to Notifications");
+
+  const handleNotifications = () => {
+    navigation.navigate("StackNav", { screen: "Notification" });
+  };
+
   const handleGenerateBankAccount = () =>
     navigation.navigate("StackNav", { screen: "Wallet" });
   const handleSupport = () =>

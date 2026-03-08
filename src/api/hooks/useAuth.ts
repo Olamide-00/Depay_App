@@ -24,6 +24,7 @@ interface CompleteRegistrationData {
   pushToken?: string | null;
   gender?: string;
   dateOfBirth?: string;
+  phoneNumber?: string;
   // referralCode?: string;
 }
 
@@ -67,7 +68,7 @@ const useSendRegistrationOTP = () => {
     mutationFn: async (data) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.SEND_REGISTRATION_OTP,
-        data
+        data,
       );
       return response.data;
     },
@@ -80,7 +81,7 @@ const useVerifyOtp = () => {
     mutationFn: async (otpData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.VERIFY_OTP,
-        otpData
+        otpData,
       );
       return response.data;
     },
@@ -96,7 +97,7 @@ const useCompleteRegistration = () => {
     mutationFn: async (userData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.REGISTER,
-        userData
+        userData,
       );
       return response.data;
     },
@@ -109,7 +110,7 @@ const useLogin = () => {
     mutationFn: async (credentials) => {
       const response = await axiosInstance.post<ApiResponse<{ token: string }>>(
         API_ENDPOINTS.LOGIN,
-        credentials
+        credentials,
       );
       return response.data;
     },
@@ -122,7 +123,7 @@ const useResendOtp = () => {
     mutationFn: async (emailData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.RESEND_OTP,
-        emailData
+        emailData,
       );
       return response.data;
     },
@@ -131,12 +132,17 @@ const useResendOtp = () => {
 
 // ─── Get wallet balance ───────────────────────────────────────
 const useGetBalance = (email: string) => {
-  const { data: balance, isLoading, isError, refetch } = useQuery({
+  const {
+    data: balance,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["balance", email],
     queryFn: async () => {
       if (!email) throw new Error("Email is required");
       const response = await axiosInstance.get(
-        `${API_ENDPOINTS.GET_BALANCE}/${email}`
+        `${API_ENDPOINTS.GET_BALANCE}/${email}`,
       );
       return response.data;
     },
@@ -153,7 +159,7 @@ const usePINOtp = () => {
     mutationFn: async (emailData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.PIN_OTP,
-        emailData
+        emailData,
       );
       return response.data;
     },
@@ -166,7 +172,7 @@ const useUpdatePIN = () => {
     mutationFn: async (pinData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.UPDATE_PIN,
-        pinData
+        pinData,
       );
       return response.data;
     },
@@ -179,7 +185,7 @@ const useUpdateNumber = () => {
     mutationFn: async (phoneData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.UPDATE_NUMBER,
-        phoneData
+        phoneData,
       );
       return response.data;
     },
@@ -188,11 +194,15 @@ const useUpdateNumber = () => {
 
 // ─── Update profile ──────────────────────────────────────────
 const useUpdateProfile = () => {
-  return useMutation<ApiResponse<any>, AxiosError, { email: string; data: UpdateProfileData }>({
+  return useMutation<
+    ApiResponse<any>,
+    AxiosError,
+    { email: string; data: UpdateProfileData }
+  >({
     mutationFn: async ({ email, data }) => {
       const response = await axiosInstance.put<ApiResponse<any>>(
         `${API_ENDPOINTS.UPDATE_PROFILE}/${email}`,
-        data
+        data,
       );
       return response.data;
     },
@@ -205,7 +215,7 @@ const useResetOTP = () => {
     mutationFn: async (otpData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.RESET_OTP,
-        otpData
+        otpData,
       );
       return response.data;
     },
@@ -218,7 +228,7 @@ const useUpdatePassword = () => {
     mutationFn: async (passwordData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.UPDATE_PASSWORD,
-        passwordData
+        passwordData,
       );
       return response.data;
     },
@@ -231,7 +241,7 @@ const useSetProfilePicture = () => {
     mutationFn: async (profilePictureData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.SET_PROFILE_PICTURE,
-        profilePictureData
+        profilePictureData,
       );
       return response.data;
     },
@@ -243,7 +253,7 @@ const useDeleteAccount = () => {
   return useMutation<ApiResponse<any>, AxiosError, string>({
     mutationFn: async (email: string) => {
       const response = await axiosInstance.delete<ApiResponse<any>>(
-        `${API_ENDPOINTS.DELETE_ACCOUNT}/${email}`
+        `${API_ENDPOINTS.DELETE_ACCOUNT}/${email}`,
       );
       return response.data;
     },

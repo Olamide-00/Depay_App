@@ -28,7 +28,10 @@ const User = () => {
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity onPress={handleEdit} style={styles.editButtonContainer}>
+        <TouchableOpacity
+          onPress={handleEdit}
+          style={styles.editButtonContainer}
+        >
           <Text style={styles.editButton}>Edit</Text>
         </TouchableOpacity>
       </View>
@@ -57,13 +60,6 @@ const User = () => {
             value={userData?.fullName || userData?.name || "---"}
             iconColor="#6C2BD9"
           />
-
-          {/* <ProfileInfoItem
-            icon="at-outline"
-            label="Username"
-            value={userData?.tag ? `@${userData.tag}` : "---"}
-            iconColor="#6C2BD9"
-          /> */}
 
           <ProfileInfoItem
             icon="mail-outline"
@@ -95,7 +91,8 @@ const User = () => {
             label="Gender"
             value={
               userData?.gender
-                ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
+                ? userData.gender.charAt(0).toUpperCase() +
+                  userData.gender.slice(1)
                 : "---"
             }
             iconColor="#6C2BD9"
@@ -104,8 +101,8 @@ const User = () => {
           <ProfileInfoItem
             icon="shield-checkmark-outline"
             label="KYC Status"
-            value={userData?.isWalletCreated ? "Verified ✓" : "Not Verified"}
-            iconColor={userData?.isWalletCreated ? "#22c55e" : "#ef4444"}
+            value={"Verified"}
+            iconColor={"#22c55e"}
           />
         </View>
       </ScrollView>

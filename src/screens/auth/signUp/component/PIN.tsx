@@ -1,4 +1,11 @@
-import { View, Text, TouchableOpacity, TextInput, Image, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  Alert,
+} from "react-native";
 import React, { useState, useRef } from "react";
 import { styles } from "../style";
 import Stepper from "./stepper";
@@ -11,7 +18,8 @@ import { useCompleteRegistration } from "../../../../api/hooks/useAuth";
 const SignUpTransactionPin = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { email, password, fullName, phoneNumber, gender, dateOfBirth } = route.params;
+  const { email, password, fullName, phoneNumber, gender, dateOfBirth } =
+    route.params;
 
   const [pin, setPin] = useState(["", "", "", ""]);
   const [confirmPin, setConfirmPin] = useState(["", "", "", ""]);
@@ -72,6 +80,7 @@ const SignUpTransactionPin = () => {
         fullName,
         gender,
         dateOfBirth,
+        phoneNumber,
         transactionPIN: pinCode,
       },
       {
@@ -84,7 +93,7 @@ const SignUpTransactionPin = () => {
             "Registration failed. Please try again.";
           Alert.alert("Error", message);
         },
-      }
+      },
     );
   };
 

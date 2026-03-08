@@ -7,8 +7,8 @@ import { Home2, Profile, Wallet, Category } from "iconsax-react-native";
 import { COLORS } from "../../constants/Colors";
 import Service from "../../screens/main/service";
 import Transaction from "../../screens/main/transaction";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Define your tab param list for TypeScript
 export type MainTabParamList = {
   HomeTab: undefined;
   Service: undefined;
@@ -16,10 +16,11 @@ export type MainTabParamList = {
   ProfileTab: undefined;
 };
 
-// Create the tab navigator instance
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export default function TabNavigation() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       initialRouteName="HomeTab"
@@ -29,8 +30,8 @@ export default function TabNavigation() {
           backgroundColor: "#FFFFFF",
           borderTopWidth: 1,
           borderTopColor: "#F0F0F0",
-          height: Platform.OS === "ios" ? 85 : 60,
-          paddingBottom: Platform.OS === "ios" ? 25 : 8,
+          height: Platform.OS === "ios" ? 85 : 60 + insets.bottom,
+          paddingBottom: Platform.OS === "ios" ? 25 : 8 + insets.bottom,
           paddingTop: 8,
         },
         tabBarActiveTintColor: COLORS.brand,

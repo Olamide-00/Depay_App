@@ -30,18 +30,12 @@ import {
 import { useNavigation } from "@react-navigation/native";
 
 const QuickAction = () => {
-  const navigation = useNavigation();
-  // Map icon names to Iconsax components
-  const getIconComponent = (icon, color = "#FF8A65") => {
-    if (React.isValidElement(icon)) {
-      return icon;
-    }
+  const navigation = useNavigation<any>();
 
-    const iconProps = {
-      size: wp("6.5%"),
-      color: color,
-      variant: "Bulk",
-    };
+  const getIconComponent = (icon, color = "#FF8A65") => {
+    if (React.isValidElement(icon)) return icon;
+
+    const iconProps = { size: wp("6.5%"), color, variant: "Bulk" };
 
     switch (icon) {
       case "Simcard1":
@@ -71,7 +65,6 @@ const QuickAction = () => {
     }
   };
 
-  // Color palette for icons
   const iconColors = [
     "#FF8A65",
     "#6B34FF",
@@ -85,13 +78,24 @@ const QuickAction = () => {
     "#90A4AE",
   ];
 
+  const handlePress = (item, index) => {
+    const isLast = index === serviceData.length - 1;
+
+    if (isLast) {
+      // ✅ Navigate to the Service tab directly
+      navigation.navigate("Service");
+    } else {
+      navigation.navigate("StackNav", { screen: item.screen });
+    }
+  };
+
   const renderServiceItem = ({ item, index }) => {
     const iconColor = iconColors[index % iconColors.length];
 
     return (
       <TouchableOpacity
         style={styles.serviceItem}
-        onPress={() => navigation.navigate("StackNav", { screen: item.screen })}
+        onPress={() => handlePress(item, index)}
         activeOpacity={0.7}
       >
         <View

@@ -64,11 +64,11 @@ const SignUpDetails = () => {
     }
   };
 
-  const formatPhoneDisplay = (phone: string) => {
-    if (phone.length <= 3) return phone;
-    if (phone.length <= 7) return `${phone.slice(0, 3)} ${phone.slice(3)}`;
-    return `${phone.slice(0, 3)} ${phone.slice(3, 7)} ${phone.slice(7)}`;
-  };
+  // const formatPhoneDisplay = (phone: string) => {
+  //   if (phone.length <= 3) return phone;
+  //   if (phone.length <= 7) return `${phone.slice(0, 3)} ${phone.slice(3)}`;
+  //   return `${phone.slice(0, 3)} ${phone.slice(3, 7)} ${phone.slice(7)}`;
+  // };
 
   const handleContinue = () => {
     setError("");
@@ -108,7 +108,7 @@ const SignUpDetails = () => {
       fullName: fullName.trim(),
       phoneNumber,
       gender,
-      dateOfBirth: dateOfBirth.toISOString().split("T")[0], // "YYYY-MM-DD"
+      dateOfBirth: dateOfBirth.toISOString().split("T")[0],
     });
   };
 
@@ -197,10 +197,10 @@ const SignUpDetails = () => {
                       style={styles.phoneInput}
                       placeholder="090 3601 8013"
                       placeholderTextColor="#999"
-                      value={formatPhoneDisplay(phoneNumber)}
+                      value={phoneNumber}
                       onChangeText={handlePhoneChange}
                       keyboardType="phone-pad"
-                      maxLength={12}
+                      maxLength={11}
                       returnKeyType="done"
                       onSubmitEditing={Keyboard.dismiss}
                     />
