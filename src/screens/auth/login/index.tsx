@@ -35,31 +35,43 @@ export default function Login() {
 
   const { setIsAuthenticated, setAccountDetails } = useAuthStore();
   const { mutate: login, isPending } = useLogin();
-  const { configureGoogleSignIn, signIn } = useGoogleSignIn(); // Using the new hook
+  const { configureGoogleSignIn, signIn } = useGoogleSignIn();
 
-  // Configure Google Sign-In on component mount
   useEffect(() => {
     configureGoogleSignIn();
   }, []);
 
-  // ─── Google login handler ─────────────────────────────────
+  // ─── Shared store update — called after both login paths ──
+  const saveUserToStore = (token: string, user: any) => {
+    useAuthStore.getState().login(token, {
+      email: user.email,
+      name: user.name,
+      phoneNumber: user.phoneNumber,
+      isWalletCreated: user.isWalletCreated,
+      balance: user.balance,
+      profilePicture: user.profilePicture,
+      tag: user.tag,
+      dateOfBirth: user.dateOfBirth,
+      gender: user.gender,
+      accountNumber: user.accountNumber, // ← stored
+      bankName: user.bankName, // ← stored
+    });
+    useAuthStore.getState().setIsWalletCreated(user.isWalletCreated); // ← store flag
+    setAccountDetails(user.accountDetails || []);
+    setIsAuthenticated(true);
+  };
 
-  // ─── Handle Google Sign-In button press ───────────────────
+  // ─── Google Sign-In ───────────────────────────────────────
   const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);
-      console.log("Starting Google Sign-In...");
-
       const result = await signIn();
 
       if (result.type === "success" && result.user?.data?.user) {
         const { idToken } = result.user.data;
         const googleUser = result.user.data.user;
-
-        console.log("Google user:", googleUser.email);
         await processGoogleLogin(idToken, googleUser);
       } else {
-        console.error("Sign-in failed or invalid data:", result);
         setGoogleLoading(false);
         Alert.alert(
           "Sign-In Failed",
@@ -69,22 +81,13 @@ export default function Login() {
         );
       }
     } catch (error: any) {
-      console.error("Google Sign-In error:", error);
       setGoogleLoading(false);
       Alert.alert("Error", "Failed to sign in with Google. Please try again.");
     }
   };
 
-  // ─── Process Google login with your backend ───────────────
   const processGoogleLogin = async (idToken: string, googleUser: any) => {
     try {
-      console.log("Sending to backend:", {
-        email: googleUser.email,
-        name: googleUser.name,
-        googleId: googleUser.id,
-        profilePicture: googleUser.photo,
-      });
-
       const { data } = await axios.post(`${BASE_URL}/user/auth/google-login`, {
         email: googleUser.email,
         name: googleUser.name,
@@ -92,34 +95,14 @@ export default function Login() {
         profilePicture: googleUser.photo,
       });
 
-      console.log("Backend response received");
-
-      // Store token and user data
       const now = new Date().toISOString();
       await SecureStore.setItemAsync("token", data.token);
       await SecureStore.setItemAsync("loginDate", now);
       await SecureStore.setItemAsync("isFreshLogin", "true");
 
-      // Update auth store
-      useAuthStore.getState().login(data.token, {
-        email: data.user.email,
-        name: data.user.name,
-        phoneNumber: data.user.phoneNumber,
-        isWalletCreated: data.user.isWalletCreated,
-        balance: data.user.balance,
-        profilePicture: data.user.profilePicture,
-        tag: data.user.tag,
-        dateOfBirth: data.user.dateOfBirth,
-        gender: data.user.gender,
-      });
-
-      setAccountDetails(data.user.accountDetails || []);
-      setIsAuthenticated(true);
+      saveUserToStore(data.token, data.user);
       Alert.alert("Success", "Logged in successfully with Google!");
     } catch (err: any) {
-      console.error("Google login error:", err?.response?.data || err);
-
-      // Handle specific error cases
       if (err?.response?.status === 404) {
         Alert.alert(
           "No Account Found",
@@ -138,9 +121,7 @@ export default function Login() {
             {
               text: "Verify Now",
               onPress: () =>
-                navigation.navigate("SignUpOTP", {
-                  email: googleUser?.email,
-                }),
+                navigation.navigate("SignUpOTP", { email: googleUser?.email }),
             },
           ],
         );
@@ -156,7 +137,7 @@ export default function Login() {
     }
   };
 
-  // ─── Email/password validation ────────────────────────────
+  // ─── Validation ───────────────────────────────────────────
   const validate = () => {
     const newErrors = { email: "", password: "" };
     if (!email || !email.includes("@")) newErrors.email = "Enter a valid email";
@@ -179,20 +160,7 @@ export default function Login() {
           await SecureStore.setItemAsync("loginDate", now);
           await SecureStore.setItemAsync("isFreshLogin", "true");
 
-          useAuthStore.getState().login(data.token, {
-            email: data.user.email,
-            name: data.user.name,
-            phoneNumber: data.user.phoneNumber,
-            isWalletCreated: data.user.isWalletCreated,
-            balance: data.user.balance,
-            profilePicture: data.user.profilePicture,
-            tag: data.user.tag,
-            dateOfBirth: data.user.dateOfBirth,
-            gender: data.user.gender,
-          });
-
-          setAccountDetails(data.user.accountDetails || []);
-          setIsAuthenticated(true);
+          saveUserToStore(data.token, data.user);
         },
         onError: (err: any) => {
           const errorMessage =
@@ -307,19 +275,17 @@ export default function Login() {
             <View style={styles.divider} />
           </View>
 
-          {/* Social login buttons */}
           <View style={styles.socialContainer}>
             <Text style={styles.socialTitle}>Continue with</Text>
 
             {isLoading ? (
               <ActivityIndicator
                 size="large"
-                color={COLORS.primary}
+                color={COLORS.brand}
                 style={{ marginVertical: 20 }}
               />
             ) : (
               <View style={styles.socialButtons}>
-                {/* Apple */}
                 <TouchableOpacity
                   style={styles.socialButton}
                   activeOpacity={0.7}
@@ -331,7 +297,6 @@ export default function Login() {
                   <MaterialCommunityIcons name="apple" size={28} color="#000" />
                 </TouchableOpacity>
 
-                {/* Google */}
                 <TouchableOpacity
                   style={[
                     styles.socialButton,
@@ -352,7 +317,6 @@ export default function Login() {
                   )}
                 </TouchableOpacity>
 
-                {/* Facebook */}
                 <TouchableOpacity
                   style={styles.socialButton}
                   activeOpacity={0.7}

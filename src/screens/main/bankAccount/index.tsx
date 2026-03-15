@@ -17,10 +17,6 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCreateWallet } from "../../../api/hooks/useWallet";
 import { useNavigation } from "@react-navigation/native";
 import { COLORS } from "../../../constants/Colors";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 
 const Wallet = () => {
   const navigation = useNavigation();
@@ -31,13 +27,14 @@ const Wallet = () => {
   const [phoneFocused, setPhoneFocused] = useState(false);
 
   const userData = useAuthStore((state) => state.userData);
-  const accountDetails = useAuthStore((state) => state.accountDetails);
-  const account = accountDetails?.[0];
+  const isWalletCreated = useAuthStore((state) => state.isWalletCreated);
 
-  const accountName = account?.accountName || userData?.name || "—";
-  const bankName = account?.bankName || "—";
-  const accountNumber = account?.accountNumber || "—";
-  const hasAccount = !!(account?.accountNumber && account?.bankName);
+  // ← Read directly from userData
+  const accountName = userData?.name || "—";
+  const bankName = (userData as any)?.bankName || "—";
+  const accountNumber = (userData as any)?.accountNumber || "—";
+  const hasAccount =
+    isWalletCreated && !!accountNumber && accountNumber !== "—";
 
   const email = userData?.email || "";
   const fullName = userData?.name || "";
@@ -79,38 +76,33 @@ const Wallet = () => {
       return;
     }
 
-    // ✅ Correct payload — matches backend validateCreateAccountRequest exactly
-    const payload = {
-      email,
-      first_name,
-      last_name,
-      phone: phoneNumber,
-      bvn,
-    };
-
-    console.log("Creating wallet with:", payload);
+    const payload = { email, first_name, last_name, phone: phoneNumber, bvn };
 
     createWallet(payload, {
       onSuccess: (response) => {
-        console.log("Wallet response:", JSON.stringify(response));
-
         const data = response?.data;
 
         if (data?.accountNumber) {
+          // ← Update userData with account fields directly
+          useAuthStore.getState().setUserData({
+            ...userData!,
+            accountNumber: data.accountNumber,
+            bankName: data.bankName || "",
+          } as any);
+          useAuthStore.getState().setIsWalletCreated(true);
           useAuthStore.getState().setAccountDetails([
             {
               accountName: data.accountName || fullName,
               accountNumber: data.accountNumber,
               bankName: data.bankName || "",
+              bankCode: "",
             },
           ]);
-          useAuthStore.getState().setIsWalletCreated(true);
           Alert.alert(
             "Success! 🎉",
             "Your bank account has been created successfully.",
           );
         } else {
-          // 202 pending case — account creation started but not done yet
           useAuthStore.getState().setIsWalletCreated(true);
           Alert.alert(
             "Almost there!",
@@ -123,10 +115,6 @@ const Wallet = () => {
         setAgreedToTerms(false);
       },
       onError: (error: any) => {
-        console.log(
-          "Wallet error:",
-          JSON.stringify(error?.response?.data || error?.message),
-        );
         const message =
           error?.response?.data?.message ||
           error?.message ||
@@ -136,7 +124,7 @@ const Wallet = () => {
     });
   };
 
-  // ─── Wallet exists — show account details ─────────────────────────────────
+  // ─── Wallet exists — show account details ──────────────────
   if (hasAccount) {
     return (
       <View style={styles.root}>
@@ -261,7 +249,7 @@ const Wallet = () => {
     );
   }
 
-  // ─── Loading overlay — shown while Paystack is processing (can take 30-60s) ──
+  // ─── Loading overlay ───────────────────────────────────────
   if (isPending) {
     return (
       <View style={styles.root}>
@@ -279,7 +267,7 @@ const Wallet = () => {
                 "Verifying your BVN",
                 "Setting up account",
                 "Linking to wallet",
-              ].map((step, i) => (
+              ].map((step) => (
                 <View key={step} style={formStyles.loadingStep}>
                   <View style={formStyles.loadingDot} />
                   <Text style={formStyles.loadingStepText}>{step}</Text>
@@ -292,7 +280,7 @@ const Wallet = () => {
     );
   }
 
-  // ─── Creation form ─────────────────────────────────────────────────────────
+  // ─── Creation form ─────────────────────────────────────────
   return (
     <View style={styles.root}>
       <CommonHeader title="Generate Bank Account" back />
@@ -567,14 +555,13 @@ const accountStyles = StyleSheet.create({
 });
 
 const formStyles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: wp("4%"), paddingTop: hp("1%") },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 8 },
 
-  // Loading
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: wp("8%"),
+    paddingHorizontal: 32,
   },
   loadingCard: {
     backgroundColor: "#fff",
@@ -612,8 +599,7 @@ const formStyles = StyleSheet.create({
   },
   loadingStepText: { fontSize: 13, color: "#4b5563" },
 
-  // Form
-  hero: { alignItems: "center", paddingVertical: hp("2%") },
+  hero: { alignItems: "center", paddingVertical: 16 },
   heroIconRing: {
     width: 80,
     height: 80,
@@ -621,7 +607,7 @@ const formStyles = StyleSheet.create({
     backgroundColor: `${COLORS.brand}12`,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: hp("1.5%"),
+    marginBottom: 12,
     borderWidth: 1.5,
     borderColor: `${COLORS.brand}25`,
   },
@@ -646,17 +632,18 @@ const formStyles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
+
   card: {
     backgroundColor: "#fff",
     borderRadius: 20,
-    padding: wp("5%"),
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 6,
-    marginBottom: hp("2%"),
-    gap: hp("1.5%"),
+    marginBottom: 16,
+    gap: 12,
   },
   fieldGroup: { gap: 7 },
   fieldLabelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
@@ -695,11 +682,12 @@ const formStyles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   forgotBvnText: { fontSize: 13, color: COLORS.brand, fontWeight: "500" },
+
   termsRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 12,
-    marginBottom: hp("2%"),
+    marginBottom: 16,
   },
   checkbox: {
     width: 22,
@@ -714,11 +702,12 @@ const formStyles = StyleSheet.create({
   },
   checkboxChecked: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
   termsText: { fontSize: 12, color: "#6b7280", lineHeight: 18, flex: 1 },
+
   badgesRow: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: wp("3%"),
-    marginBottom: hp("2%"),
+    gap: 12,
+    marginBottom: 16,
   },
   badge: {
     flexDirection: "row",
@@ -732,11 +721,12 @@ const formStyles = StyleSheet.create({
     borderColor: `${COLORS.brand}18`,
   },
   badgeText: { fontSize: 10, color: COLORS.brand, fontWeight: "600" },
-  buttonContainer: { paddingBottom: hp("2%") },
+
+  buttonContainer: { paddingBottom: 16 },
   generateButton: {
     backgroundColor: COLORS.brand,
     borderRadius: 14,
-    paddingVertical: hp("2%"),
+    paddingVertical: 16,
     alignItems: "center",
     shadowColor: COLORS.brand,
     shadowOffset: { width: 0, height: 6 },

@@ -7,10 +7,6 @@ import {
   Alert,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS } from "../../../../constants/Colors";
 import Text from "../../../../components/common/txt";
@@ -23,7 +19,7 @@ import { useGetBalance } from "../../../../api/hooks/useAuth";
 const SOCKET_URL = "https://jaa.up.railway.app";
 
 interface DashboardProps {
-  refreshTick?: number; // bumped by Home when user pulls to refresh
+  refreshTick?: number;
 }
 
 const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
@@ -33,14 +29,11 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
   const [currentBalance, setCurrentBalance] = useState(null);
 
   const userData = useAuthStore((state) => state.userData);
-  const accountDetails = useAuthStore((state) => state.accountDetails);
+  const isWalletCreated = useAuthStore((state) => state.isWalletCreated);
 
   const email = userData?.email || "";
-  const displayName = userData?.name || "User";
-
-  const account = accountDetails?.[0];
-  const accountNumber = account?.accountNumber || "—";
-  const bankName = account?.bankName || "JAAN";
+  const accountNumber = (userData as any)?.accountNumber || "—";
+  const bankName = (userData as any)?.bankName || "—";
 
   const truncate = (str: string, max: number) =>
     str?.length > max ? str.slice(0, max) + "…" : str;
@@ -66,17 +59,15 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
 
   const { balance, refetch, isLoading: balanceLoading } = useGetBalance(email);
 
-  // Refetch on screen focus
   useFocusEffect(
     useCallback(() => {
       refetch();
     }, [refetch]),
   );
 
-  // ✅ Refetch whenever Home triggers a pull-to-refresh
   useEffect(() => {
     if (refreshTick > 0) {
-      setCurrentBalance(null); // clear socket-cached value so REST result shows
+      setCurrentBalance(null);
       refetch();
     }
   }, [refreshTick]);
@@ -102,6 +93,7 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
       <View style={styles.container}>
         <View style={styles.row}>
           <View style={styles.innerContainer}>
+            {/* Balance header */}
             <View style={styles.balanceContainer}>
               <Text variant="light" color="#fff" size="sm">
                 Balance
@@ -120,6 +112,7 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
               <View style={styles.liveDot} />
             </View>
 
+            {/* Balance amount + account info */}
             <View style={styles.balanceDetails}>
               <Text
                 variant="bold"
@@ -130,7 +123,8 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
                 {displayBalance}
               </Text>
 
-              {account ? (
+              {isWalletCreated ? (
+                // ── Wallet exists ─────────────────────────
                 <>
                   <View style={styles.accountInfo}>
                     <MaterialCommunityIcons
@@ -171,6 +165,7 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
                   </TouchableOpacity>
                 </>
               ) : (
+                // ── No wallet — prompt to create ──────────
                 <TouchableOpacity
                   style={styles.createAccountBtn}
                   onPress={() =>
@@ -191,6 +186,7 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
             </View>
           </View>
 
+          {/* Top Up button */}
           <TouchableOpacity
             style={styles.topUp}
             onPress={() => setModalVisible(true)}
@@ -209,6 +205,7 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
           </TouchableOpacity>
         </View>
 
+        {/* Quick actions bar */}
         <View style={styles.row2}>
           <TouchableOpacity style={styles.yellowContent} activeOpacity={0.8}>
             <MaterialCommunityIcons
@@ -256,9 +253,9 @@ const styles = StyleSheet.create({
   innerContainer: { flex: 1 },
   balanceContainer: {
     flexDirection: "row",
-    gap: wp("2%"),
+    gap: 8,
     alignItems: "center",
-    marginBottom: hp("1%"),
+    marginBottom: 8,
   },
   eyeIcon: { opacity: 0.8 },
   liveDot: {
@@ -268,25 +265,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#22c55e",
     marginLeft: "auto",
   },
-  balanceDetails: { gap: hp("0.5%") },
-  amountText: { letterSpacing: 0.5, marginBottom: hp("0.5%") },
+  balanceDetails: { gap: 4 },
+  amountText: { letterSpacing: 0.5, marginBottom: 4 },
   accountInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: wp("1.5%"),
+    gap: 6,
   },
   accountIcon: { opacity: 0.8 },
-  copyIcon: { marginLeft: wp("1%"), opacity: 0.7 },
+  copyIcon: { marginLeft: 4, opacity: 0.7 },
   topUp: {
     flexDirection: "row",
-    gap: wp("1.5%"),
+    gap: 6,
     alignItems: "center",
     backgroundColor: COLORS.white,
-    width: wp("22%"),
-    height: hp("4.5%"),
+    width: 88,
+    height: 36,
     borderRadius: 12,
     justifyContent: "center",
-    marginRight: wp("4%"),
+    marginRight: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -294,7 +291,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   plusIconContainer: {
-    backgroundColor: "rgba(0, 0, 0, 0.05)",
+    backgroundColor: "rgba(0,0,0,0.05)",
     borderRadius: 8,
     padding: 4,
   },
@@ -303,15 +300,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: COLORS.brand,
-    padding: wp("3%"),
+    padding: 12,
     borderTopEndRadius: 15,
     borderTopStartRadius: 15,
   },
   row2: {
-    height: hp("5.5%"),
+    height: 44,
     backgroundColor: COLORS.yellow,
-    paddingHorizontal: wp("5%"),
-    paddingVertical: hp("1.2%"),
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderBottomEndRadius: 15,
     borderBottomStartRadius: 15,
   },
@@ -323,21 +320,21 @@ const styles = StyleSheet.create({
   },
   yellowTextContainer: {
     flex: 1,
-    marginLeft: wp("3%"),
+    marginLeft: 12,
     gap: 2,
   },
   boltIcon: { opacity: 0.9 },
   createAccountBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: wp("1.5%"),
+    gap: 6,
     backgroundColor: "rgba(255,255,255,0.15)",
-    paddingHorizontal: wp("3%"),
-    paddingVertical: hp("0.6%"),
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.25)",
     alignSelf: "flex-start",
-    marginTop: hp("0.5%"),
+    marginTop: 4,
   },
 });

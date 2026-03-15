@@ -12,10 +12,6 @@ import {
   Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import { COLORS } from "../../../../constants/Colors";
 import useAuthStore from "../../../../store/userStore";
 import Text from "../../../../components/common/txt";
@@ -33,15 +29,15 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   const userData = useAuthStore((state) => state.userData);
-  const accountDetails = useAuthStore((state) => state.accountDetails);
-  const account = accountDetails?.[0];
+  const isWalletCreated = useAuthStore((state) => state.isWalletCreated);
 
-  const accountName = account?.accountName || userData?.name || "—";
-  const bankName = account?.bankName || "—";
-  const accountNumber = account?.accountNumber || "—";
+  // ← Read directly from userData — same as Dashboard fix
+  const accountName = userData?.name || "—";
+  const bankName = (userData as any)?.bankName || "—";
+  const accountNumber = (userData as any)?.accountNumber || "—";
 
-  // Show account details if accountDetails exists OR wallet was created
-  const hasAccount = !!(account?.accountNumber && account?.bankName);
+  const hasAccount =
+    isWalletCreated && !!accountNumber && accountNumber !== "—";
 
   useEffect(() => {
     if (visible) {
@@ -292,7 +288,7 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
   modalContainer: {
@@ -315,9 +311,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingHorizontal: wp("5%"),
-    paddingTop: hp("1%"),
-    paddingBottom: hp("2%"),
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   headerTitle: {
     fontSize: 22,
@@ -335,8 +331,8 @@ const styles = StyleSheet.create({
   },
   iconSection: {
     alignItems: "center",
-    paddingHorizontal: wp("5%"),
-    marginBottom: hp("3%"),
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   iconContainer: {
     width: 90,
@@ -345,24 +341,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0E6FF",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: hp("1.5%"),
+    marginBottom: 12,
   },
   iconSubtitle: {
     fontSize: 14,
     color: "#666",
     textAlign: "center",
     lineHeight: 20,
-    paddingHorizontal: wp("5%"),
+    paddingHorizontal: 20,
   },
-
-  // No account state
   noAccountCard: {
     alignItems: "center",
-    marginHorizontal: wp("5%"),
+    marginHorizontal: 20,
     backgroundColor: "#fff",
     borderRadius: 16,
-    padding: wp("6%"),
-    gap: hp("1%"),
+    padding: 24,
+    gap: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -373,7 +367,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#333",
-    marginTop: hp("0.5%"),
+    marginTop: 4,
   },
   noAccountSubtitle: {
     fontSize: 13,
@@ -381,18 +375,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
-
   bankDetailsCard: {
     backgroundColor: "#FFFFFF",
-    marginHorizontal: wp("5%"),
+    marginHorizontal: 20,
     borderRadius: 16,
-    padding: wp("5%"),
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
-    marginBottom: hp("2%"),
+    marginBottom: 16,
   },
   bankDetailRow: {
     flexDirection: "row",
@@ -411,7 +404,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0E6FF",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: wp("3%"),
+    marginRight: 12,
   },
   bankDetailTextContainer: { flex: 1 },
   bankDetailLabel: {
@@ -431,22 +424,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0E6FF",
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: wp("2%"),
+    marginLeft: 8,
   },
   divider: {
     height: 1,
     backgroundColor: "#F0F0F0",
-    marginVertical: hp("2%"),
+    marginVertical: 16,
   },
   infoCard: {
     flexDirection: "row",
     backgroundColor: "#FFF9E6",
-    marginHorizontal: wp("5%"),
-    padding: wp("4%"),
+    marginHorizontal: 20,
+    padding: 16,
     borderRadius: 12,
     alignItems: "center",
-    marginBottom: hp("2%"),
-    gap: wp("3%"),
+    marginBottom: 16,
+    gap: 12,
   },
   infoText: {
     flex: 1,
@@ -456,8 +449,8 @@ const styles = StyleSheet.create({
   },
   moneySentButton: {
     backgroundColor: COLORS.brand,
-    marginHorizontal: wp("5%"),
-    paddingVertical: hp("2%"),
+    marginHorizontal: 20,
+    paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
     shadowColor: COLORS.brand,
@@ -473,7 +466,7 @@ const styles = StyleSheet.create({
   },
   waitingContainer: {
     alignItems: "center",
-    marginTop: hp("2%"),
+    marginTop: 16,
   },
   dotContainer: {
     flexDirection: "row",
@@ -493,7 +486,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#999",
   },
-  bottomSpacer: { height: hp("3%") },
+  bottomSpacer: { height: 24 },
 });
 
 export default TopUpModal;
