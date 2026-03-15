@@ -10,6 +10,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
     paddingTop: hp(5),
-    paddingHorizontal: wp(5),
+    paddingHorizontal: wp(4),
   },
 });

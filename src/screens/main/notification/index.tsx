@@ -1,10 +1,12 @@
-import { View, FlatList, TouchableOpacity, StyleSheet,  Animated  } from "react-native";
-import React, { useState } from "react";
 import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+  View,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+} from "react-native";
+import React, { useState } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Text from "../../../components/common/txt";
 import { COLORS } from "../../../constants/Colors";
@@ -23,15 +25,6 @@ type NotificationItem = {
   transaction_date?: string;
 };
 
-const formatDate = (dateString?: string) => {
-  if (!dateString) return "Unknown Date";
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(dateString));
-};
-
 const formatAmount = (amount?: string | number) => {
   if (!amount) return "₦0.00";
   return new Intl.NumberFormat("en-NG", {
@@ -41,154 +34,236 @@ const formatAmount = (amount?: string | number) => {
   }).format(Number(amount));
 };
 
-// Skeleton loader using React Native's built-in Animated API
-const SkeletonLoader = () => {
-  const opacity = React.useRef(new Animated.Value(0.3)).current;
+const getTimeAgo = (dateString?: string) => {
+  if (!dateString) return "Just now";
+  const now = new Date();
+  const date = new Date(dateString);
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
 
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return date.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
+};
+
+const getFullDate = (dateString?: string) => {
+  if (!dateString) return "---";
+  return new Date(dateString).toLocaleString("en-NG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// Group transactions by date label
+const groupByDate = (items: NotificationItem[]) => {
+  const groups: { [key: string]: NotificationItem[] } = {};
+  items.forEach((item) => {
+    const dateStr = item.transaction_date || item.date;
+    if (!dateStr) {
+      const key = "Earlier";
+      groups[key] = groups[key] || [];
+      groups[key].push(item);
+      return;
+    }
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 86400000);
+    let key = "Earlier";
+    if (diff === 0) key = "Today";
+    else if (diff === 1) key = "Yesterday";
+    else if (diff < 7) key = "This Week";
+    else if (diff < 30) key = "This Month";
+    groups[key] = groups[key] || [];
+    groups[key].push(item);
+  });
+  // Preserve order
+  const order = ["Today", "Yesterday", "This Week", "This Month", "Earlier"];
+  return order
+    .filter((k) => groups[k])
+    .map((k) => ({ title: k, data: groups[k] }));
+};
+
+const SkeletonItem = () => {
+  const opacity = React.useRef(new Animated.Value(0.4)).current;
   React.useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.8, duration: 800, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
-      ])
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.4,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]),
     ).start();
   }, []);
 
   return (
-    <Animated.View style={[styles.skeletonCard, { opacity }]}>
-      <View style={styles.skeletonLeft}>
-        <View style={styles.skeletonTitle} />
-        <View style={styles.skeletonSubtitle} />
+    <Animated.View style={[styles.skeletonItem, { opacity }]}>
+      <View style={styles.skeletonIcon} />
+      <View style={styles.skeletonContent}>
+        <View style={styles.skeletonLine} />
+        <View style={styles.skeletonLineShort} />
       </View>
       <View style={styles.skeletonRight}>
         <View style={styles.skeletonAmount} />
-        <View style={styles.skeletonStatus} />
+        <View style={styles.skeletonBadge} />
       </View>
     </Animated.View>
   );
 };
 
-const EmptyState = ({ message, showDateHint = false }: { message: string; showDateHint?: boolean }) => (
-  <View style={styles.emptyContainer}>
-    <MaterialIcons name="notifications-none" size={48} color="rgba(108, 43, 217, 0.25)" />
-    <Text style={styles.emptyText}>{message}</Text>
-    {showDateHint && (
-      <Text style={styles.emptySubtext}>Try selecting a different date</Text>
-    )}
-  </View>
-);
-
 const Notification = () => {
   const navigation = useNavigation<any>();
-  const [selectedDate, setSelectedDate] = useState("");
 
   const userData = useAuthStore((state: any) => state.userData);
   const email = userData?.email || "";
 
-  const { data: notifications = [], isLoading, isError } = useGetBillsHistory(email);
+  const {
+    data: notifications = [],
+    isLoading,
+    isError,
+  } = useGetBillsHistory(email);
 
-  // Filter by selected date — same logic as completed project
-  const filteredNotifications = selectedDate
-    ? notifications.filter((item: NotificationItem) => {
-        const itemDate = formatDate(item.transaction_date || item.date);
-        return itemDate === formatDate(selectedDate);
-      })
-    : notifications;
+  const grouped = groupByDate(notifications);
 
-  const renderItem = ({ item }: { item: NotificationItem }) => {
-    const isFailed = item.status === "FAILED" || item.status === "failed";
-    const statusColor = isFailed ? "#ef4444" : "#10b981";
-    const statusBg = isFailed ? "#fef2f2" : "#f0fdf4";
-    const statusBorder = isFailed ? "#fecaca" : "#bbf7d0";
-    const displayDate = formatDate(item.transaction_date || item.date);
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: NotificationItem;
+    index: number;
+  }) => {
+    const isFailed = item.status?.toLowerCase() === "failed";
+    const isPending = item.status?.toLowerCase() === "pending";
+    const isSuccess = !isFailed && !isPending;
+
+    const statusColor = isFailed
+      ? "#EF4444"
+      : isPending
+        ? "#F59E0B"
+        : "#22C55E";
+    const iconName = isFailed
+      ? "close-circle"
+      : isPending
+        ? "clock-outline"
+        : "check-circle";
+    const iconBg = isFailed ? "#FEF2F2" : isPending ? "#FFFBEB" : "#F0FDF4";
+    const timeAgo = getTimeAgo(item.transaction_date || item.date);
+    const fullDate = getFullDate(item.transaction_date || item.date);
+    const label = item.service || item.label || "Transaction";
 
     return (
-      <View style={styles.notificationCard}>
-        {/* Coloured left strip */}
-        <View style={[styles.statusStrip, { backgroundColor: statusColor }]} />
-
-        <View style={styles.cardContent}>
-          {/* Left */}
-          <View style={styles.leftSection}>
-            <View style={styles.iconContainer}>
-              <MaterialIcons
-                name={isFailed ? "error-outline" : "check-circle-outline"}
-                size={22}
-                color={statusColor}
-              />
-            </View>
-
-            <View style={styles.detailsContainer}>
-              <Text style={styles.serviceName} numberOfLines={1}>
-                {item.service || item.label || "Transaction"}
-              </Text>
-              <View style={styles.metaRow}>
-                <MaterialIcons name="schedule" size={13} color="#6b7280" />
-                <Text style={styles.dateText}>{displayDate}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Right */}
-          <View style={styles.rightSection}>
-            <Text style={[styles.amount, { color: statusColor }]}>
-              {formatAmount(item.amount)}
-            </Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusBg, borderColor: statusBorder }]}>
-              <Text style={[styles.statusText, { color: statusColor }]}>
-                {(item.status || "PENDING").toUpperCase()}
-              </Text>
-            </View>
-          </View>
+      <TouchableOpacity
+        style={styles.item}
+        activeOpacity={0.7}
+        onPress={() =>
+          navigation.navigate("StackNav", {
+            screen: "Receipt",
+            params: { transaction: item },
+          })
+        }
+      >
+        {/* Icon */}
+        <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
+          <MaterialCommunityIcons
+            name={iconName as any}
+            size={22}
+            color={statusColor}
+          />
         </View>
 
-        <MaterialIcons
-          name="chevron-right"
-          size={20}
-          color="rgba(107, 114, 128, 0.3)"
-        />
-      </View>
+        {/* Details */}
+        <View style={styles.details}>
+          <Text variant="semibold" size="sm" color="#1A1A1E" numberOfLines={1}>
+            {label}
+          </Text>
+          <Text size="xs" color="#A0A0A8">
+            {fullDate}
+          </Text>
+        </View>
+
+        {/* Right */}
+        <View style={styles.right}>
+          <Text variant="bold" size="sm" color={statusColor}>
+            {formatAmount(item.amount)}
+          </Text>
+          <Text size="xs" color="#B0B0B8" style={styles.timeAgo}>
+            {timeAgo}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   };
+
+  const renderSection = ({
+    item,
+  }: {
+    item: { title: string; data: NotificationItem[] };
+  }) => (
+    <View style={styles.section}>
+      {/* Date group label */}
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionLine} />
+        <Text
+          size="xs"
+          variant="semibold"
+          color="#B0B0B8"
+          style={styles.sectionLabel}
+        >
+          {item.title}
+        </Text>
+        <View style={styles.sectionLine} />
+      </View>
+
+      {item.data.map((n, i) => renderItem({ item: n, index: i }))}
+    </View>
+  );
 
   return (
     <View style={styles.root}>
       <CommonHeader title="Notifications" back />
 
-      {/* Simple date text filter */}
-      <View style={styles.dateRow}>
-        <MaterialIcons name="date-range" size={18} color={COLORS.brand} />
-        <Text style={styles.dateLabel}>Filter by Date</Text>
-      </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        {isLoading ? (
-          <FlatList
-            data={[1, 2, 3, 4, 5]}
-            keyExtractor={(item) => item.toString()}
-            renderItem={() => <SkeletonLoader />}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
+      {isLoading ? (
+        <View style={styles.skeletonList}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <SkeletonItem key={i} />
+          ))}
+        </View>
+      ) : isError || notifications.length === 0 ? (
+        <View style={styles.empty}>
+          <MaterialCommunityIcons
+            name="bell-off-outline"
+            size={52}
+            color="rgba(108,43,217,0.15)"
           />
-        ) : isError || notifications.length === 0 ? (
-          <EmptyState message="No notifications at the moment" />
-        ) : filteredNotifications.length > 0 ? (
-          <FlatList
-            data={filteredNotifications}
-            keyExtractor={(item, index) => item._id || item.id || index.toString()}
-            renderItem={renderItem}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
-            initialNumToRender={20}
-            maxToRenderPerBatch={20}
-            updateCellsBatchingPeriod={50}
-            windowSize={5}
-          />
-        ) : (
-          <EmptyState message="No notifications found" showDateHint={!!selectedDate} />
-        )}
-      </View>
+          <Text variant="semibold" size="md" color="#9CA3AF">
+            No notifications yet
+          </Text>
+          <Text size="sm" color="#C4C4CC" center>
+            Your transaction updates will appear here
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={grouped}
+          keyExtractor={(item) => item.title}
+          renderItem={renderSection}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+        />
+      )}
     </View>
   );
 };
@@ -198,141 +273,133 @@ export default Notification;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  dateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: wp("5%"),
-    paddingVertical: hp("1.5%"),
-  },
-  dateLabel: {
-    fontSize: 14,
-    color: COLORS.brand,
-    fontWeight: "500",
-  },
-  content: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: wp("5%"),
-    paddingBottom: hp("4%"),
-    gap: hp("1.2%"),
+    backgroundColor: "#F5F5F7",
   },
 
-  // Notification card
-  notificationCard: {
+  // ── List ──────────────────────────────────────
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 40,
+    gap: 4,
+  },
+
+  // ── Section group ─────────────────────────────
+  section: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 2,
+  },
+  sectionLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#EBEBF0",
+  },
+  sectionLabel: {
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+
+  // ── Item ──────────────────────────────────────
+  item: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     borderRadius: 14,
+    gap: 12,
     borderWidth: 1,
-    borderColor: "rgba(108, 43, 217, 0.08)",
-    elevation: 1,
+    borderColor: "#F2F2F5",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    overflow: "hidden",
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  statusStrip: {
-    width: 4,
-    alignSelf: "stretch",
-  },
-  cardContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    paddingHorizontal: wp("3%"),
-    paddingVertical: hp("1.8%"),
-  },
-  leftSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    gap: wp("3%"),
-  },
-  iconContainer: {
-    width: hp("5%"),
-    height: hp("5%"),
-    borderRadius: hp("2.5%"),
-    backgroundColor: "#f9fafb",
-    alignItems: "center",
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  detailsContainer: {
-    flex: 1,
-    gap: hp("0.3%"),
-  },
-  serviceName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  metaRow: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: wp("1%"),
+    flexShrink: 0,
   },
-  dateText: {
-    fontSize: 12,
-    color: "#6b7280",
+  details: {
+    flex: 1,
+    gap: 4,
   },
-  rightSection: {
+  right: {
     alignItems: "flex-end",
-    gap: hp("0.5%"),
+    gap: 4,
+    flexShrink: 0,
   },
-  amount: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  statusBadge: {
-    paddingHorizontal: wp("2%"),
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: "600",
+  timeAgo: {
+    letterSpacing: 0.1,
   },
 
-  // Skeleton
-  skeletonCard: {
+  // ── Skeleton ──────────────────────────────────
+  skeletonList: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    gap: 8,
+  },
+  skeletonItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#f9fafb",
-    paddingHorizontal: wp("4%"),
-    paddingVertical: hp("2%"),
+    backgroundColor: "#fff",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     borderRadius: 14,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#F2F2F5",
   },
-  skeletonLeft: { flex: 1, gap: hp("0.5%") },
-  skeletonTitle: { width: wp("35%"), height: 14, backgroundColor: "#e5e7eb", borderRadius: 4 },
-  skeletonSubtitle: { width: wp("25%"), height: 12, backgroundColor: "#f3f4f6", borderRadius: 4 },
-  skeletonRight: { alignItems: "flex-end", gap: hp("0.5%") },
-  skeletonAmount: { width: wp("18%"), height: 14, backgroundColor: "#e5e7eb", borderRadius: 4 },
-  skeletonStatus: { width: wp("14%"), height: 12, backgroundColor: "#f3f4f6", borderRadius: 4 },
+  skeletonIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#F3F4F6",
+  },
+  skeletonContent: { flex: 1, gap: 6 },
+  skeletonLine: {
+    width: "55%",
+    height: 13,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 4,
+  },
+  skeletonLineShort: {
+    width: "38%",
+    height: 11,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 4,
+  },
+  skeletonRight: { alignItems: "flex-end", gap: 6 },
+  skeletonAmount: {
+    width: 64,
+    height: 13,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 4,
+  },
+  skeletonBadge: {
+    width: 40,
+    height: 11,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 4,
+  },
 
-  // Empty state
-  emptyContainer: {
+  // ── Empty ─────────────────────────────────────
+  empty: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: hp("1.5%"),
-    paddingTop: hp("6%"),
-  },
-  emptyText: {
-    fontSize: 14,
-    color: "#9ca3af",
-    textAlign: "center",
-  },
-  emptySubtext: {
-    fontSize: 12,
-    color: "#d1d5db",
-    textAlign: "center",
+    gap: 10,
+    paddingBottom: 60,
   },
 });

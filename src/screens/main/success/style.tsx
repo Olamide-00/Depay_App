@@ -1,46 +1,198 @@
-import { StyleSheet } from "react-native";
+// style.ts
+import { StyleSheet, Platform } from "react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { COLORS } from "../../../constants/Colors";
 
+// Success palette — rich emerald green
+const S = {
+  bg: "#0A2E1A", // deep forest green
+  bgMid: "#0F3D22",
+  accent: "#22c55e", // vivid green
+  accentSoft: "#16a34a",
+  ring1: "rgba(34,197,94,0.15)",
+  ring2: "rgba(34,197,94,0.08)",
+  pill: "rgba(34,197,94,0.15)",
+  pillBorder: "rgba(34,197,94,0.3)",
+  blob: "rgba(34,197,94,0.07)",
+};
+
+// Failed palette — deep crimson
+const F = {
+  bg: "#2A0A0A", // deep dark red
+  bgMid: "#3D0F0F",
+  accent: "#ef4444",
+  accentSoft: "#dc2626",
+  ring1: "rgba(239,68,68,0.15)",
+  ring2: "rgba(239,68,68,0.08)",
+  pill: "rgba(239,68,68,0.12)",
+  pillBorder: "rgba(239,68,68,0.3)",
+  blob: "rgba(239,68,68,0.07)",
+};
+
 export const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.brand,
+    backgroundColor: S.bg,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: wp("8%"),
+    overflow: "hidden",
+  },
+  rootFailed: {
+    backgroundColor: F.bg,
+  },
+
+  // ── Decorative blobs ──────────────────────────
+  blob: {
+    position: "absolute",
+    top: -hp("8%"),
+    right: -wp("20%"),
+    width: wp("70%"),
+    height: wp("70%"),
+    borderRadius: wp("35%"),
+    backgroundColor: S.blob,
+  },
+  blobFailed: {
+    backgroundColor: F.blob,
+  },
+  blobBottom: {
+    position: "absolute",
+    bottom: -hp("6%"),
+    left: -wp("20%"),
+    width: wp("60%"),
+    height: wp("60%"),
+    borderRadius: wp("30%"),
+    backgroundColor: S.blob,
+  },
+  blobBottomFailed: {
+    backgroundColor: F.blob,
+  },
+
+  // ── Icon ──────────────────────────────────────
+  iconWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: hp("4%"),
+  },
+  iconOuterRing: {
+    position: "absolute",
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: S.ring2,
+    borderWidth: 1,
+    borderColor: S.ring1,
+  },
+  iconOuterRingFailed: {
+    backgroundColor: F.ring2,
+    borderColor: F.ring1,
+  },
+  iconRing: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: S.ring1,
+    borderWidth: 1.5,
+    borderColor: "rgba(34,197,94,0.25)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  iconRingFailed: {
+    backgroundColor: F.ring1,
+    borderColor: "rgba(239,68,68,0.25)",
+  },
+  iconInner: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: S.accent,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: S.accent,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  iconInnerFailed: {
+    backgroundColor: F.accent,
+    shadowColor: F.accent,
   },
   image: {
-    width: wp("50%"),
-    height: hp("25%"),
-    maxWidth: 280,
-    maxHeight: 280,
+    width: 52,
+    height: 52,
   },
+
+  // ── Text ──────────────────────────────────────
   descContainer: {
-    marginTop: hp("4%"),
     alignItems: "center",
-    gap: hp("1%"),
+    gap: 10,
+    marginBottom: hp("2%"),
   },
+
+  // ── Pill ──────────────────────────────────────
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 6,
+    backgroundColor: S.pill,
+    borderWidth: 1,
+    borderColor: S.pillBorder,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  pillFailed: {
+    backgroundColor: F.pill,
+    borderColor: F.pillBorder,
+  },
+  pillDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: S.accentSoft,
+  },
+  pillDotFailed: {
+    backgroundColor: F.accentSoft,
+  },
+
+  // ── Buttons ───────────────────────────────────
   btnContainer: {
     width: "100%",
-    marginTop: hp("10%"),
+    marginTop: hp("6%"),
+    gap: 12,
   },
-  btn: {
-    backgroundColor: COLORS.white,
+  btnPrimary: {
+    backgroundColor: "#ffffff",
     borderWidth: 0,
     width: "100%",
-    paddingVertical: hp("2.5%"),
+    paddingVertical: hp("2.1%"),
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     elevation: 8,
+  },
+  btnPrimaryText: {
+    color: S.accentSoft,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  btnGhost: {
+    backgroundColor: "transparent",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.15)",
+    width: "100%",
+    paddingVertical: hp("2.1%"),
+    borderRadius: 16,
+  },
+  btnGhostText: {
+    color: "rgba(255,255,255,0.55)",
+    letterSpacing: 0.2,
   },
 });

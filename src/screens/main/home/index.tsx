@@ -36,9 +36,9 @@ export function Home() {
           />
         }
       >
-        <Spacer size={2} />
+        <Spacer size={1.5} />
         <Dashboard refreshTick={refreshTick} />
-        <Spacer size={2} />
+        <Spacer size={1} />
         <QuickAction />
         <Spacer size={1} />
         <Ad />

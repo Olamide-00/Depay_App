@@ -11,6 +11,12 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5F7",
   },
+  scroll: {
+    flex: 1, // takes all space above the buttons
+  },
+  scrollContent: {
+    paddingBottom: 16, // breathing room at the bottom of scroll area
+  },
 
   // flex column — card grows to fill, buttons stick to bottom
   container: {

@@ -1,9 +1,11 @@
-import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
-import React from "react";
 import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+  View,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
+import React from "react";
 import { serviceData } from "../../../../constants/serviceData";
 import {
   Simcard1,
@@ -24,81 +26,77 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import Text from "../../../../components/common/txt";
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const COLUMN = 5;
+const H_PADDING = 30;
+const GAP = 8;
+const ITEM_WIDTH = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (COLUMN - 1)) / COLUMN;
+const ICON_SIZE = Math.round(ITEM_WIDTH * 0.3);
+
+const iconColors = [
+  "#FF8A65",
+  "#6B34FF",
+  "#22C55E",
+  "#FFB609",
+  "#9575CD",
+  "#06B6D4",
+  "#FFB74D",
+  "#7986CB",
+  "#A1887F",
+  "#90A4AE",
+];
+
+const getIconComponent = (icon: string, color: string) => {
+  const p = { size: ICON_SIZE, color, variant: "Bulk" };
+  switch (icon) {
+    case "Simcard1":
+      return <Simcard1 {...p} />;
+    case "Simcard":
+      return <Simcard {...p} />;
+    case "phone-landscape":
+      return <Mobile {...p} />;
+    case "Electricity":
+      return <Electricity {...p} />;
+    case "Receipt21":
+      return <Receipt21 {...p} />;
+    case "Book1":
+      return <Book1 {...p} />;
+    case "Game":
+      return <Game {...p} />;
+    case "Card":
+      return <Card {...p} />;
+    case "People":
+      return <People {...p} />;
+    case "Simcard2":
+      return <Simcard2 {...p} />;
+    default:
+      return <AddCircle {...p} />;
+  }
+};
+
 const QuickAction = () => {
   const navigation = useNavigation<any>();
 
-  const getIconComponent = (icon, color = "#FF8A65") => {
-    if (React.isValidElement(icon)) return icon;
-
-    const iconProps = { size: wp("6.5%"), color, variant: "Bulk" };
-
-    switch (icon) {
-      case "Simcard1":
-        return <Simcard1 {...iconProps} />;
-      case "Simcard":
-        return <Simcard {...iconProps} />;
-      case "phone-landscape":
-        return <Mobile {...iconProps} />;
-      case "Electricity":
-        return <Electricity {...iconProps} />;
-      case "Receipt21":
-        return <Receipt21 {...iconProps} />;
-      case "Book1":
-        return <Book1 {...iconProps} />;
-      case "Game":
-        return <Game {...iconProps} />;
-      case "AddCircle":
-        return <AddCircle {...iconProps} />;
-      case "Card":
-        return <Card {...iconProps} />;
-      case "People":
-        return <People {...iconProps} />;
-      case "Simcard2":
-        return <Simcard2 {...iconProps} />;
-      default:
-        return <AddCircle {...iconProps} />;
-    }
-  };
-
-  const iconColors = [
-    "#FF8A65",
-    "#6B34FF",
-    "#81C784",
-    "#FFB609",
-    "#9575CD",
-    "green",
-    "#FFB74D",
-    "#7986CB",
-    "#A1887F",
-    "#90A4AE",
-  ];
-
-  const handlePress = (item, index) => {
-    const isLast = index === serviceData.length - 1;
-
-    if (isLast) {
-      // ✅ Navigate to the Service tab directly
+  const handlePress = (item: any, index: number) => {
+    if (index === serviceData.length - 1) {
       navigation.navigate("Service");
     } else {
       navigation.navigate("StackNav", { screen: item.screen });
     }
   };
 
-  const renderServiceItem = ({ item, index }) => {
-    const iconColor = iconColors[index % iconColors.length];
-
+  const renderItem = ({ item, index }: any) => {
+    const color = iconColors[index % iconColors.length];
     return (
       <TouchableOpacity
-        style={styles.serviceItem}
+        style={styles.item}
         onPress={() => handlePress(item, index)}
         activeOpacity={0.7}
       >
-        <View
-          style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}
-        >
-          {getIconComponent(item.icon, iconColor)}
+        <View style={[styles.iconBox, { backgroundColor: `${color}18` }]}>
+          {getIconComponent(item.icon, color)}
         </View>
-        <Text style={styles.serviceTitle} numberOfLines={1}>
+        <Text size="xs" color="#4A4A4E" style={styles.label} numberOfLines={1}>
           {item.name}
         </Text>
       </TouchableOpacity>
@@ -107,18 +105,18 @@ const QuickAction = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Quick Access</Text>
-      </View>
+      <Text variant="semibold" size="md" color="#1A1A1E" style={styles.title}>
+        Quick Access
+      </Text>
 
       <FlatList
         data={serviceData}
-        renderItem={renderServiceItem}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        numColumns={5}
-        columnWrapperStyle={styles.columnWrapper}
-        showsVerticalScrollIndicator={false}
+        numColumns={COLUMN}
+        columnWrapperStyle={styles.row}
         scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -128,38 +126,32 @@ export default QuickAction;
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: hp("-1%"),
+    marginBottom: 4,
   },
-  header: {
-    flexDirection: "row",
+  title: {
+    marginBottom: 12,
+    letterSpacing: -0.1,
+  },
+
+  row: {
     justifyContent: "space-between",
+    marginBottom: 12,
+  },
+
+  item: {
+    width: ITEM_WIDTH,
     alignItems: "center",
-    marginBottom: hp("1%"),
+    gap: 6,
   },
-  headerTitle: {
-    fontSize: wp("4.5%"),
-    fontWeight: "600",
-    color: "#1A1A1A",
-  },
-  seeAllText: {
-    fontSize: wp("3.8%"),
-    color: "#666",
-    fontWeight: "500",
-  },
-  columnWrapper: {
-    justifyContent: "space-between",
-    marginBottom: hp("2.5%"),
-  },
-  serviceItem: {
-    width: wp("15%"),
+  iconBox: {
+    width: ITEM_WIDTH * 0.65,
+    height: ITEM_WIDTH * 0.65,
+    borderRadius: 14,
+    justifyContent: "center",
     alignItems: "center",
   },
-  iconContainer: {},
-  serviceTitle: {
-    fontSize: wp("3.2%"),
-    color: "#333",
+  label: {
     textAlign: "center",
-    fontWeight: "500",
-    marginTop: hp("0.5%"),
+    letterSpacing: 0.1,
   },
 });

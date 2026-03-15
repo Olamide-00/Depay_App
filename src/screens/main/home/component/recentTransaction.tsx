@@ -1,9 +1,6 @@
+// RecentTransaction.tsx
 import { StyleSheet, TouchableOpacity, View, ScrollView } from "react-native";
 import React from "react";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import Item from "../../../../components/ui/item";
 import { COLORS } from "../../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
@@ -19,13 +16,11 @@ const RecentTransaction = () => {
   const email = userData?.email || "";
 
   const { data: history = [], isLoading } = useGetBillsHistory(email);
-
   const recentTransactions = history.slice(0, 5);
 
   const sanitize = (item: any) => ({
     ...item,
     label: typeof item.label === "string" ? item.label : "Transaction",
-    // Normalize to lowercase so "SUCCESS" / "FAILED" / "success" all match
     status:
       typeof item.status === "string" ? item.status.toLowerCase() : "pending",
     category:
@@ -50,15 +45,19 @@ const RecentTransaction = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Recent Transactions</Text>
+        <Text variant="semibold" size="md" color="#1A1A1E">
+          Recent Transactions
+        </Text>
         <TouchableOpacity onPress={() => navigation.navigate("Transaction")}>
-          <Text style={styles.viewAllText}>View All</Text>
+          <Text variant="semibold" size="sm" color={COLORS.brand}>
+            View All
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Scrollable list area */}
+      {/* Content */}
       {isLoading ? (
-        <View>
+        <View style={styles.skeletonContainer}>
           {[1, 2, 3].map((i) => (
             <SkeletonRow key={i} />
           ))}
@@ -70,8 +69,10 @@ const RecentTransaction = () => {
             size={40}
             color="rgba(108, 43, 217, 0.2)"
           />
-          <Text style={styles.emptyTitle}>No Transactions Yet</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text variant="semibold" size="md" color="#9CA3AF">
+            No Transactions Yet
+          </Text>
+          <Text variant="regular" size="sm" color="#D1D5DB" center>
             Your recent transactions will appear here
           </Text>
         </View>
@@ -79,14 +80,16 @@ const RecentTransaction = () => {
         <ScrollView
           style={styles.scrollArea}
           showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={true}
+          nestedScrollEnabled={false}
         >
-          {recentTransactions.map((item: any, index: number) => (
-            <Item
-              key={item._id || item.id || index.toString()}
-              data={sanitize(item)}
-            />
-          ))}
+          <View style={styles.listContainer}>
+            {recentTransactions.map((item: any, index: number) => (
+              <Item
+                key={item._id || item.id || index.toString()}
+                data={sanitize(item)}
+              />
+            ))}
+          </View>
         </ScrollView>
       )}
     </View>
@@ -97,77 +100,73 @@ export default RecentTransaction;
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: hp("2%"),
+    paddingBottom: 16,
   },
+
+  // ── Header ────────────────────────────────────
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: wp("2%"),
-    marginBottom: hp("1%"),
+    marginBottom: 12,
   },
-  headerTitle: {
-    fontSize: wp("4.5%"),
-    fontWeight: "600",
-    color: "#1A1A1A",
-  },
-  viewAllText: {
-    fontSize: wp("3.8%"),
-    color: COLORS.brand,
-    fontWeight: "500",
-  },
+
+  // ── Scroll area ───────────────────────────────
   scrollArea: {
-    height: hp("35%"), // fixed height — adjust to fit your screen
+    height: 320, // fixed height — inner scroll lives here
   },
+  listContainer: {
+    gap: 8,
+  },
+
+  // ── Empty ─────────────────────────────────────
   emptyContainer: {
     alignItems: "center",
-    paddingVertical: hp("4%"),
-    gap: hp("1%"),
+    paddingVertical: 32,
+    gap: 8,
   },
-  emptyTitle: {
-    fontSize: wp("4%"),
-    fontWeight: "600",
-    color: "#9ca3af",
-  },
-  emptySubtitle: {
-    fontSize: wp("3.3%"),
-    color: "#d1d5db",
-    textAlign: "center",
+
+  // ── Skeleton ──────────────────────────────────
+  skeletonContainer: {
+    gap: 8,
   },
   skeletonRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: hp("1.2%"),
-    paddingHorizontal: wp("2%"),
-    gap: wp("3%"),
-    marginBottom: hp("0.5%"),
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 12,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#F2F2F5",
   },
   skeletonIcon: {
-    width: hp("5%"),
-    height: hp("5%"),
-    borderRadius: hp("2.5%"),
-    backgroundColor: "#f3f4f6",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#F3F4F6",
   },
   skeletonContent: {
     flex: 1,
-    gap: hp("0.5%"),
+    gap: 6,
   },
   skeletonLine: {
-    width: wp("35%"),
+    width: "55%",
     height: 13,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#F3F4F6",
     borderRadius: 4,
   },
   skeletonLineShort: {
-    width: wp("22%"),
+    width: "35%",
     height: 11,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#F9FAFB",
     borderRadius: 4,
   },
   skeletonAmount: {
-    width: wp("18%"),
+    width: 60,
     height: 13,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#F3F4F6",
     borderRadius: 4,
   },
 });

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+  View,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import CommonHeader from "../../../components/ui/commonHeader";
 import { COLORS } from "../../../constants/Colors";
@@ -26,7 +28,7 @@ type TransactionItem = {
 };
 
 const getCategoryIcon = (category: string) => {
-  const iconMap: { [key: string]: string } = {
+  const map: { [key: string]: string } = {
     airtime: "phone",
     data: "wifi",
     betting: "cards-spade",
@@ -38,11 +40,11 @@ const getCategoryIcon = (category: string) => {
     education: "school",
     transfer: "bank-transfer",
   };
-  return iconMap[category?.toLowerCase()] || "wallet";
+  return map[category?.toLowerCase()] || "wallet";
 };
 
 const getCategoryColor = (category: string) => {
-  const colorMap: { [key: string]: string } = {
+  const map: { [key: string]: string } = {
     airtime: "#FF6B6B",
     data: "#4ECDC4",
     betting: "#FFD93D",
@@ -54,19 +56,21 @@ const getCategoryColor = (category: string) => {
     education: "#4C6FFF",
     transfer: "#22c55e",
   };
-  return colorMap[category?.toLowerCase()] || COLORS.brand;
+  return map[category?.toLowerCase()] || COLORS.brand;
 };
 
-const formatDate = (dateString?: string) => {
-  if (!dateString) return null;
-  return new Date(dateString).toISOString().split("T")[0];
+const TABS = ["all", "expenses", "funding"] as const;
+type Tab = (typeof TABS)[number];
+
+const TAB_LABELS: Record<Tab, string> = {
+  all: "All",
+  expenses: "Expenses",
+  funding: "Funding",
 };
 
 const Transaction = () => {
   const navigation = useNavigation<any>();
-  const [activeTab, setActiveTab] = useState<"all" | "expenses" | "funding">(
-    "all",
-  );
+  const [activeTab, setActiveTab] = useState<Tab>("all");
 
   const userData = useAuthStore((state: any) => state.userData);
   const email = userData?.email || "";
@@ -81,7 +85,13 @@ const Transaction = () => {
     return true;
   });
 
-  const renderItem = ({ item }: { item: TransactionItem }) => {
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: TransactionItem;
+    index: number;
+  }) => {
     const category =
       typeof item.category === "string"
         ? item.category.toLowerCase()
@@ -94,6 +104,7 @@ const Transaction = () => {
     const status =
       typeof item.status === "string" ? item.status.toLowerCase() : "pending";
     const isSuccess = status === "success";
+    const color = getCategoryColor(category);
 
     const displayDate = dateStr
       ? new Date(dateStr).toLocaleString("en-NG", {
@@ -105,9 +116,14 @@ const Transaction = () => {
         })
       : "---";
 
+    const label =
+      typeof item.label === "string" && item.label.length > 0
+        ? item.label
+        : category.charAt(0).toUpperCase() + category.slice(1);
+
     return (
       <TouchableOpacity
-        style={styles.transactionItem}
+        style={styles.item}
         activeOpacity={0.7}
         onPress={() =>
           navigation.navigate("StackNav", {
@@ -117,38 +133,38 @@ const Transaction = () => {
         }
       >
         {/* Icon */}
-        <View
-          style={[
-            styles.iconContainer,
-            { backgroundColor: `${getCategoryColor(category)}20` },
-          ]}
-        >
+        <View style={[styles.iconBox, { backgroundColor: `${color}18` }]}>
           <MaterialCommunityIcons
             name={getCategoryIcon(category) as any}
-            size={22}
-            color={COLORS.white}
+            size={20}
+            color={"#fff"}
           />
         </View>
 
         {/* Details */}
-        <View style={styles.transactionDetails}>
-          <Text style={styles.transactionTitle}>
-            {typeof item.label === "string" && item.label.length > 0
-              ? item.label
-              : category.charAt(0).toUpperCase() + category.slice(1)}
+        <View style={styles.details}>
+          <Text variant="semibold" size="sm" color="#1A1A1E" numberOfLines={1}>
+            {label}
           </Text>
-          <Text style={styles.transactionDate}>{displayDate}</Text>
+          <Text size="xs" color="#A0A0A8">
+            {displayDate}
+          </Text>
           <View
             style={[
-              styles.statusBadge,
-              { backgroundColor: isSuccess ? "#22c55e20" : "#ef444420" },
+              styles.badge,
+              isSuccess ? styles.badgeSuccess : styles.badgeFailed,
             ]}
           >
-            <Text
+            <View
               style={[
-                styles.statusText,
-                { color: isSuccess ? "#22c55e" : "#ef4444" },
+                styles.badgeDot,
+                isSuccess ? styles.dotSuccess : styles.dotFailed,
               ]}
+            />
+            <Text
+              size="xs"
+              variant="semibold"
+              color={isSuccess ? "#16A34A" : "#DC2626"}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </Text>
@@ -156,12 +172,7 @@ const Transaction = () => {
         </View>
 
         {/* Amount */}
-        <Text
-          style={[
-            styles.amount,
-            isCredit ? styles.amountCredit : styles.amountDebit,
-          ]}
-        >
+        <Text variant="bold" size="sm" color={isCredit ? "#22C55E" : "#EF4444"}>
           {isCredit ? "+" : "-"}₦
           {amount.toLocaleString("en-NG", {
             minimumFractionDigits: 2,
@@ -172,48 +183,72 @@ const Transaction = () => {
     );
   };
 
+  const SkeletonItem = () => (
+    <View style={styles.skeletonItem}>
+      <View style={styles.skeletonIcon} />
+      <View style={styles.skeletonContent}>
+        <View style={styles.skeletonLine} />
+        <View style={styles.skeletonLineShort} />
+      </View>
+      <View style={styles.skeletonAmount} />
+    </View>
+  );
+
   return (
     <View style={styles.root}>
       <CommonHeader title="Transactions" back />
 
       {/* Tabs */}
-      <View style={styles.tabContainer}>
-        {(["all", "expenses", "funding"] as const).map((tab) => (
+      <View style={styles.tabRow}>
+        {TABS.map((tab) => (
           <TouchableOpacity
             key={tab}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
+            style={[styles.tab, activeTab === tab && styles.tabActive]}
             onPress={() => setActiveTab(tab)}
+            activeOpacity={0.7}
           >
             <Text
-              style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText,
-              ]}
+              variant={activeTab === tab ? "semibold" : "regular"}
+              size="sm"
+              color={activeTab === tab ? COLORS.brand : "#9A9AA0"}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {TAB_LABELS[tab]}
             </Text>
+            {activeTab === tab && <View style={styles.tabIndicator} />}
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* List */}
+      {/* Content */}
       {isLoading ? (
-        <View style={styles.emptyState}>
-          <MaterialCommunityIcons name="loading" size={32} color="#ddd" />
-          <Text style={styles.emptyText}>Loading transactions...</Text>
+        <View style={styles.skeletonList}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <SkeletonItem key={i} />
+          ))}
         </View>
       ) : tabFiltered.length === 0 ? (
-        <View style={styles.emptyState}>
-          <MaterialCommunityIcons name="receipt" size={48} color="#ddd" />
-          <Text style={styles.emptyText}>No transactions found</Text>
+        <View style={styles.empty}>
+          <MaterialCommunityIcons
+            name="receipt-text-outline"
+            size={48}
+            color="rgba(108,43,217,0.15)"
+          />
+          <Text variant="semibold" size="md" color="#9CA3AF">
+            No transactions found
+          </Text>
+          <Text size="sm" color="#C4C4CC" center>
+            {activeTab === "all"
+              ? "Your transactions will appear here"
+              : `No ${TAB_LABELS[activeTab].toLowerCase()} yet`}
+          </Text>
         </View>
       ) : (
         <FlatList
           data={tabFiltered}
-          keyExtractor={(item, index) => item._id || index.toString()}
+          keyExtractor={(item, i) => item._id || i.toString()}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={styles.list}
           initialNumToRender={20}
           maxToRenderPerBatch={20}
           windowSize={5}
@@ -226,109 +261,153 @@ const Transaction = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#F5F5F7",
   },
-  tabContainer: {
+
+  // ── Tabs ──────────────────────────────────────
+  tabRow: {
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: wp("5%"),
-    marginTop: hp("2%"),
-    borderRadius: 12,
-    padding: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F5",
   },
   tab: {
     flex: 1,
-    paddingVertical: hp("1.2%"),
     alignItems: "center",
-    borderRadius: 10,
+    paddingVertical: 14,
+    position: "relative",
+    gap: 0,
   },
-  activeTab: {
-    backgroundColor: "#F0F0F0",
+  tabActive: {},
+  tabIndicator: {
+    position: "absolute",
+    bottom: 0,
+    left: "20%",
+    right: "20%",
+    height: 2.5,
+    borderRadius: 2,
+    backgroundColor: COLORS.brand,
   },
-  tabText: {
-    fontSize: 14,
-    color: "#999",
-    fontWeight: "500",
+
+  // ── List ──────────────────────────────────────
+  list: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 32,
+    gap: 8,
   },
-  activeTabText: {
-    color: "#333",
-    fontWeight: "600",
-  },
-  listContent: {
-    paddingHorizontal: wp("5%"),
-    paddingTop: hp("2%"),
-    paddingBottom: hp("4%"),
-  },
-  transactionItem: {
+
+  // ── Item ──────────────────────────────────────
+  item: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    padding: wp("4%"),
-    borderRadius: 12,
-    marginBottom: hp("1.5%"),
+    backgroundColor: "#fff",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#F2F2F5",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  iconContainer: {
+  iconBox: {
     width: 44,
     height: 44,
     borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: wp("3%"),
+    flexShrink: 0,
   },
-  transactionDetails: {
+  details: {
     flex: 1,
     gap: 3,
   },
-  transactionTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#333",
-  },
-  transactionDate: {
-    fontSize: 12,
-    color: "#999",
-  },
-  statusBadge: {
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     alignSelf: "flex-start",
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 2,
+    borderRadius: 20,
+    marginTop: 1,
   },
-  statusText: {
-    fontSize: 11,
-    fontWeight: "600",
-    textTransform: "capitalize",
+  badgeSuccess: {
+    backgroundColor: "#F0FDF4",
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
   },
-  amount: {
-    fontSize: 15,
-    fontWeight: "700",
+  badgeFailed: {
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
   },
-  amountDebit: {
-    color: "#ef4444",
+  badgeDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
   },
-  amountCredit: {
-    color: "#22c55e",
+  dotSuccess: { backgroundColor: "#22C55E" },
+  dotFailed: { backgroundColor: "#EF4444" },
+
+  // ── Skeleton ──────────────────────────────────
+  skeletonList: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    gap: 8,
   },
-  emptyState: {
+  skeletonItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#F2F2F5",
+  },
+  skeletonIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#F3F4F6",
+  },
+  skeletonContent: {
+    flex: 1,
+    gap: 6,
+  },
+  skeletonLine: {
+    width: "55%",
+    height: 13,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 4,
+  },
+  skeletonLineShort: {
+    width: "35%",
+    height: 11,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 4,
+  },
+  skeletonAmount: {
+    width: 60,
+    height: 13,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 4,
+  },
+
+  // ── Empty ─────────────────────────────────────
+  empty: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: "#999",
+    gap: 10,
+    paddingBottom: 60,
   },
 });
 

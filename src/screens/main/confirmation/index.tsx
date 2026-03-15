@@ -1,5 +1,5 @@
 // Confirmation.tsx
-import { View, Animated, TouchableOpacity } from "react-native";
+import { View, Animated, TouchableOpacity, ScrollView } from "react-native";
 import React, { useEffect, useRef } from "react";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
@@ -95,105 +95,109 @@ const Confirmation = () => {
       <CommonHeader title="Confirm Transaction" back />
 
       <View style={styles.container}>
-        {/* ── Icon + heading ── */}
-        <Animated.View
-          style={[
-            styles.iconSection,
-            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-          ]}
+        {/* ── Scrollable content ── */}
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
         >
-          <View style={styles.iconRing}>
-            <View style={styles.iconContainer}>
-              <MaterialCommunityIcons
-                name="shield-check"
-                size={26}
-                color={COLORS.brand}
-              />
+          {/* Icon + heading */}
+          <Animated.View
+            style={[
+              styles.iconSection,
+              { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+            ]}
+          >
+            <View style={styles.iconRing}>
+              <View style={styles.iconContainer}>
+                <MaterialCommunityIcons
+                  name="shield-check"
+                  size={26}
+                  color={COLORS.brand}
+                />
+              </View>
             </View>
-          </View>
-          <Text style={styles.reviewText}>Review Transaction</Text>
-          <Text style={styles.reviewSubtext}>
-            Confirm details before proceeding
-          </Text>
-        </Animated.View>
-
-        {/* ── Details card ── */}
-        <Animated.View
-          style={[
-            styles.detailsCard,
-            { opacity: fadeAnim, transform: [{ translateY: cardAnim }] },
-          ]}
-        >
-          {/* Amount pill */}
-          <View style={styles.amountSection}>
-            <Text style={styles.amountLabel}>TOTAL AMOUNT</Text>
-            <Text style={styles.amountValue}>₦{formattedAmount}</Text>
-            <View style={styles.amountBadge}>
-              <MaterialCommunityIcons
-                name="lightning-bolt"
-                size={10}
-                color={COLORS.brand}
-              />
-              <Text style={styles.amountBadgeText}>Instant Processing</Text>
-            </View>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerLabel}>DETAILS</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          {/* Items */}
-          <View style={styles.itemContainer}>
-            <Item label="Service Type" value={serviceTypeLabel} />
-            <Item label="Amount" value={`₦${formattedAmount}`} />
-            <Item label="Provider" value={providerLabel} />
-
-            {isData && plan?.name && (
-              <Item label="Data Plan" value={plan.name} />
-            )}
-            {isData && variation_code && !plan?.name && (
-              <Item label="Plan Code" value={variation_code} />
-            )}
-            {isTV && variation_code && (
-              <Item label="Package" value={variation_code} />
-            )}
-            {isTV && billersCode && (
-              <Item label="Smartcard No." value={billersCode} />
-            )}
-            {isElectricity && variation_code && (
-              <Item
-                label="Meter Type"
-                value={
-                  variation_code.charAt(0).toUpperCase() +
-                  variation_code.slice(1)
-                }
-              />
-            )}
-            {isElectricity && billersCode && (
-              <Item label="Meter Number" value={billersCode} />
-            )}
-            {(isData || (!isTV && !isElectricity)) && phoneNumber && (
-              <Item label="Phone Number" value={phoneNumber} />
-            )}
-          </View>
-
-          {/* Note */}
-          <View style={styles.noteCard}>
-            <MaterialCommunityIcons
-              name="information-outline"
-              size={13}
-              color={COLORS.brand}
-            />
-            <Text style={styles.noteText}>
-              Once confirmed, this transaction cannot be reversed.
+            <Text style={styles.reviewText}>Review Transaction</Text>
+            <Text style={styles.reviewSubtext}>
+              Confirm details before proceeding
             </Text>
-          </View>
-        </Animated.View>
+          </Animated.View>
 
-        {/* ── Buttons — always visible at bottom ── */}
+          {/* Details card */}
+          <Animated.View
+            style={[
+              styles.detailsCard,
+              { opacity: fadeAnim, transform: [{ translateY: cardAnim }] },
+            ]}
+          >
+            <View style={styles.amountSection}>
+              <Text style={styles.amountLabel}>TOTAL AMOUNT</Text>
+              <Text style={styles.amountValue}>₦{formattedAmount}</Text>
+              <View style={styles.amountBadge}>
+                <MaterialCommunityIcons
+                  name="lightning-bolt"
+                  size={10}
+                  color={COLORS.brand}
+                />
+                <Text style={styles.amountBadgeText}>Instant Processing</Text>
+              </View>
+            </View>
+
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerLabel}>DETAILS</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.itemContainer}>
+              <Item label="Service Type" value={serviceTypeLabel} />
+              <Item label="Amount" value={`₦${formattedAmount}`} />
+              <Item label="Provider" value={providerLabel} />
+
+              {isData && plan?.name && (
+                <Item label="Data Plan" value={plan.name} />
+              )}
+              {isData && variation_code && !plan?.name && (
+                <Item label="Plan Code" value={variation_code} />
+              )}
+              {isTV && variation_code && (
+                <Item label="Package" value={variation_code} />
+              )}
+              {isTV && billersCode && (
+                <Item label="Smartcard No." value={billersCode} />
+              )}
+              {isElectricity && variation_code && (
+                <Item
+                  label="Meter Type"
+                  value={
+                    variation_code.charAt(0).toUpperCase() +
+                    variation_code.slice(1)
+                  }
+                />
+              )}
+              {isElectricity && billersCode && (
+                <Item label="Meter Number" value={billersCode} />
+              )}
+              {(isData || (!isTV && !isElectricity)) && phoneNumber && (
+                <Item label="Phone Number" value={phoneNumber} />
+              )}
+            </View>
+
+            <View style={styles.noteCard}>
+              <MaterialCommunityIcons
+                name="information-outline"
+                size={13}
+                color={COLORS.brand}
+              />
+              <Text style={styles.noteText}>
+                Once confirmed, this transaction cannot be reversed.
+              </Text>
+            </View>
+          </Animated.View>
+        </ScrollView>
+
+        {/* ── Buttons — fixed outside scroll, always visible ── */}
         <Animated.View
           style={[
             styles.actions,

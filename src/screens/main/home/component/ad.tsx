@@ -5,15 +5,13 @@ import {
   FlatList,
   Dimensions,
   TouchableOpacity,
-  Animated,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 
-const { width: screenWidth } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const GAP = 18;
+const IMAGE_WIDTH = SCREEN_WIDTH - GAP;
 
 const adImages = [
   require("../../../../../assets/images/ad.png"),
@@ -23,32 +21,22 @@ const adImages = [
 
 const Ad = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const flatListRef = useRef(null);
-  const timerRef = useRef(null);
-  const isScrollingRef = useRef(false);
+  const flatListRef = useRef<any>(null);
+  const timerRef = useRef<any>(null);
+  const isScrolling = useRef(false);
+  const currentRef = useRef(0);
 
-  // Fixed: Calculate item width with proper spacing
-  const ITEM_SPACING = wp("5%"); // Space between items
-  const CONTAINER_PADDING = wp("5%"); // Padding on sides
-  const itemWidth = screenWidth - CONTAINER_PADDING * 2;
-
-  // Fixed auto slide function
   const startAutoSlide = () => {
     if (timerRef.current) return;
-
     timerRef.current = setInterval(() => {
-      // Don't auto slide if user is currently scrolling
-      if (isScrollingRef.current) return;
-
-      const nextIndex = (currentIndex + 1) % adImages.length;
-
-      // Fixed: Use scrollToOffset for more reliable scrolling
+      if (isScrolling.current) return;
+      const next = (currentRef.current + 1) % adImages.length;
       flatListRef.current?.scrollToOffset({
-        offset: nextIndex * itemWidth,
+        offset: next * IMAGE_WIDTH, // ← snap by IMAGE_WIDTH not SCREEN_WIDTH
         animated: true,
       });
-      setCurrentIndex(nextIndex);
+      currentRef.current = next;
+      setCurrentIndex(next);
     }, 3000);
   };
 
@@ -62,91 +50,57 @@ const Ad = () => {
   useEffect(() => {
     startAutoSlide();
     return () => stopAutoSlide();
-  }, [currentIndex]);
+  }, []);
 
-  // Fixed: Add onScrollBeginDrag to track when user starts scrolling
   const handleScrollBeginDrag = () => {
-    isScrollingRef.current = true;
+    isScrolling.current = true;
     stopAutoSlide();
   };
 
-  // Fixed: Add onScrollEndDrag to track when user stops scrolling
-  const handleScrollEndDrag = () => {
-    isScrollingRef.current = false;
-    setTimeout(() => {
-      startAutoSlide();
-    }, 2000);
+  const handleMomentumScrollEnd = (e: any) => {
+    isScrolling.current = false;
+    const index = Math.round(e.nativeEvent.contentOffset.x / IMAGE_WIDTH);
+    currentRef.current = index;
+    setCurrentIndex(index);
+    setTimeout(startAutoSlide, 2000);
   };
 
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-    {
-      useNativeDriver: false,
-      listener: (event) => {
-        const offsetX = event.nativeEvent.contentOffset.x;
-        // Fixed: Use itemWidth instead of screenWidth
-        const index = Math.round(offsetX / itemWidth);
-        if (index >= 0 && index < adImages.length && index !== currentIndex) {
-          setCurrentIndex(index);
-        }
-      },
-    },
-  );
-
-  const handleMomentumScrollEnd = () => {
-    isScrollingRef.current = false;
-    // Fixed: Reduced timeout to 2 seconds for better UX
-    setTimeout(() => startAutoSlide(), 2000);
-  };
-
-  const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={() => console.log("Ad clicked")}
-      >
-        <Image source={item} style={styles.adImage} resizeMode="cover" />
-      </TouchableOpacity>
-    </View>
-  );
-
-  // Fixed: Simplified pagination without animations that might conflict
-  const Pagination = () => {
-    return (
-      <View style={styles.paginationContainer}>
-        {adImages.map((_, i) => (
-          <View
-            key={i}
-            style={[styles.dot, currentIndex === i && styles.activeDot]}
-          />
-        ))}
+  const renderItem = ({ item }: any) => (
+    <TouchableOpacity activeOpacity={0.92} style={styles.itemContainer}>
+      <Image source={item} style={styles.adImage} resizeMode="cover" />
+      <View style={styles.imageOverlay} />
+      <View style={styles.promoBadge}>
+        <View style={styles.promoDot} />
       </View>
-    );
-  };
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.carouselContainer}>
-        <FlatList
-          ref={flatListRef}
-          data={adImages}
-          renderItem={renderItem}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          onScrollBeginDrag={handleScrollBeginDrag}
-          onScrollEndDrag={handleScrollEndDrag}
-          onMomentumScrollEnd={handleMomentumScrollEnd}
-          scrollEventThrottle={16}
-          // Fixed: Add these props for better performance
-          decelerationRate="fast"
-          snapToInterval={itemWidth}
-          snapToAlignment="center"
-          contentContainerStyle={styles.flatListContent}
-          keyExtractor={(_, index) => index.toString()}
-        />
-        <Pagination />
+      <FlatList
+        ref={flatListRef}
+        data={adImages}
+        renderItem={renderItem}
+        horizontal
+        pagingEnabled={false} // ← off, we handle snapping manually
+        snapToInterval={IMAGE_WIDTH} // ← snap exactly per image
+        snapToAlignment="start"
+        disableIntervalMomentum // ← one card per swipe
+        showsHorizontalScrollIndicator={false}
+        onScrollBeginDrag={handleScrollBeginDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        scrollEventThrottle={16}
+        decelerationRate="fast"
+        keyExtractor={(_, i) => i.toString()}
+      />
+
+      <View style={styles.pagination}>
+        {adImages.map((_, i) => (
+          <View
+            key={i}
+            style={[styles.dot, currentIndex === i && styles.dotActive]}
+          />
+        ))}
       </View>
     </View>
   );
@@ -155,45 +109,63 @@ const Ad = () => {
 export default Ad;
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: wp("5%"),
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  carouselContainer: {
-    position: "relative",
-  },
+  container: {},
+
   itemContainer: {
-    width: screenWidth - wp("5%") * 2,
-    paddingHorizontal: 0,
+    width: IMAGE_WIDTH, // item = image width
   },
   adImage: {
-    width: "90%",
-    height: 100,
-    borderRadius: 8,
+    width: IMAGE_WIDTH - GAP, // image = item - right gap → right border radius shows
+    height: 110,
+    borderRadius: 16,
+    backgroundColor: "#EDE1FF",
   },
-  flatListContent: {
-    paddingHorizontal: 0,
+  imageOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: IMAGE_WIDTH - GAP,
+    height: 50,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    backgroundColor: "rgba(0,0,0,0.18)",
   },
-  paginationContainer: {
+  promoBadge: {
+    position: "absolute",
+    top: 10,
+    right: GAP + 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  promoDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "#22c55e",
+  },
+
+  pagination: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: hp("1%"),
-    alignSelf: "center",
+    gap: 5,
+    marginTop: 10,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#D0D0D0",
-    marginHorizontal: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#DCDCE0",
   },
-  activeDot: {
-    backgroundColor: "#FF6B35",
-    width: 20,
+  dotActive: {
+    width: 22,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#7B3FE4",
   },
 });

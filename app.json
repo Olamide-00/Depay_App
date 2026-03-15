@@ -13,6 +13,12 @@
       "resizeMode": "cover",
       "backgroundColor": "#6B34FF"
     },
+    "fonts": [
+      "./assets/fonts/Tinos-Regular.ttf",
+      "./assets/fonts/Tinos-Bold.ttf",
+      "./assets/fonts/Tinos-Italic.ttf",
+      "./assets/fonts/Tinos-BoldItalic.ttf"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.olamide00.jaanApp"
@@ -38,7 +44,8 @@
       "expo-secure-store",
       "expo-web-browser",
       "@react-native-google-signin/google-signin",
-      "expo-build-properties"
+      "expo-build-properties",
+      "expo-font"
     ],
     "extra": {
       "eas": {

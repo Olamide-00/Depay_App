@@ -1,148 +1,98 @@
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Animated,
-  Keyboard,
-} from "react-native";
-import React, { useState, useRef } from "react";
+// Header.tsx
+import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import React from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import Text from "../common/txt";
 import { useNavigation } from "@react-navigation/native";
 import useAuthStore, { selectUserData } from "../../store/userStore";
 
 const Header = () => {
-  const navigation = useNavigation();
-  const [showSearchBar, setShowSearchBar] = useState(false);
-  const [searchText, setSearchText] = useState("");
-  const slideAnim = useRef(new Animated.Value(-100)).current;
+  const navigation = useNavigation<any>();
 
-  // details
   const userData = useAuthStore(selectUserData);
   const name = userData?.name || "User";
+  const firstName = name.split(" ")[0];
+  const initial = firstName.charAt(0).toUpperCase();
 
-  const handleSearchPress = () => {
-    if (!showSearchBar) {
-      setShowSearchBar(true);
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      // If search bar is already showing, focus on it
-      // Or you can hide it on second press if you prefer
-    }
-  };
-
-  const handleSearchCancel = () => {
-    Animated.timing(slideAnim, {
-      toValue: -100,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setShowSearchBar(false);
-      setSearchText("");
-      Keyboard.dismiss();
-    });
-  };
-
-  const handleSearchSubmit = () => {
-    console.log("Searching for:", searchText);
-    // Handle search functionality
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+    SS;
   };
 
   return (
     <View style={styles.container}>
-      {/* Original Header */}
-      <View style={styles.headerContent}>
-        <View style={styles.row1}>
-          <MaterialCommunityIcons
-            name="account-circle-outline"
-            size={32}
-            color="black"
-            onPress={() => navigation.navigate("StackNav", { screen: "User" })}
-          />
-          <Text variant="bold" color="black" size="lg">
-            Hi, {name}!
+      {/* Left — avatar + greeting */}
+      <TouchableOpacity
+        style={styles.greetingRow}
+        onPress={() => navigation.navigate("StackNav", { screen: "User" })}
+        activeOpacity={0.75}
+      >
+        {/* Avatar */}
+        <View style={styles.avatarWrapper}>
+          <View style={styles.avatar}>
+            <Text variant="bold" size="lg" color="#fff">
+              {initial}
+            </Text>
+          </View>
+          {/* Online dot */}
+          <View style={styles.onlineDot} />
+        </View>
+
+        {/* Greeting text */}
+        <View style={styles.greetingText}>
+          <Text
+            size="xs"
+            color="#9A9AA0"
+            variant="regular"
+            style={styles.greeting}
+          >
+            {getGreeting()} 👋
+          </Text>
+          <Text variant="bold" size="lg" color="#1A1A1E" style={styles.name}>
+            {firstName}
           </Text>
         </View>
-        <View style={styles.row2}>
-          <TouchableOpacity onPress={handleSearchPress}>
-            <MaterialCommunityIcons
-              name="account-search"
-              size={24}
-              color="black"
-            />
-          </TouchableOpacity>
-          <MaterialCommunityIcons name="scan-helper" size={24} color="black" />
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("StackNav", { screen: "Notification" })
-            }
-          >
-            <MaterialCommunityIcons name="bell" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      </TouchableOpacity>
 
-      {/* Overlay Search Bar - Appears on top */}
-      {showSearchBar && (
-        <Animated.View
-          style={[
-            styles.searchOverlay,
-            {
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
+      {/* Right — action buttons */}
+      <View style={styles.actions}>
+        {/* Customer care */}
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={() => navigation.navigate("StackNav", { screen: "Support" })}
+          activeOpacity={0.75}
         >
-          <View style={styles.searchContainer}>
-            <View style={styles.searchInputContainer}>
-              <MaterialCommunityIcons
-                name="magnify"
-                size={20}
-                color="#666"
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search..."
-                value={searchText}
-                onChangeText={setSearchText}
-                autoFocus={true}
-                onSubmitEditing={handleSearchSubmit}
-                returnKeyType="search"
-                placeholderTextColor="#999"
-              />
-              {searchText.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setSearchText("")}
-                  style={styles.clearButton}
-                >
-                  <MaterialCommunityIcons
-                    name="close-circle"
-                    size={18}
-                    color="#999"
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-            <TouchableOpacity
-              onPress={handleSearchCancel}
-              style={styles.cancelButton}
+          <MaterialCommunityIcons name="headset" size={20} color="#7B3FE4" />
+        </TouchableOpacity>
+
+        {/* Notification */}
+        <TouchableOpacity
+          style={[styles.iconBtn, styles.iconBtnDark]}
+          onPress={() =>
+            navigation.navigate("StackNav", { screen: "Notification" })
+          }
+          activeOpacity={0.75}
+        >
+          <MaterialCommunityIcons
+            name="bell-outline"
+            size={20}
+            color="#1A1A1E"
+          />
+          <View style={styles.notifBadge}>
+            <Text
+              size="xs"
+              color="#fff"
+              variant="bold"
+              style={styles.notifCount}
             >
-              <Text color="black" size="md">
-                Cancel
-              </Text>
-            </TouchableOpacity>
+              3
+            </Text>
           </View>
-        </Animated.View>
-      )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -151,70 +101,100 @@ export default Header;
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#fff",
+
+    paddingBottom: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  // ── Left ──────────────────────────────────────
+  greetingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  // Avatar
+  avatarWrapper: {
     position: "relative",
-    backgroundColor: "white",
-    marginBottom: hp("-1%"),
   },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  avatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#7B3FE4",
+    justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#7B3FE4",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: "#EDE1FF",
   },
-  row1: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: wp("2%"),
-  },
-  row2: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: wp("5%"),
-  },
-  // Search Overlay Styles
-  searchOverlay: {
+  onlineDot: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "white",
-    zIndex: 100,
-    elevation: 10, // For Android shadow
-    shadowColor: "#000", // For iOS shadow
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    borderRadius: 20,
+    bottom: 1,
+    right: 1,
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: "#22c55e",
+    borderWidth: 2,
+    borderColor: "#fff",
   },
-  searchContainer: {
+
+  // Greeting
+  greetingText: {
+    gap: 1,
+  },
+  greeting: {
+    letterSpacing: 0.1,
+  },
+  name: {
+    letterSpacing: -0.3,
+  },
+
+  // ── Right ─────────────────────────────────────
+  actions: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: wp("4%"),
-    paddingVertical: hp("2%"),
+    gap: 10,
   },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: "row",
+  iconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#F0E8FF",
+    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: wp("3%"),
-    paddingHorizontal: wp("3%"),
-    marginRight: wp("3%"),
-    height: hp("5.5%"),
+    borderWidth: 1,
+    borderColor: "#E8D9FF",
   },
-  searchIcon: {
-    marginRight: wp("2%"),
+  iconBtnDark: {
+    backgroundColor: "#F5F5F7",
+    borderColor: "#EFEFEF",
   },
-  searchInput: {
-    flex: 1,
-    height: "100%",
-    fontSize: hp("1.9%"),
-    color: "black",
+
+  // Notification badge
+  notifBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#EF4444",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#fff",
   },
-  clearButton: {
-    padding: wp("1%"),
-  },
-  cancelButton: {
-    paddingHorizontal: wp("1%"),
+  notifCount: {
+    fontSize: 9,
+    lineHeight: 11,
   },
 });
