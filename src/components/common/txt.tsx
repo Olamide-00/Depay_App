@@ -1,4 +1,4 @@
-
+// Text.tsx
 import React from "react";
 import {
   Text as RNText,
@@ -30,25 +30,21 @@ function normalize(size: number): number {
 }
 
 const sizeMap: Record<TextSize, number> = {
-  xs:   normalize(8),
-  sm:   normalize(10),
-  md:   normalize(13),
-  lg:   normalize(16),
-  xl:   normalize(20),
+  xs: normalize(8),
+  sm: normalize(10),
+  md: normalize(13),
+  lg: normalize(16),
+  xl: normalize(20),
   "2xl": normalize(24),
   "3xl": normalize(30),
   "4xl": normalize(36),
 };
 
-// ── Tinos font family map ──────────────────────
-// Tinos has 4 cuts: Regular, Bold, Italic, BoldItalic
-// semibold → Bold (closest available)
-// light    → Regular (closest available)
 const variantMap: Record<TextVariant, TextStyle> = {
-  regular:  { fontFamily: "Tinos-Regular" },
-  bold:     { fontFamily: "Tinos-Bold"    },
-  semibold: { fontFamily: "Tinos-Bold"    },
-  light:    { fontFamily: "Tinos-Regular" },
+  regular: { fontFamily: "Tinos-Regular" },
+  bold: { fontFamily: "Tinos-Bold" },
+  semibold: { fontFamily: "Tinos-Bold" },
+  light: { fontFamily: "Tinos-Regular" },
 };
 
 export const Text: React.FC<TextProps> = ({
@@ -74,9 +70,9 @@ export const Text: React.FC<TextProps> = ({
   );
 };
 
-export const TextWithFontFamily: React.FC
-  TextProps & { fontFamily?: string }
-> = ({
+type TextWithFontFamilyProps = TextProps & { fontFamily?: string };
+
+export const TextWithFontFamily: React.FC<TextWithFontFamilyProps> = ({
   children,
   size = "md",
   variant = "regular",
@@ -90,8 +86,7 @@ export const TextWithFontFamily: React.FC
     fontSize: sizeMap[size],
     color,
     textAlign: center ? "center" : "left",
-    // explicit fontFamily prop overrides variant map
-    fontFamily: fontFamily ?? variantMap[variant].fontFamily,
+    fontFamily: fontFamily ?? (variantMap[variant].fontFamily as string),
   };
 
   return (
