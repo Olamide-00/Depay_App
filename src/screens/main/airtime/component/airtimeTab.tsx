@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, TextInput, TouchableOpacity } from "react-native";
 import { styles } from "../style";
 import BottomSheetSelector from "../../../../components/common/bottomsheet";
 import PhoneInputWithContact from "../../../../components/common/numberSelector";
 import { useNavigation } from "@react-navigation/native";
 import { useGetAllServices } from "../../../../api/hooks/useBills";
+import Text from "../../../../components/common/txt";
 
 const AirtimeTab = () => {
   const navigation = useNavigation();

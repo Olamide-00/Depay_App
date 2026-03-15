@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   Modal,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useContacts } from "../../utils/contactProvider";
+import Text from "./txt";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
@@ -19,6 +18,7 @@ import {
 } from "react-native-responsive-screen";
 import { COLORS } from "../../../../constants/Colors";
 import useAuthStore from "../../../../store/userStore";
+import Text from "../../../../components/common/txt";
 
 const { height } = Dimensions.get("window");
 
@@ -123,7 +123,11 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                     style={styles.closeButton}
                     activeOpacity={0.7}
                   >
-                    <MaterialCommunityIcons name="close" size={24} color="#666" />
+                    <MaterialCommunityIcons
+                      name="close"
+                      size={24}
+                      color="#666"
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -170,8 +174,12 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                             />
                           </View>
                           <View style={styles.bankDetailTextContainer}>
-                            <Text style={styles.bankDetailLabel}>Account Name</Text>
-                            <Text style={styles.bankDetailValue}>{accountName}</Text>
+                            <Text style={styles.bankDetailLabel}>
+                              Account Name
+                            </Text>
+                            <Text style={styles.bankDetailValue}>
+                              {accountName}
+                            </Text>
                           </View>
                         </View>
                       </View>
@@ -189,8 +197,12 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                             />
                           </View>
                           <View style={styles.bankDetailTextContainer}>
-                            <Text style={styles.bankDetailLabel}>Bank Name</Text>
-                            <Text style={styles.bankDetailValue}>{bankName}</Text>
+                            <Text style={styles.bankDetailLabel}>
+                              Bank Name
+                            </Text>
+                            <Text style={styles.bankDetailValue}>
+                              {bankName}
+                            </Text>
                           </View>
                         </View>
                       </View>
@@ -208,8 +220,12 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                             />
                           </View>
                           <View style={styles.bankDetailTextContainer}>
-                            <Text style={styles.bankDetailLabel}>Account Number</Text>
-                            <Text style={styles.bankDetailValue}>{accountNumber}</Text>
+                            <Text style={styles.bankDetailLabel}>
+                              Account Number
+                            </Text>
+                            <Text style={styles.bankDetailValue}>
+                              {accountNumber}
+                            </Text>
                           </View>
                         </View>
                         <TouchableOpacity
@@ -234,8 +250,8 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                         color={COLORS.brand}
                       />
                       <Text style={styles.infoText}>
-                        Your wallet will be funded automatically within 2 minutes
-                        after sending money from your bank app
+                        Your wallet will be funded automatically within 2
+                        minutes after sending money from your bank app
                       </Text>
                     </View>
 
@@ -256,7 +272,9 @@ const TopUpModal: React.FC<TopUpModalProps> = ({ visible, onClose }) => {
                         <View style={[styles.dot, styles.dotDelay1]} />
                         <View style={[styles.dot, styles.dotDelay2]} />
                       </View>
-                      <Text style={styles.waitingText}>Waiting for transfer</Text>
+                      <Text style={styles.waitingText}>
+                        Waiting for transfer
+                      </Text>
                     </View>
                   </>
                 )}

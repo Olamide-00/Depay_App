@@ -1,10 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View, ScrollView } from "react-native";
 import React from "react";
 import {
   widthPercentageToDP as wp,
@@ -16,6 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import useAuthStore from "../../../../store/userStore";
 import { useGetBillsHistory } from "../../../../api/hooks/useBills";
+import Text from "../../../../components/common/txt";
 
 const RecentTransaction = () => {
   const navigation = useNavigation<any>();

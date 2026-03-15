@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, TextInput, StyleSheet, Image } from "react-native";
+import { View, TextInput, StyleSheet, Image } from "react-native";
+import Text from "../../../../components/common/txt";
 
 interface PhoneNumberInputProps {
   label: string;

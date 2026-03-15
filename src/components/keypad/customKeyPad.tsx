@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Vibration,
-} from "react-native";
+import { View, TouchableOpacity, StyleSheet, Vibration } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Text from "../common/txt";
 
 interface CustomKeypadProps {
   onKeyPress: (key: string) => void;

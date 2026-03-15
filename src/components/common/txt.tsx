@@ -4,35 +4,46 @@ import {
   Text as RNText,
   TextStyle,
   TextProps as RNTextProps,
+  Dimensions,
+  PixelRatio,
 } from "react-native";
 
 export type TextVariant = "regular" | "bold" | "semibold" | "light";
 export type TextSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
 
 export interface TextProps extends RNTextProps {
-  /** Text content */
   children: React.ReactNode;
-  /** Text size variant */
   size?: TextSize;
-  /** Font weight variant */
   variant?: TextVariant;
-  /** Text color */
   color?: string;
-  /** Center align text */
   center?: boolean;
-  /** Custom style to override default styles */
   style?: TextStyle;
 }
 
+// --- Responsive font scaling utility ---
+const BASE_WIDTH = 375; // iPhone 14 base width (standard design baseline)
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const scale = SCREEN_WIDTH / BASE_WIDTH;
+
+/**
+ * Normalizes font size across all screen sizes and densities.
+ * Keeps fonts proportional without going too large on tablets.
+ */
+function normalize(size: number): number {
+  const newSize = size * scale;
+  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+}
+
+// --- Size map (design values in dp, normalized at runtime) ---
 const sizeMap: Record<TextSize, number> = {
-  xs: 12,
-  sm: 14,
-  md: 16,
-  lg: 18,
-  xl: 20,
-  "2xl": 24,
-  "3xl": 30,
-  "4xl": 36,
+  xs: normalize(8),
+  sm: normalize(10),
+  md: normalize(13),
+  lg: normalize(16),
+  xl: normalize(20),
+  "2xl": normalize(24),
+  "3xl": normalize(30),
+  "4xl": normalize(36),
 };
 
 const variantMap: Record<TextVariant, TextStyle> = {
@@ -42,14 +53,6 @@ const variantMap: Record<TextVariant, TextStyle> = {
   light: { fontWeight: "300" },
 };
 
-/**
- * A customizable Text component with consistent typography
- *
- * @example
- * <Text size="lg" variant="bold" color="#333">
- *   Hello World
- * </Text>
- */
 export const Text: React.FC<TextProps> = ({
   children,
   size = "md",
@@ -67,13 +70,14 @@ export const Text: React.FC<TextProps> = ({
   };
 
   return (
-    <RNText style={[textStyle, style]} {...rest}>
+    // allowFontScaling={false} → ignores OS accessibility font size
+    // Placed after {...rest} so it can never be overridden by consumers
+    <RNText {...rest} allowFontScaling={false} style={[textStyle, style]}>
       {children}
     </RNText>
   );
 };
 
-// Alternative version with more flexibility using fontFamily if you have custom fonts
 export const TextWithFontFamily: React.FC<
   TextProps & { fontFamily?: string }
 > = ({
@@ -90,12 +94,12 @@ export const TextWithFontFamily: React.FC<
     fontSize: sizeMap[size],
     color,
     textAlign: center ? "center" : "left",
-    fontFamily: fontFamily || undefined,
+    fontFamily: fontFamily ?? undefined,
     ...variantMap[variant],
   };
 
   return (
-    <RNText style={[textStyle, style]} {...rest}>
+    <RNText {...rest} allowFontScaling={false} style={[textStyle, style]}>
       {children}
     </RNText>
   );

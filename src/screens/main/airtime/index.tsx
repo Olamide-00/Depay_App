@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
@@ -6,6 +6,7 @@ import AirtimeTab from "./component/airtimeTab";
 import DataTab from "./component/dataTab";
 import { ContactsProvider } from "../../../utils/contactProvider";
 import { useGetAllServices } from "../../../api/hooks/useBills";
+import Text from "../../../components/common/txt";
 
 const Airtime = () => {
   const [activeTab, setActiveTab] = useState<"airtime" | "data">("airtime");

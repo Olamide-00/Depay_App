@@ -1,9 +1,10 @@
-import { View, Text, TouchableOpacity, Switch } from "react-native";
+import { View, TouchableOpacity, Switch } from "react-native";
 import React, { useState } from "react";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import Text from "../../../components/common/txt";
 
 const Security = () => {
   const navigation = useNavigation();

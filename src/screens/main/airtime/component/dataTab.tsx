@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, Text } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { styles } from "../style";
 import BottomSheetSelector from "../../../../components/common/bottomsheet";
 import PhoneInputWithContact from "../../../../components/common/numberSelector";
@@ -8,6 +8,7 @@ import {
   useGetAllServices,
   useGetServicePLan,
 } from "../../../../api/hooks/useBills";
+import Text from "../../../../components/common/txt";
 
 const DataTab = () => {
   const navigation = useNavigation();

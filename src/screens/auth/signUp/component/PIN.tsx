@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  Alert,
-} from "react-native";
+import { View, TouchableOpacity, TextInput, Image, Alert } from "react-native";
 import React, { useState, useRef } from "react";
 import { styles } from "../style";
 import Stepper from "./stepper";
@@ -14,6 +7,7 @@ import { COLORS } from "../../../../constants/Colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCompleteRegistration } from "../../../../api/hooks/useAuth";
+import Text from "../../../../components/common/txt";
 
 const SignUpTransactionPin = () => {
   const navigation = useNavigation<any>();

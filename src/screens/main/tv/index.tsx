@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
@@ -16,6 +15,7 @@ import {
   useGetServicePLan,
 } from "../../../api/hooks/useBills";
 import useVerify from "../../../api/hooks/useVerify";
+import Text from "../../../components/common/txt";
 
 const TV = () => {
   const navigation = useNavigation<any>();

@@ -5,21 +5,13 @@ import Text from "./txt";
 interface ItemProps {
   label: string;
   value: string | number;
-  /** Optional container style override */
   style?: StyleProp<ViewStyle>;
-  /** Optional label text style override */
   labelStyle?: StyleProp<any>;
-  /** Optional value text style override */
   valueStyle?: StyleProp<any>;
-  /** Reverse layout (value on left, label on right) */
   reverse?: boolean;
-  /** Custom label component */
   customLabel?: React.ReactNode;
-  /** Custom value component */
   customValue?: React.ReactNode;
-  /** Gap between label and value */
   gap?: number;
-  /** Test ID for testing frameworks */
   testID?: string;
 }
 
@@ -39,29 +31,43 @@ const Item = ({
     <View
       style={[styles.container, { gap }, reverse && styles.reverse, style]}
       testID={testID}
-      accessibilityLabel={`${label}: ${value}`}
+      accessibilityLabel={`${label}: ${String(value)}`}
     >
-      {customLabel || (
-        <Text
-          variant="semibold"
-          size="md"
-          style={[labelStyle, reverse && styles.reverseText]}
-          accessibilityRole="text"
-        >
-          {label}
-        </Text>
-      )}
+      {/* Label */}
+      <View style={styles.labelWrapper}>
+        {customLabel || (
+          <Text
+            variant="semibold"
+            size="sm"
+            style={[
+              styles.labelText,
+              labelStyle,
+              reverse && styles.reverseText,
+            ]}
+            accessibilityRole="text"
+            numberOfLines={1}
+          >
+            {label}
+          </Text>
+        )}
+      </View>
 
-      {customValue || (
-        <Text
-          variant="bold"
-          size="xl"
-          style={valueStyle}
-          accessibilityRole="text"
-        >
-          {value}
-        </Text>
-      )}
+      {/* Dot separator line */}
+      <View style={styles.separator} />
+
+      {/* Value */}
+      <View style={styles.valueWrapper}>
+        {customValue || (
+          <Text
+            variant="bold"
+            size="sm"
+            style={[styles.valueText, valueStyle]}
+            accessibilityRole="text"
+          >
+            {String(value)}
+          </Text>
+        )}
+      </View>
     </View>
   );
 };
@@ -71,15 +77,50 @@ export default Item;
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-    minHeight: 32,
-    paddingVertical: 4,
+    alignItems: "flex-start",
+    minHeight: 36,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: "#F9F9FB",
+    borderWidth: 1,
+    borderColor: "#EFEFEF",
   },
   reverse: {
     flexDirection: "row-reverse",
   },
   reverseText: {
     textAlign: "right",
+  },
+
+  labelWrapper: {
+    flexShrink: 0,
+    maxWidth: "38%",
+    paddingTop: 1,
+  },
+  labelText: {
+    color: "#8A8A8E", // muted label tone
+    letterSpacing: 0.2,
+  },
+
+  separator: {
+    flex: 1,
+    height: 1,
+    marginHorizontal: 8,
+    marginTop: 10, // vertically center with text baseline
+    borderStyle: "dashed",
+    borderWidth: 1,
+    borderColor: "#DCDCE0",
+  },
+
+  valueWrapper: {
+    flexShrink: 1,
+    maxWidth: "48%",
+    alignItems: "flex-end",
+  },
+  valueText: {
+    textAlign: "right",
+    color: "#1A1A1E", // strong value tone
+    letterSpacing: -0.2,
   },
 });

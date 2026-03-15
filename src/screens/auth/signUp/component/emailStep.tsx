@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
 import { styles } from "../style";
 import Stepper from "./stepper";
@@ -8,6 +8,7 @@ import { COLORS } from "../../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSendRegistrationOTP } from "../../../../api/hooks/useAuth";
+import Text from "../../../../components/common/txt";
 
 const SignUpEmail = () => {
   const navigation = useNavigation<any>();
@@ -26,14 +27,17 @@ const SignUpEmail = () => {
       {
         onSuccess: () => {
           // OTP sent — move to verification screen, carry email forward
-          navigation.navigate("SignUpOTP", { email: email.trim().toLowerCase() });
+          navigation.navigate("SignUpOTP", {
+            email: email.trim().toLowerCase(),
+          });
         },
         onError: (error: any) => {
           const message =
-            error?.response?.data?.message || "Failed to send OTP. Please try again.";
+            error?.response?.data?.message ||
+            "Failed to send OTP. Please try again.";
           Alert.alert("Error", message);
         },
-      }
+      },
     );
   };
 
@@ -121,7 +125,11 @@ const SignUpEmail = () => {
               <MaterialCommunityIcons name="google" size={28} color="#DB4437" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
-              <MaterialCommunityIcons name="facebook" size={28} color="#1877F2" />
+              <MaterialCommunityIcons
+                name="facebook"
+                size={28}
+                color="#1877F2"
+              />
             </TouchableOpacity>
           </View>
         </View>

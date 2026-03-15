@@ -9,7 +9,7 @@ import {
   TextStyle,
   View,
 } from "react-native";
-import { Text, TextProps } from "./txt"; // Adjust import path as needed
+import { Text, TextProps } from "./txt";
 import { COLORS } from "../../constants/Colors";
 
 export type BtnVariant = "primary" | "secondary" | "outline" | "ghost";

@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -17,6 +16,7 @@ import useAuthStore from "../../../store/userStore";
 import ViewShot, { captureRef } from "react-native-view-shot";
 import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
+import Text from "../../../components/common/txt";
 
 const Receipt = () => {
   const navigation = useNavigation<any>();

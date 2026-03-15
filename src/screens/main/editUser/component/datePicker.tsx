@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   Modal,
   StyleSheet,
@@ -9,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Text from "../../../../components/common/txt";
 
 interface DatePickerModalProps {
   label: string;

@@ -41,7 +41,7 @@ const CommonHeader = ({ title, back, onBackPress }: HeaderProps) => {
             back ? styles.titleWithBack : styles.titleWithoutBack,
           ]}
         >
-          <Text variant="bold" size="xl" style={styles.title}>
+          <Text variant="bold" size="lg" style={styles.title}>
             {title}
           </Text>
         </View>
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.white,
     paddingHorizontal: wp("4%"),
-    paddingTop: hp("4%"),
+    paddingTop: hp("3%"),
     paddingBottom: hp("1%"),
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: hp("6%"),
+    minHeight: hp("5%"),
   },
   backButton: {
     padding: wp("1%"),

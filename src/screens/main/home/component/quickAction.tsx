@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-} from "react-native";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import React from "react";
 import {
   widthPercentageToDP as wp,
@@ -28,6 +22,7 @@ import {
   Game,
 } from "iconsax-react-native";
 import { useNavigation } from "@react-navigation/native";
+import Text from "../../../../components/common/txt";
 
 const QuickAction = () => {
   const navigation = useNavigation<any>();

@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   Image,
@@ -20,6 +19,7 @@ import { COLORS } from "../../../../constants/Colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Text from "../../../../components/common/txt";
 
 const SignUpDetails = () => {
   const navigation = useNavigation<any>();

@@ -40,6 +40,7 @@ const Input = (props: InputProps) => {
         value={value}
         onChangeText={onChangeText}
         placeholderTextColor="#999"
+        allowFontScaling={false}
         {...rest}
       />
 

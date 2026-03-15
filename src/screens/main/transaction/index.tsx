@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-} from "react-native";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -16,6 +10,7 @@ import { COLORS } from "../../../constants/Colors";
 import useAuthStore from "../../../store/userStore";
 import { useGetBillsHistory } from "../../../api/hooks/useBills";
 import { useNavigation } from "@react-navigation/native";
+import Text from "../../../components/common/txt";
 
 type TransactionItem = {
   _id?: string;
@@ -69,7 +64,9 @@ const formatDate = (dateString?: string) => {
 
 const Transaction = () => {
   const navigation = useNavigation<any>();
-  const [activeTab, setActiveTab] = useState<"all" | "expenses" | "funding">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "expenses" | "funding">(
+    "all",
+  );
 
   const userData = useAuthStore((state: any) => state.userData);
   const email = userData?.email || "";
@@ -77,19 +74,25 @@ const Transaction = () => {
   const { data: histories = [], isLoading } = useGetBillsHistory(email);
 
   const tabFiltered = histories.filter((item: TransactionItem) => {
-    const type = typeof item.type === "string" ? item.type.toLowerCase() : "debit";
+    const type =
+      typeof item.type === "string" ? item.type.toLowerCase() : "debit";
     if (activeTab === "expenses") return type === "debit";
     if (activeTab === "funding") return type === "credit";
     return true;
   });
 
   const renderItem = ({ item }: { item: TransactionItem }) => {
-    const category = typeof item.category === "string" ? item.category.toLowerCase() : "wallet";
-    const type = typeof item.type === "string" ? item.type.toLowerCase() : "debit";
+    const category =
+      typeof item.category === "string"
+        ? item.category.toLowerCase()
+        : "wallet";
+    const type =
+      typeof item.type === "string" ? item.type.toLowerCase() : "debit";
     const isCredit = type === "credit";
     const amount = parseFloat(item.amount) || 0;
     const dateStr = item.transaction_date || item.date || "";
-    const status = typeof item.status === "string" ? item.status.toLowerCase() : "pending";
+    const status =
+      typeof item.status === "string" ? item.status.toLowerCase() : "pending";
     const isSuccess = status === "success";
 
     const displayDate = dateStr
@@ -182,7 +185,10 @@ const Transaction = () => {
             onPress={() => setActiveTab(tab)}
           >
             <Text
-              style={[styles.tabText, activeTab === tab && styles.activeTabText]}
+              style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText,
+              ]}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </Text>

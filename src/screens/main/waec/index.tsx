@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -17,6 +16,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import Text from "../../../components/common/txt";
 
 const Waec = () => {
   const navigation = useNavigation<any>();

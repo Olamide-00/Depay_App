@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
@@ -13,6 +12,7 @@ import { ContactsProvider } from "../../../utils/contactProvider";
 import { useNavigation } from "@react-navigation/native";
 import { useGetAllServices } from "../../../api/hooks/useBills";
 import useVerify from "../../../api/hooks/useVerify";
+import Text from "../../../components/common/txt";
 
 const Electricity = () => {
   const navigation = useNavigation<any>();

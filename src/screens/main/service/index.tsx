@@ -1,10 +1,11 @@
-import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
+import { View, ScrollView, Image, TouchableOpacity } from "react-native";
 import React, { useState, useMemo } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import SearchBar from "../../../components/common/searchBar";
 import { services as serviceData } from "../../../constants/service";
+import Text from "../../../components/common/txt";
 
 const Service = () => {
   const navigation = useNavigation();

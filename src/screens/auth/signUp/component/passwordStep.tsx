@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, ScrollView } from "react-native";
+import { View, TouchableOpacity, Image, ScrollView } from "react-native";
 import React, { useState } from "react";
 import { styles } from "../style";
 import Stepper from "./stepper";
@@ -7,6 +7,7 @@ import Btn from "../../../../components/common/btn";
 import { COLORS } from "../../../../constants/Colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Text from "../../../../components/common/txt";
 
 const SignUpPassword = () => {
   const navigation = useNavigation<any>();

@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   TouchableOpacity,
   Pressable,
   ScrollView,
@@ -17,6 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Spacer from "../../../components/common/spacer";
 import { useSendRegistrationOTP } from "../../../api/hooks/useAuth";
+import Text from "../../../components/common/txt";
 
 const SignUp = () => {
   const navigation = useNavigation<any>();

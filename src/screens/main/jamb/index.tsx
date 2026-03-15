@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
@@ -19,6 +18,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import Text from "../../../components/common/txt";
 
 const Jamb = () => {
   const navigation = useNavigation<any>();

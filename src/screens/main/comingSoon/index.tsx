@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
 import CommonHeader from "../../../components/ui/commonHeader";
 import { useNavigation } from "@react-navigation/native";
+import Text from "../../../components/common/txt";
 
 interface ComingSoonProps {
   serviceName?: string;

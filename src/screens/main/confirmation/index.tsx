@@ -1,13 +1,14 @@
-import { View, Text, Animated, TouchableOpacity } from "react-native";
+// Confirmation.tsx
+import { View, Animated, TouchableOpacity } from "react-native";
 import React, { useEffect, useRef } from "react";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
-import Spacer from "../../../components/common/spacer";
 import Item from "../../../components/common/item";
 import Btn from "../../../components/common/btn";
 import { COLORS } from "../../../constants/Colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Text from "../../../components/common/txt";
 
 type ConfirmationParams = {
   serviceID: string;
@@ -34,41 +35,45 @@ const Confirmation = () => {
   } = (route.params as ConfirmationParams) || {};
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const scaleAnim = useRef(new Animated.Value(0.92)).current;
+  const cardAnim = useRef(new Animated.Value(24)).current;
+  const btnAnim = useRef(new Animated.Value(16)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 450,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 60,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(cardAnim, {
         toValue: 0,
-        tension: 50,
-        friction: 7,
+        tension: 55,
+        friction: 8,
         useNativeDriver: true,
       }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
+      Animated.spring(btnAnim, {
+        toValue: 0,
+        tension: 55,
+        friction: 8,
         useNativeDriver: true,
       }),
     ]).start();
   }, []);
 
-  // Derive service type from serviceID
   const isData = serviceID.toLowerCase().includes("data");
   const isElectricity =
     variation_code === "prepaid" || variation_code === "postpaid";
-  const isDstv = serviceID === "dstv";
-  const isGotv = serviceID === "gotv";
-  const isStartimes = serviceID === "startimes";
-  const isTV = isDstv || isGotv || isStartimes;
+  const isTV = ["dstv", "gotv", "startimes"].includes(serviceID);
 
-  // Resolve human-readable service type label
   const serviceTypeLabel = isData
     ? "Data"
     : isElectricity
@@ -76,10 +81,11 @@ const Confirmation = () => {
       : isTV
         ? "TV"
         : "Airtime";
-
   const numericAmount = parseFloat(amount) || 0;
-
-  // Format provider name nicely
+  const formattedAmount = numericAmount.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
   const providerLabel = serviceID
     .replace(/-/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
@@ -87,92 +93,76 @@ const Confirmation = () => {
   return (
     <View style={styles.root}>
       <CommonHeader title="Confirm Transaction" back />
-      <View style={styles.container}>
-        <Spacer size={3} />
 
-        {/* Icon Section */}
+      <View style={styles.container}>
+        {/* ── Icon + heading ── */}
         <Animated.View
           style={[
             styles.iconSection,
-            {
-              opacity: fadeAnim,
-              transform: [{ scale: scaleAnim }],
-            },
+            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
           ]}
         >
-          <View style={styles.iconContainer}>
-            <MaterialCommunityIcons
-              name="check-circle"
-              size={40}
-              color={COLORS.brand}
-            />
+          <View style={styles.iconRing}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons
+                name="shield-check"
+                size={26}
+                color={COLORS.brand}
+              />
+            </View>
           </View>
-          <Text style={styles.reviewText}>Review Your Transaction</Text>
+          <Text style={styles.reviewText}>Review Transaction</Text>
           <Text style={styles.reviewSubtext}>
-            Please confirm the details below before proceeding
+            Confirm details before proceeding
           </Text>
         </Animated.View>
 
-        <Spacer size={4} />
-
-        {/* Transaction Details Card */}
+        {/* ── Details card ── */}
         <Animated.View
           style={[
             styles.detailsCard,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
+            { opacity: fadeAnim, transform: [{ translateY: cardAnim }] },
           ]}
         >
-          {/* Amount Section - Highlighted */}
+          {/* Amount pill */}
           <View style={styles.amountSection}>
-            <Text style={styles.amountLabel}>Amount to Pay</Text>
-            <Text style={styles.amountValue}>
-              ₦
-              {numericAmount.toLocaleString("en-NG", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </Text>
+            <Text style={styles.amountLabel}>TOTAL AMOUNT</Text>
+            <Text style={styles.amountValue}>₦{formattedAmount}</Text>
+            <View style={styles.amountBadge}>
+              <MaterialCommunityIcons
+                name="lightning-bolt"
+                size={10}
+                color={COLORS.brand}
+              />
+              <Text style={styles.amountBadgeText}>Instant Processing</Text>
+            </View>
           </View>
 
-          <View style={styles.divider} />
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerLabel}>DETAILS</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
-          {/* Dynamic Details */}
+          {/* Items */}
           <View style={styles.itemContainer}>
-            {/* Type — always shown */}
-            <Item label="Type" value={serviceTypeLabel} />
-
-            {/* Amount — always shown */}
-            <Item
-              label="Amount"
-              value={`₦${numericAmount.toLocaleString("en-NG", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}`}
-            />
-
-            {/* Provider — always shown */}
+            <Item label="Service Type" value={serviceTypeLabel} />
+            <Item label="Amount" value={`₦${formattedAmount}`} />
             <Item label="Provider" value={providerLabel} />
 
-            {/* Data: show plan name */}
             {isData && plan?.name && (
               <Item label="Data Plan" value={plan.name} />
             )}
             {isData && variation_code && !plan?.name && (
               <Item label="Plan Code" value={variation_code} />
             )}
-
-            {/* TV: show package and smartcard */}
             {isTV && variation_code && (
               <Item label="Package" value={variation_code} />
             )}
             {isTV && billersCode && (
-              <Item label="Smartcard Number" value={billersCode} />
+              <Item label="Smartcard No." value={billersCode} />
             )}
-
-            {/* Electricity: show meter type and meter number */}
             {isElectricity && variation_code && (
               <Item
                 label="Meter Type"
@@ -185,29 +175,35 @@ const Confirmation = () => {
             {isElectricity && billersCode && (
               <Item label="Meter Number" value={billersCode} />
             )}
-
-            {/* Phone number — shown for airtime and data */}
             {(isData || (!isTV && !isElectricity)) && phoneNumber && (
               <Item label="Phone Number" value={phoneNumber} />
             )}
+          </View>
 
-            {/* Airtime: no extra fields needed beyond provider, phone, amount */}
+          {/* Note */}
+          <View style={styles.noteCard}>
+            <MaterialCommunityIcons
+              name="information-outline"
+              size={13}
+              color={COLORS.brand}
+            />
+            <Text style={styles.noteText}>
+              Once confirmed, this transaction cannot be reversed.
+            </Text>
           </View>
         </Animated.View>
 
-        <Spacer size={9} />
-
-        {/* Action Buttons */}
+        {/* ── Buttons — always visible at bottom ── */}
         <Animated.View
-          style={{
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }}
+          style={[
+            styles.actions,
+            { opacity: fadeAnim, transform: [{ translateY: btnAnim }] },
+          ]}
         >
           <Btn
             title="Confirm & Continue"
             style={styles.btn}
-            textStyle={{ color: COLORS.white }}
+            textStyle={styles.btnText}
             onPress={() =>
               navigation.navigate("OTP", {
                 serviceID,
@@ -219,11 +215,10 @@ const Confirmation = () => {
               })
             }
           />
-
           <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
+            activeOpacity={0.6}
           >
             <Text style={styles.cancelButtonText}>Cancel Transaction</Text>
           </TouchableOpacity>

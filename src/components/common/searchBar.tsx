@@ -45,6 +45,7 @@ const SearchBar = ({
           onChangeText={handleTextChange}
           returnKeyType="search"
           clearButtonMode="never"
+          allowFontScaling={false}
         />
 
         {searchText.length > 0 && (

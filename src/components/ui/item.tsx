@@ -40,16 +40,20 @@ const Item = ({ data }: any) => {
   const navigation = useNavigation<any>();
 
   const category = typeof data.category === "string" ? data.category : "wallet";
-  const label = typeof data.label === "string" && data.label.length > 0
-    ? data.label
-    : category.charAt(0).toUpperCase() + category.slice(1);
+  const label =
+    typeof data.label === "string" && data.label.length > 0
+      ? data.label
+      : category.charAt(0).toUpperCase() + category.slice(1);
 
   const isDebit = data.type !== "credit";
   const amount = parseFloat(data.amount) || 0;
-  const displayAmount = `${isDebit ? "-" : "+"}₦${amount.toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  const displayAmount = `${isDebit ? "-" : "+"}₦${amount.toLocaleString(
+    "en-NG",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )}`;
   const amountColor = isDebit ? "#ef4444" : "#22c55e";
 
   const status = typeof data.status === "string" ? data.status : "pending";
@@ -59,13 +63,21 @@ const Item = ({ data }: any) => {
   return (
     <Pressable
       onPress={() =>
-        navigation.navigate("StackNav", { screen: "Receipt", params: { transaction: data } })
+        navigation.navigate("StackNav", {
+          screen: "Receipt",
+          params: { transaction: data },
+        })
       }
       style={styles.container}
     >
       <View style={styles.row1}>
         {/* Icon */}
-        <View style={[styles.iconContainer, { backgroundColor: `${COLORS.brand}15` }]}>
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: `${COLORS.brand}15` },
+          ]}
+        >
           <MaterialCommunityIcons
             name={getCategoryIcon(category) as any}
             size={22}
@@ -78,13 +90,21 @@ const Item = ({ data }: any) => {
           <Text variant="semibold" size="md" color="#1A1A1A">
             {label}
           </Text>
-          <Text variant="regular" size="sm" color="#999" style={styles.timeText}>
+          <Text
+            variant="regular"
+            size="sm"
+            color="#999"
+            style={styles.timeText}
+          >
             {displayDate}
           </Text>
           <View
             style={[
               styles.statusBadge,
-              { backgroundColor: status === "success" ? "#22c55e20" : "#ef444420" },
+              {
+                backgroundColor:
+                  status === "success" ? "#22c55e20" : "#ef444420",
+              },
             ]}
           >
             <Text
@@ -99,7 +119,12 @@ const Item = ({ data }: any) => {
       </View>
 
       {/* Amount */}
-      <Text variant="bold" size="md" color={amountColor} style={styles.amountText}>
+      <Text
+        variant="bold"
+        size="md"
+        color={amountColor}
+        style={styles.amountText}
+      >
         {displayAmount}
       </Text>
     </Pressable>

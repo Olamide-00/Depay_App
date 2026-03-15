@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   Modal,
   ScrollView,
@@ -10,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/Colors";
+import Text from "./txt";
 
 interface Option {
   label: string;

@@ -1,7 +1,6 @@
 // src/screens/auth/Login/Login.tsx
 import {
   View,
-  Text,
   TouchableOpacity,
   Pressable,
   ScrollView,
@@ -22,6 +21,7 @@ import { useLogin } from "../../../api/hooks/useAuth";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { useGoogleSignIn } from "../../../hooks/useGoogleSignIn";
+import Text from "../../../components/common/txt";
 
 const BASE_URL = "https://jaa.up.railway.app/api/v1";
 
