@@ -37,7 +37,7 @@ const SignUpEmail = () => {
             "Failed to send OTP. Please try again.";
           Alert.alert("Error", message);
         },
-      },
+      }
     );
   };
 

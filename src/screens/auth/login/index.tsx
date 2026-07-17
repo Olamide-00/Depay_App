@@ -1,4 +1,3 @@
-// src/screens/auth/Login/Login.tsx
 import {
   View,
   TouchableOpacity,
@@ -7,41 +6,84 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import { styles } from "./style";
+import React, { useEffect, useState } from "react";
 import Input from "../../../components/common/input";
-import Btn from "../../../components/common/btn";
 import { COLORS } from "../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import Spacer from "../../../components/common/spacer";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as LocalAuthentication from "expo-local-authentication";
+import * as SecureStore from "expo-secure-store";
 import useAuthStore from "../../../store/userStore";
 import { useLogin } from "../../../api/hooks/useAuth";
-import * as SecureStore from "expo-secure-store";
-import axios from "axios";
-import { useGoogleSignIn } from "../../../hooks/useGoogleSignIn";
 import Text from "../../../components/common/txt";
 
-const BASE_URL = "https://jaa.up.railway.app/api/v1";
+const BRAND = "#1B3710";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const ERROR_RED = "#D92D20";
+
+type BiometricType = "face" | "fingerprint" | null;
 
 export default function Login() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
-  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const [biometricType, setBiometricType] = useState<BiometricType>(null);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
 
   const { setIsAuthenticated, setAccountDetails } = useAuthStore();
   const { mutate: login, isPending } = useLogin();
-  const { configureGoogleSignIn, signIn } = useGoogleSignIn();
 
+  // ─── Detect biometric hardware + a stored session ─────────
   useEffect(() => {
-    configureGoogleSignIn();
+    const checkBiometrics = async () => {
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (!hasHardware || !isEnrolled) return;
+
+        // Biometric login only works if a previous session exists
+        const storedToken = await SecureStore.getItemAsync("token");
+        const storedUser = await SecureStore.getItemAsync("userSnapshot");
+        if (!storedToken || !storedUser) return;
+
+        const types =
+          await LocalAuthentication.supportedAuthenticationTypesAsync();
+        if (
+          types.includes(
+            LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+          )
+        ) {
+          setBiometricType("face");
+        } else if (
+          types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
+        ) {
+          setBiometricType("fingerprint");
+        } else {
+          setBiometricType("fingerprint"); // iris etc. — generic fallback
+        }
+        setBiometricAvailable(true);
+      } catch {
+        // If detection fails, simply don't offer biometrics
+      }
+    };
+
+    checkBiometrics();
   }, []);
 
-  // ─── Shared store update — called after both login paths ──
+  // ─── Shared store update — called after login ─────────────
   const saveUserToStore = (token: string, user: any) => {
     useAuthStore.getState().login(token, {
       email: user.email,
@@ -53,88 +95,12 @@ export default function Login() {
       tag: user.tag,
       dateOfBirth: user.dateOfBirth,
       gender: user.gender,
-      accountNumber: user.accountNumber, // ← stored
-      bankName: user.bankName, // ← stored
+      accountNumber: user.accountNumber,
+      bankName: user.bankName,
     });
-    useAuthStore.getState().setIsWalletCreated(user.isWalletCreated); // ← store flag
+    useAuthStore.getState().setIsWalletCreated(user.isWalletCreated);
     setAccountDetails(user.accountDetails || []);
     setIsAuthenticated(true);
-  };
-
-  // ─── Google Sign-In ───────────────────────────────────────
-  const handleGoogleSignIn = async () => {
-    try {
-      setGoogleLoading(true);
-      const result = await signIn();
-
-      if (result.type === "success" && result.user?.data?.user) {
-        const { idToken } = result.user.data;
-        const googleUser = result.user.data.user;
-        await processGoogleLogin(idToken, googleUser);
-      } else {
-        setGoogleLoading(false);
-        Alert.alert(
-          "Sign-In Failed",
-          result.type === "error"
-            ? "Google Sign-In failed. Please try again."
-            : "Invalid response from Google",
-        );
-      }
-    } catch (error: any) {
-      setGoogleLoading(false);
-      Alert.alert("Error", "Failed to sign in with Google. Please try again.");
-    }
-  };
-
-  const processGoogleLogin = async (idToken: string, googleUser: any) => {
-    try {
-      const { data } = await axios.post(`${BASE_URL}/user/auth/google-login`, {
-        email: googleUser.email,
-        name: googleUser.name,
-        googleId: googleUser.id,
-        profilePicture: googleUser.photo,
-      });
-
-      const now = new Date().toISOString();
-      await SecureStore.setItemAsync("token", data.token);
-      await SecureStore.setItemAsync("loginDate", now);
-      await SecureStore.setItemAsync("isFreshLogin", "true");
-
-      saveUserToStore(data.token, data.user);
-      Alert.alert("Success", "Logged in successfully with Google!");
-    } catch (err: any) {
-      if (err?.response?.status === 404) {
-        Alert.alert(
-          "No Account Found",
-          "No Jaan account found with this Google email. Please sign up first.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Sign Up", onPress: () => navigation.navigate("SignUp") },
-          ],
-        );
-      } else if (err?.response?.status === 403) {
-        Alert.alert(
-          "Account Not Verified",
-          "Please verify your email before logging in.",
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Verify Now",
-              onPress: () =>
-                navigation.navigate("SignUpOTP", { email: googleUser?.email }),
-            },
-          ],
-        );
-      } else {
-        Alert.alert(
-          "Login Failed",
-          err?.response?.data?.message ||
-            "Something went wrong. Please try again.",
-        );
-      }
-    } finally {
-      setGoogleLoading(false);
-    }
   };
 
   // ─── Validation ───────────────────────────────────────────
@@ -159,6 +125,11 @@ export default function Login() {
           await SecureStore.setItemAsync("token", data.token);
           await SecureStore.setItemAsync("loginDate", now);
           await SecureStore.setItemAsync("isFreshLogin", "true");
+          // Snapshot for biometric session restore on next visit
+          await SecureStore.setItemAsync(
+            "userSnapshot",
+            JSON.stringify(data.user)
+          );
 
           saveUserToStore(data.token, data.user);
         },
@@ -176,37 +147,94 @@ export default function Login() {
             }, 1500);
           }
         },
-      },
+      }
     );
   };
 
-  const isFormDisabled = !email || !password || isPending;
-  const isLoading = isPending || googleLoading;
+  // ─── Biometric login (restores stored session) ────────────
+  const handleBiometricLogin = async () => {
+    if (biometricLoading || isPending) return;
+    setBiometricLoading(true);
+
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Log in to Depay",
+        cancelLabel: "Use password instead",
+        disableDeviceFallback: false,
+      });
+
+      if (!result.success) {
+        // User cancelled or failed — no alert needed, they can use password
+        return;
+      }
+
+      const token = await SecureStore.getItemAsync("token");
+      const userRaw = await SecureStore.getItemAsync("userSnapshot");
+
+      if (!token || !userRaw) {
+        Alert.alert(
+          "Session Expired",
+          "Please log in with your password to re-enable biometric login."
+        );
+        setBiometricAvailable(false);
+        return;
+      }
+
+      const user = JSON.parse(userRaw);
+      await SecureStore.setItemAsync("isFreshLogin", "false");
+      saveUserToStore(token, user);
+    } catch {
+      Alert.alert(
+        "Biometric Login Failed",
+        "Something went wrong. Please log in with your password."
+      );
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
+
+  const isLoading = isPending || biometricLoading;
+  const isFormDisabled = !email || !password || isLoading;
+
+  const biometricLabel =
+    biometricType === "face"
+      ? "Log in with Face ID"
+      : "Log in with fingerprint";
+  const biometricIcon =
+    biometricType === "face" ? "face-recognition" : "fingerprint";
 
   return (
-    <View style={styles.root}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("../../../../assets/images/logo2.png")}
-              resizeMode="contain"
-              style={styles.image}
-            />
-          </View>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.flex}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: Math.max(insets.bottom, 16) + 24 },
+          ]}
+        >
+          <Image
+            source={require("../../../../assets/images/logo2.png")}
+            resizeMode="contain"
+            style={styles.logo}
+          />
 
-          <Text style={styles.title}>Welcome Back!</Text>
+          <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>
-            Log in to access your JAAN Account
+            Log in to access your Depay account.
           </Text>
 
-          <View style={styles.formContainer}>
+          <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email*</Text>
+              <Text style={styles.label}>Email</Text>
               <Input
                 placeholder="Olamide@email.com"
                 value={email}
-                onChangeText={(text) => {
+                onChangeText={(text: string) => {
                   setEmail(text.trim().toLowerCase());
                   setErrors((prev) => ({ ...prev, email: "" }));
                 }}
@@ -221,11 +249,11 @@ export default function Login() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password*</Text>
+              <Text style={styles.label}>Password</Text>
               <Input
                 placeholder="Enter your password"
                 value={password}
-                onChangeText={(text) => {
+                onChangeText={(text: string) => {
                   setPassword(text);
                   setErrors((prev) => ({ ...prev, password: "" }));
                 }}
@@ -236,11 +264,12 @@ export default function Login() {
                   <TouchableOpacity
                     onPress={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
+                    hitSlop={8}
                   >
                     <MaterialCommunityIcons
                       name={showPassword ? "eye-off" : "eye"}
                       size={20}
-                      color="black"
+                      color={MUTED}
                     />
                   </TouchableOpacity>
                 }
@@ -254,100 +283,169 @@ export default function Login() {
               onPress={() => navigation.navigate("ForgotPassword")}
               style={styles.forgotPassword}
               disabled={isLoading}
+              hitSlop={8}
             >
               <Text style={styles.forgotPasswordText}>Forgot password?</Text>
             </TouchableOpacity>
-          </View>
 
-          <Spacer size={5} />
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={handleLogin}
+              disabled={isFormDisabled}
+              style={[
+                styles.loginButton,
+                isFormDisabled && styles.loginButtonDisabled,
+              ]}
+            >
+              {isPending ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.loginButtonText}>Log in</Text>
+              )}
+            </TouchableOpacity>
 
-          <Btn
-            title={isPending ? "Logging in..." : "Log In"}
-            style={[styles.loginButton, isFormDisabled && { opacity: 0.7 }]}
-            textStyle={{ color: COLORS.white }}
-            onPress={handleLogin}
-            disabled={isFormDisabled || isLoading}
-          />
-
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.divider} />
-          </View>
-
-          <View style={styles.socialContainer}>
-            <Text style={styles.socialTitle}>Continue with</Text>
-
-            {isLoading ? (
-              <ActivityIndicator
-                size="large"
-                color={COLORS.brand}
-                style={{ marginVertical: 20 }}
-              />
-            ) : (
-              <View style={styles.socialButtons}>
-                <TouchableOpacity
-                  style={styles.socialButton}
-                  activeOpacity={0.7}
-                  onPress={() =>
-                    Alert.alert("Coming Soon", "Apple login coming soon.")
-                  }
-                  disabled={isLoading}
-                >
-                  <MaterialCommunityIcons name="apple" size={28} color="#000" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.socialButton,
-                    googleLoading && { opacity: 0.5 },
-                  ]}
-                  activeOpacity={0.7}
-                  onPress={handleGoogleSignIn}
-                  disabled={isLoading}
-                >
-                  {googleLoading ? (
-                    <ActivityIndicator size="small" color="#DB4437" />
-                  ) : (
+            {biometricAvailable && (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={handleBiometricLogin}
+                disabled={isLoading}
+                style={styles.biometricButton}
+              >
+                {biometricLoading ? (
+                  <ActivityIndicator color={BRAND} size="small" />
+                ) : (
+                  <>
                     <MaterialCommunityIcons
-                      name="google"
-                      size={28}
-                      color="#DB4437"
+                      name={biometricIcon}
+                      size={22}
+                      color={BRAND}
                     />
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.socialButton}
-                  activeOpacity={0.7}
-                  onPress={() =>
-                    Alert.alert("Coming Soon", "Facebook login coming soon.")
-                  }
-                  disabled={isLoading}
-                >
-                  <MaterialCommunityIcons
-                    name="facebook"
-                    size={28}
-                    color="#1877F2"
-                  />
-                </TouchableOpacity>
-              </View>
+                    <Text style={styles.biometricButtonText}>
+                      {biometricLabel}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
             )}
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.signUpText}>
-              Don't have an account?{" "}
-              <Pressable
-                onPress={() => navigation.navigate("SignUp")}
-                disabled={isLoading}
-              >
-                <Text style={styles.signUpLink}>Sign up for free</Text>
-              </Pressable>
-            </Text>
+            <Text style={styles.signUpText}>Don't have an account? </Text>
+            <Pressable
+              onPress={() => navigation.navigate("SignUp")}
+              disabled={isLoading}
+              hitSlop={8}
+            >
+              <Text style={styles.signUpLink}>Sign up</Text>
+            </Pressable>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  flex: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+  },
+  logo: {
+    width: 96,
+    height: 32,
+    marginBottom: 40,
+  },
+  title: {
+    color: INK,
+    fontSize: 26,
+    fontWeight: "700",
+    letterSpacing: -0.3,
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: MUTED,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  form: {
+    width: "100%",
+  },
+  inputContainer: {
+    marginBottom: 18,
+  },
+  label: {
+    color: INK,
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  errorText: {
+    color: ERROR_RED,
+    fontSize: 12.5,
+    marginTop: 6,
+  },
+  forgotPassword: {
+    alignSelf: "flex-end",
+    marginBottom: 24,
+  },
+  forgotPasswordText: {
+    color: BRAND,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  loginButton: {
+    height: 54,
+    borderRadius: 12,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loginButtonDisabled: {
+    opacity: 0.45,
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  biometricButton: {
+    height: 54,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginTop: 12,
+  },
+  biometricButtonText: {
+    color: BRAND,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 32,
+  },
+  signUpText: {
+    color: MUTED,
+    fontSize: 14.5,
+  },
+  signUpLink: {
+    color: BRAND,
+    fontSize: 14.5,
+    fontWeight: "700",
+  },
+});
