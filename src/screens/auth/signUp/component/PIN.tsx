@@ -87,7 +87,7 @@ const SignUpTransactionPin = () => {
             "Registration failed. Please try again.";
           Alert.alert("Error", message);
         },
-      },
+      }
     );
   };
 

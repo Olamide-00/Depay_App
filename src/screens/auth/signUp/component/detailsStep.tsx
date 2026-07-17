@@ -1,107 +1,156 @@
 import {
   View,
   TouchableOpacity,
-  ScrollView,
-  Image,
   TextInput,
-  Platform,
+  StyleSheet,
   KeyboardAvoidingView,
-  TouchableWithoutFeedback,
+  Platform,
   Keyboard,
+  LayoutAnimation,
+  UIManager,
+  ScrollView,
+  Modal,
+  Pressable,
 } from "react-native";
-import React, { useState } from "react";
-import { styles } from "../style";
+import React, { useState, useEffect } from "react";
 import Stepper from "./stepper";
-import Input from "../../../../components/common/input";
-import Btn from "../../../../components/common/btn";
-import BottomSheetSelector from "../../../../components/common/bottomsheet";
-import { COLORS } from "../../../../constants/Colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Text from "../../../../components/common/txt";
+
+const BRAND = "#1B3710";
+const BRAND_SOFT = "#EAF3E9";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
+const ERROR_RED = "#D92D20";
+
+const MIN_AGE = 13;
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+type FieldName = "name" | "phone" | null;
+
+const GENDER_OPTIONS = [
+  { label: "Male", value: "male", icon: "gender-male" as const },
+  { label: "Female", value: "female", icon: "gender-female" as const },
+  { label: "Other", value: "other", icon: "gender-male-female" as const },
+];
+
+// Precise age check (year subtraction alone is off by up to a year)
+const getAge = (dob: Date) => {
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+const formatDate = (date: Date) => {
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 const SignUpDetails = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const insets = useSafeAreaInsets();
   const { email, password } = route.params;
 
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
+  const [tempDate, setTempDate] = useState<Date>(new Date(2000, 0, 1));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState("");
+  const [focusedField, setFocusedField] = useState<FieldName>(null);
   const [error, setError] = useState("");
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  const genderOptions = [
-    { label: "Male", value: "male", icon: "gender-male" as const },
-    { label: "Female", value: "female", icon: "gender-female" as const },
-    { label: "Other", value: "other", icon: "gender-male-female" as const },
-  ];
+  // ─── Keyboard visibility ───────────────────────────────────
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
-  const formatDate = (date: Date) => {
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+    const showSub = Keyboard.addListener(showEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setKeyboardVisible(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setKeyboardVisible(false);
+    });
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    if (Platform.OS === "android") {
-      setShowDatePicker(false);
-    }
-    if (selectedDate) {
-      setDateOfBirth(selectedDate);
-      setError("");
-    }
-  };
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handlePhoneChange = (text: string) => {
     const cleaned = text.replace(/\D/g, "");
     if (cleaned.length <= 10) {
       setPhoneNumber(cleaned);
-      setError("");
+      if (error) setError("");
     }
   };
 
-  // const formatPhoneDisplay = (phone: string) => {
-  //   if (phone.length <= 3) return phone;
-  //   if (phone.length <= 7) return `${phone.slice(0, 3)} ${phone.slice(3)}`;
-  //   return `${phone.slice(0, 3)} ${phone.slice(3, 7)} ${phone.slice(7)}`;
-  // };
+  // ─── Date picker ───────────────────────────────────────────
+  const openDatePicker = () => {
+    Keyboard.dismiss();
+    setTempDate(dateOfBirth ?? new Date(2000, 0, 1));
+    setShowDatePicker(true);
+  };
+
+  // Android: native dialog fires once with set/dismissed
+  const handleAndroidDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (event.type === "set" && selectedDate) {
+      setDateOfBirth(selectedDate);
+      if (error) setError("");
+    }
+  };
+
+  // iOS: spinner inside our sheet updates tempDate; Done confirms
+  const handleIosDateChange = (_event: any, selectedDate?: Date) => {
+    if (selectedDate) setTempDate(selectedDate);
+  };
+
+  const confirmIosDate = () => {
+    setDateOfBirth(tempDate);
+    setShowDatePicker(false);
+    if (error) setError("");
+  };
+
+  const isUnderage = dateOfBirth ? getAge(dateOfBirth) < MIN_AGE : false;
+
+  const canContinue =
+    fullName.trim().length > 0 &&
+    phoneNumber.length === 10 &&
+    !!dateOfBirth &&
+    !isUnderage &&
+    !!gender;
 
   const handleContinue = () => {
-    setError("");
-
-    if (!fullName.trim()) {
-      setError("Please enter your full name");
-      return;
-    }
-
-    if (!phoneNumber || phoneNumber.length !== 10) {
-      setError("Please enter a valid 10-digit phone number");
-      return;
-    }
-
-    if (!dateOfBirth) {
-      setError("Please select your date of birth");
-      return;
-    }
-
-    if (!gender) {
-      setError("Please select your gender");
-      return;
-    }
-
-    const age = new Date().getFullYear() - dateOfBirth.getFullYear();
-    if (age < 13) {
-      setError("You must be at least 13 years old to register");
-      return;
-    }
+    if (!canContinue || !dateOfBirth) return;
 
     Keyboard.dismiss();
+    setError("");
 
-    // Pass everything collected so far to the next screen
     navigation.navigate("SignUpTransactionPin", {
       email,
       password,
@@ -113,178 +162,440 @@ const SignUpDetails = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.root}>
-          {/* Back Button */}
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      {/* HEADER */}
+      <View style={styles.headerRow}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={8}
+          style={styles.backButton}
+        >
+          <MaterialCommunityIcons name="chevron-left" size={26} color={INK} />
+        </TouchableOpacity>
+      </View>
+
+      <Stepper currentStep={3} totalSteps={4} showLabel />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.flex}
+      >
+        <ScrollView
+          style={styles.flex}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.content}
+        >
+          <Text style={styles.title}>Tell us about{"\n"}yourself</Text>
+          <Text style={styles.subtitle}>
+            We use this to set up and verify your account.
+          </Text>
+
+          {/* FULL NAME */}
+          <Text style={styles.label}>Full name</Text>
+          <View
+            style={[
+              styles.inputWrapper,
+              focusedField === "name" && styles.inputWrapperFocused,
+            ]}
           >
             <MaterialCommunityIcons
-              name="chevron-left"
-              size={28}
-              color="#333"
+              name="account-outline"
+              size={20}
+              color={focusedField === "name" ? BRAND : MUTED}
+            />
+            <TextInput
+              placeholder="e.g. Olamide Oladele"
+              placeholderTextColor="#A8AFA5"
+              value={fullName}
+              onChangeText={(text) => {
+                setFullName(text);
+                if (error) setError("");
+              }}
+              onFocus={() => setFocusedField("name")}
+              onBlur={() => setFocusedField(null)}
+              autoCapitalize="words"
+              autoComplete="name"
+              textContentType="name"
+              returnKeyType="next"
+              style={styles.input}
+            />
+          </View>
+
+          {/* PHONE */}
+          <Text style={styles.label}>Phone number</Text>
+          <View
+            style={[
+              styles.inputWrapper,
+              focusedField === "phone" && styles.inputWrapperFocused,
+            ]}
+          >
+            <Text style={styles.countryFlag}>🇳🇬</Text>
+            <Text style={styles.countryCode}>+234</Text>
+            <View style={styles.phoneDivider} />
+            <TextInput
+              placeholder="903 601 8013"
+              placeholderTextColor="#A8AFA5"
+              value={phoneNumber}
+              onChangeText={handlePhoneChange}
+              onFocus={() => setFocusedField("phone")}
+              onBlur={() => setFocusedField(null)}
+              keyboardType="phone-pad"
+              maxLength={10}
+              autoComplete="tel"
+              textContentType="telephoneNumber"
+              returnKeyType="done"
+              onSubmitEditing={Keyboard.dismiss}
+              style={styles.input}
+            />
+            {phoneNumber.length === 10 && (
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={20}
+                color={BRAND}
+              />
+            )}
+          </View>
+
+          {/* DATE OF BIRTH */}
+          <Text style={styles.label}>Date of birth</Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={openDatePicker}
+            style={[
+              styles.inputWrapper,
+              isUnderage && styles.inputWrapperError,
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="calendar-outline"
+              size={20}
+              color={MUTED}
+            />
+            <Text
+              style={[styles.valueText, !dateOfBirth && styles.placeholderText]}
+            >
+              {dateOfBirth
+                ? formatDate(dateOfBirth)
+                : "Select your date of birth"}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={20}
+              color={MUTED}
             />
           </TouchableOpacity>
+          {isUnderage ? (
+            <Text style={styles.errorText}>
+              You must be at least {MIN_AGE} years old to register.
+            </Text>
+          ) : null}
 
-          {/* Stepper */}
-          <Stepper currentStep={3} totalSteps={4} />
-
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.scrollContent}
-          >
-            <View style={styles.content}>
-              {/* Logo */}
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require("../../../../../assets/images/logo2.png")}
-                  resizeMode="contain"
-                  style={styles.image}
-                />
-              </View>
-
-              {/* Title */}
-              <Text style={styles.title}>Tell Us More About You</Text>
-              <View style={styles.titleIconContainer}>
-                <MaterialCommunityIcons
-                  name="information-outline"
-                  size={16}
-                  color="#999"
-                />
-              </View>
-
-              {/* Error Message */}
-              {error ? (
-                <View style={styles.errorContainer}>
+          {/* GENDER — chips */}
+          <Text style={styles.label}>Gender</Text>
+          <View style={styles.genderRow}>
+            {GENDER_OPTIONS.map((option) => {
+              const isActive = gender === option.value;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setGender(option.value);
+                    if (error) setError("");
+                  }}
+                  style={[
+                    styles.genderChip,
+                    isActive && styles.genderChipActive,
+                  ]}
+                >
                   <MaterialCommunityIcons
-                    name="alert-circle"
-                    size={16}
-                    color="#FF6B6B"
+                    name={option.icon}
+                    size={18}
+                    color={isActive ? BRAND : MUTED}
                   />
-                  <Text style={styles.errorText}>{error}</Text>
-                </View>
-              ) : null}
-
-              {/* Form */}
-              <View style={styles.formContainer}>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Full Name*</Text>
-                  <Input
-                    placeholder="eg Olamide Oladele"
-                    value={fullName}
-                    onChangeText={setFullName}
-                    width="100%"
-                    returnKeyType="next"
-                  />
-                </View>
-
-                {/* Phone Number */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Phone Number*</Text>
-                  <View style={styles.phoneInputContainer}>
-                    <View style={styles.countryCodeContainer}>
-                      <Text style={styles.countryFlag}>🇳🇬</Text>
-                      <Text style={styles.countryCode}>+234</Text>
-                    </View>
-                    <View style={styles.phoneInputDivider} />
-                    <TextInput
-                      style={styles.phoneInput}
-                      placeholder="090 3601 8013"
-                      placeholderTextColor="#999"
-                      value={phoneNumber}
-                      onChangeText={handlePhoneChange}
-                      keyboardType="phone-pad"
-                      maxLength={11}
-                      returnKeyType="done"
-                      onSubmitEditing={Keyboard.dismiss}
-                    />
-                  </View>
-                </View>
-
-                {/* Date of Birth */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Date of Birth*</Text>
-                  <TouchableOpacity
-                    style={styles.dateInput}
-                    onPress={() => {
-                      Keyboard.dismiss();
-                      setShowDatePicker(true);
-                    }}
+                  <Text
+                    style={[
+                      styles.genderChipText,
+                      isActive && styles.genderChipTextActive,
+                    ]}
                   >
-                    <Text
-                      style={[
-                        styles.dateInputText,
-                        dateOfBirth && styles.dateInputTextSelected,
-                      ]}
-                    >
-                      {dateOfBirth
-                        ? formatDate(dateOfBirth)
-                        : "Select Date Of Birth"}
-                    </Text>
-                    <MaterialCommunityIcons
-                      name="calendar"
-                      size={20}
-                      color="#999"
-                    />
-                  </TouchableOpacity>
-                </View>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={dateOfBirth || new Date(2000, 0, 1)}
-                    mode="date"
-                    display={Platform.OS === "ios" ? "spinner" : "default"}
-                    onChange={handleDateChange}
-                    maximumDate={new Date()}
-                    minimumDate={new Date(1924, 0, 1)}
-                  />
-                )}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        </ScrollView>
 
-                {showDatePicker && Platform.OS === "ios" && (
-                  <TouchableOpacity
-                    style={styles.datePickerDoneButton}
-                    onPress={() => setShowDatePicker(false)}
-                  >
-                    <Text style={styles.datePickerDoneText}>Done</Text>
-                  </TouchableOpacity>
-                )}
-
-                {/* Gender */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Gender*</Text>
-                  <BottomSheetSelector
-                    options={genderOptions}
-                    selectedValue={gender}
-                    onSelect={(value) => {
-                      setGender(value);
-                      setError("");
-                    }}
-                    placeholder="Select Preferred Gender"
-                    sheetTitle="Select Gender"
-                    variant="field"
-                  />
-                </View>
-              </View>
-
-              {/* Continue Button */}
-              <Btn
-                title="Continue"
-                style={styles.continueButton2}
-                textStyle={{ color: COLORS.white }}
-                onPress={handleContinue}
-              />
-            </View>
-          </ScrollView>
+        {/* BOTTOM — pinned CTA */}
+        <View
+          style={[
+            styles.bottom,
+            {
+              paddingBottom: keyboardVisible
+                ? 12
+                : Math.max(insets.bottom, 16) + 8,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={handleContinue}
+            disabled={!canContinue}
+            style={[
+              styles.continueButton,
+              !canContinue && styles.continueButtonDisabled,
+            ]}
+          >
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+
+      {/* ANDROID — native date dialog */}
+      {Platform.OS === "android" && showDatePicker && (
+        <DateTimePicker
+          value={dateOfBirth ?? new Date(2000, 0, 1)}
+          mode="date"
+          display="default"
+          onChange={handleAndroidDateChange}
+          maximumDate={new Date()}
+          minimumDate={new Date(1924, 0, 1)}
+        />
+      )}
+
+      {/* iOS — spinner in a bottom sheet */}
+      {Platform.OS === "ios" && (
+        <Modal
+          visible={showDatePicker}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowDatePicker(false)}
+        >
+          <Pressable
+            style={styles.sheetBackdrop}
+            onPress={() => setShowDatePicker(false)}
+          />
+          <View
+            style={[
+              styles.sheet,
+              { paddingBottom: Math.max(insets.bottom, 16) },
+            ]}
+          >
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>Date of birth</Text>
+
+            <DateTimePicker
+              value={tempDate}
+              mode="date"
+              display="spinner"
+              onChange={handleIosDateChange}
+              maximumDate={new Date()}
+              minimumDate={new Date(1924, 0, 1)}
+              style={styles.iosPicker}
+            />
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={confirmIosDate}
+              style={styles.sheetDoneButton}
+            >
+              <Text style={styles.sheetDoneText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      )}
+    </View>
   );
 };
 
 export default SignUpDetails;
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  flex: {
+    flex: 1,
+  },
+  headerRow: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 16,
+  },
+  title: {
+    color: INK,
+    fontSize: 30,
+    fontWeight: "800",
+    lineHeight: 37,
+    letterSpacing: -0.5,
+    marginBottom: 10,
+  },
+  subtitle: {
+    color: MUTED,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 10,
+  },
+  label: {
+    color: INK,
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginTop: 18,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    height: 58,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: FIELD_BG,
+    paddingHorizontal: 16,
+  },
+  inputWrapperFocused: {
+    borderColor: BRAND,
+    backgroundColor: "#FFFFFF",
+  },
+  inputWrapperError: {
+    borderColor: ERROR_RED,
+  },
+  input: {
+    flex: 1,
+    color: INK,
+    fontSize: 16,
+    height: "100%",
+  },
+  valueText: {
+    flex: 1,
+    color: INK,
+    fontSize: 16,
+  },
+  placeholderText: {
+    color: "#A8AFA5",
+  },
+  countryFlag: {
+    fontSize: 18,
+  },
+  countryCode: {
+    color: INK,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  phoneDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: BORDER,
+  },
+  genderRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  genderChip: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    height: 50,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: FIELD_BG,
+  },
+  genderChipActive: {
+    borderColor: BRAND,
+    backgroundColor: BRAND_SOFT,
+  },
+  genderChipText: {
+    color: MUTED,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  genderChipTextActive: {
+    color: BRAND,
+    fontWeight: "700",
+  },
+  errorText: {
+    color: ERROR_RED,
+    fontSize: 13,
+    marginTop: 8,
+  },
+  bottom: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+  },
+  continueButton: {
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  continueButtonDisabled: {
+    opacity: 0.35,
+  },
+  continueButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16.5,
+    fontWeight: "700",
+  },
+  sheetBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+  },
+  sheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+  },
+  sheetHandle: {
+    alignSelf: "center",
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: BORDER,
+    marginBottom: 14,
+  },
+  sheetTitle: {
+    color: INK,
+    fontSize: 17,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  iosPicker: {
+    alignSelf: "center",
+  },
+  sheetDoneButton: {
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+  sheetDoneText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+});

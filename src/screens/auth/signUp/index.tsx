@@ -73,25 +73,26 @@ const SignUp = () => {
   const isFormDisabled = !isValidEmail || isPending;
 
   const handleContinue = () => {
-    if (isFormDisabled) return;
+    navigation.navigate("SignUpOTP", { email: cleanEmail });
+    // if (isFormDisabled) return;
 
-    Keyboard.dismiss();
-    setError("");
+    // Keyboard.dismiss();
+    // setError("");
 
-    sendOTP(
-      { email: cleanEmail },
-      {
-        onSuccess: () => {
-          navigation.navigate("SignUpOTP", { email: cleanEmail });
-        },
-        onError: (err: any) => {
-          const message =
-            err?.response?.data?.message ||
-            "Failed to send OTP. Please try again.";
-          setError(message);
-        },
-      }
-    );
+    // sendOTP(
+    //   { email: cleanEmail },
+    //   {
+    //     onSuccess: () => {
+    //       navigation.navigate("SignUpOTP", { email: cleanEmail });
+    //     },
+    //     onError: (err: any) => {
+    //       const message =
+    //         err?.response?.data?.message ||
+    //         "Failed to send OTP. Please try again.";
+    //       setError(message);
+    //     },
+    //   }
+    // );
   };
 
   return (

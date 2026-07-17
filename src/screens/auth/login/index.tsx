@@ -115,6 +115,7 @@ export default function Login() {
 
   // ─── Email/password login ─────────────────────────────────
   const handleLogin = () => {
+    setIsAuthenticated(true);
     if (!validate()) return;
 
     login(
@@ -154,6 +155,7 @@ export default function Login() {
   // ─── Biometric login (restores stored session) ────────────
   const handleBiometricLogin = async () => {
     if (biometricLoading || isPending) return;
+    setIsAuthenticated(true);
     setBiometricLoading(true);
 
     try {
