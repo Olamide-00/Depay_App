@@ -395,6 +395,8 @@ const SignUpDetails = () => {
               onChange={handleIosDateChange}
               maximumDate={new Date()}
               minimumDate={new Date(1924, 0, 1)}
+              themeVariant="light" // force light appearance to match the white sheet
+              textColor={INK} // spinner-only prop, explicit text color
               style={styles.iosPicker}
             />
 

@@ -1,44 +1,43 @@
-import { View, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
-import React from "react";
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Alert,
+  StyleSheet,
+} from "react-native";
+import React, { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import Text from "../../../components/common/txt";
-import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import ProfileMenuItem from "./component/item";
 import { useNavigation } from "@react-navigation/native";
 import useAuthStore from "../../../store/userStore";
 import * as SecureStore from "expo-secure-store";
 
+const BRAND = "#1B3710";
+const LIGHT_GREEN = "#EAF3E9";
+const ACCENT_GREEN = "#A9D99B";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const SCREEN_BG = "#F7F9F6";
+
 const Profile = () => {
   const navigation = useNavigation<any>();
+  const [imageFailed, setImageFailed] = useState(false);
 
   const userData = useAuthStore((state) => state.userData);
   const accountDetails = useAuthStore((state) => state.accountDetails);
   const logout = useAuthStore((state) => state.logout);
 
-  console.log(userData);
-
   const displayName = userData?.name || "User";
+  const initial = displayName.charAt(0).toUpperCase();
   const profilePicture = userData?.profilePicture;
+  const email = userData?.email || "";
   const account = accountDetails?.[0];
-  const accountNumber = account?.accountNumber || "No account yet";
-  const balance = userData?.balance ?? 0;
-  const gender =
-    typeof userData?.gender === "string" && userData.gender.length > 0
-      ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)
-      : null;
-  const dateOfBirth = userData?.dateOfBirth
-    ? new Date(userData.dateOfBirth).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  const accountNumber = account?.accountNumber || null;
 
-  const formatBalance = (amount: number) =>
-    `₦${Number(amount).toLocaleString("en-NG", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
+  const showImage = !!profilePicture && !imageFailed;
 
   const handleLogout = () => {
     Alert.alert("Log Out", "Are you sure you want to log out?", [
@@ -56,154 +55,198 @@ const Profile = () => {
     ]);
   };
 
-  const handleViewProfile = () =>
-    navigation.navigate("StackNav", { screen: "User" });
-  const handleReferrals = () =>
-    navigation.navigate("StackNav", { screen: "Refer" });
-  const handleAnalytics = () => console.log("Navigate to Analytics");
-  const handleSecurity = () =>
-    navigation.navigate("StackNav", { screen: "Security" });
-  const handleTheme = () => console.log("Navigate to Theme");
-
-  const handleNotifications = () => {
-    navigation.navigate("StackNav", { screen: "Notification" });
-  };
-
-  const handleGenerateBankAccount = () =>
-    navigation.navigate("StackNav", { screen: "Wallet" });
-  const handleSupport = () =>
-    navigation.navigate("StackNav", { screen: "Support" });
-  const handleLegal = () =>
-    navigation.navigate("StackNav", { screen: "Legal" });
-  const handleJoinCommunity = () => console.log("Navigate to Join Community");
-  const handleRateApp = () => console.log("Rate App");
+  const go = (screen: string) => () =>
+    navigation.navigate("StackNav", { screen });
 
   return (
     <View style={styles.root}>
       <CommonHeader title="Profile" />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.profileInfo}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* ── PROFILE CARD ── */}
+        <TouchableOpacity
+          style={styles.profileCard}
+          activeOpacity={0.85}
+          onPress={go("User")}
+        >
+          {showImage ? (
             <Image
-              source={
-                profilePicture
-                  ? { uri: profilePicture }
-                  : { uri: "https://via.placeholder.com/50" }
-              }
-              style={styles.profileImage}
+              source={{ uri: profilePicture }}
+              style={styles.avatar}
+              onError={() => setImageFailed(true)}
             />
-            <View style={styles.userInfo}>
-              <Text variant="bold" size="lg">
-                {displayName}
-              </Text>
-              <Text size="sm" style={styles.accountNumber}>
-                Account: {accountNumber}
-              </Text>
-              <Text size="sm" style={styles.walletBalance}>
-                Balance: {formatBalance(balance)}
+          ) : (
+            <View style={styles.avatarFallback}>
+              <Text variant="bold" size="lg" color={ACCENT_GREEN}>
+                {initial}
               </Text>
             </View>
+          )}
+
+          <View style={styles.profileText}>
+            <Text variant="bold" size="lg" color="#fff">
+              {displayName}
+            </Text>
+            <Text size="xs" color="rgba(255,255,255,0.7)" numberOfLines={1}>
+              {accountNumber ? `Account · ${accountNumber}` : email}
+            </Text>
           </View>
-          <TouchableOpacity
-            style={styles.viewProfileButton}
-            onPress={handleViewProfile}
-          >
-            <Text style={styles.viewProfileText}>View</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Menu Items */}
-        <View style={styles.menuContainer}>
-          <ProfileMenuItem
-            icon="people-outline"
-            iconColor="#6C2BD9"
-            iconBgColor="#F5F3FF"
-            title="Referrals"
-            onPress={handleReferrals}
-          />
+          <View style={styles.editBadge}>
+            <Ionicons name="chevron-forward" size={16} color={BRAND} />
+          </View>
+        </TouchableOpacity>
 
-          {/* <ProfileMenuItem
-            icon="stats-chart-outline"
-            iconColor="#EF4444"
-            iconBgColor="#FEF2F2"
-            title="Analytics"
-            onPress={handleAnalytics}
-          /> */}
-
-          <ProfileMenuItem
-            icon="shield-checkmark-outline"
-            iconColor="#10B981"
-            iconBgColor="#F0FDF4"
-            title="Security"
-            onPress={handleSecurity}
-          />
-
-          {/* <ProfileMenuItem
-            icon="color-palette-outline"
-            iconColor="#F59E0B"
-            iconBgColor="#FFFBEB"
-            title="Theme"
-            onPress={handleTheme}
-          /> */}
-
-          <ProfileMenuItem
-            icon="notifications-outline"
-            iconColor="#3B82F6"
-            iconBgColor="#EFF6FF"
-            title="Notifications"
-            onPress={handleNotifications}
-          />
-
+        {/* ── ACCOUNT ── */}
+        <Text style={styles.sectionTitle}>Account</Text>
+        <View style={styles.group}>
           <ProfileMenuItem
             icon="card-outline"
-            iconColor="#8B5CF6"
-            iconBgColor="#F5F3FF"
-            title="Generate Bank Account"
-            onPress={handleGenerateBankAccount}
+            title="Bank Account"
+            subtitle={accountNumber ?? "Generate your account number"}
+            onPress={go("Wallet")}
           />
-
           <ProfileMenuItem
-            icon="help-circle-outline"
-            iconColor="#EF4444"
-            iconBgColor="#FEF2F2"
-            title="Support"
-            onPress={handleSupport}
+            icon="people-outline"
+            title="Referrals"
+            subtitle="Invite friends, earn rewards"
+            onPress={go("Refer")}
           />
-
           <ProfileMenuItem
-            icon="document-text-outline"
-            iconColor="#6B7280"
-            iconBgColor="#F9FAFB"
-            title="Legal"
-            onPress={handleLegal}
-          />
-
-          <ProfileMenuItem
-            icon="people-circle-outline"
-            iconColor="#10B981"
-            iconBgColor="#F0FDF4"
-            title="Join Our Community"
-            onPress={handleJoinCommunity}
-          />
-
-          <ProfileMenuItem
-            icon="star-outline"
-            iconColor="#F59E0B"
-            iconBgColor="#FFFBEB"
-            title="Rate App"
-            onPress={handleRateApp}
-            showChevron={false}
+            icon="notifications-outline"
+            title="Notifications"
+            onPress={go("Notification")}
+            isLast
           />
         </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
+        {/* ── SECURITY ── */}
+        <Text style={styles.sectionTitle}>Security</Text>
+        <View style={styles.group}>
+          <ProfileMenuItem
+            icon="shield-checkmark-outline"
+            title="Security"
+            subtitle="PIN, password & biometrics"
+            onPress={go("Security")}
+            isLast
+          />
+        </View>
+
+        {/* ── SUPPORT ── */}
+        <Text style={styles.sectionTitle}>Support</Text>
+        <View style={styles.group}>
+          <ProfileMenuItem
+            icon="help-circle-outline"
+            title="Help & Support"
+            onPress={go("Support")}
+          />
+          <ProfileMenuItem
+            icon="document-text-outline"
+            title="Legal"
+            onPress={go("Legal")}
+          />
+          <ProfileMenuItem
+            icon="star-outline"
+            title="Rate App"
+            onPress={() => console.log("Rate App")}
+            showChevron={false}
+            isLast
+          />
+        </View>
+
+        {/* ── LOG OUT ── */}
+        <View style={[styles.group, styles.logoutGroup]}>
+          <ProfileMenuItem
+            icon="log-out-outline"
+            title="Log Out"
+            onPress={handleLogout}
+            showChevron={false}
+            danger
+            isLast
+          />
+        </View>
+
+        <Text style={styles.version}>Version 1.0.0</Text>
       </ScrollView>
     </View>
   );
 };
 
 export default Profile;
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: SCREEN_BG,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+  },
+
+  // ── Profile card ──────────────────────────────
+  profileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 13,
+    backgroundColor: BRAND,
+    borderRadius: 20,
+    padding: 16,
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+  },
+  avatarFallback: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: 1.5,
+    borderColor: "rgba(169,217,155,0.4)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileText: {
+    flex: 1,
+    gap: 2,
+  },
+  editBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: ACCENT_GREEN,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // ── Groups ────────────────────────────────────
+  sectionTitle: {
+    fontSize: 12.5,
+    fontWeight: "600",
+    color: MUTED,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  group: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: "hidden",
+  },
+  logoutGroup: {
+    marginBottom: 12,
+  },
+  version: {
+    textAlign: "center",
+    fontSize: 12,
+    color: "#AAB2A6",
+  },
+});

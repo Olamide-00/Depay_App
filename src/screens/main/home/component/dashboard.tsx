@@ -2,13 +2,14 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
   ActivityIndicator,
-  Clipboard,
-  Alert,
+  Animated,
+  Easing,
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { COLORS } from "../../../../constants/Colors";
+import * as Clipboard from "expo-clipboard";
 import Text from "../../../../components/common/txt";
 import TopUpModal from "./topupModal";
 import { io } from "socket.io-client";
@@ -18,15 +19,55 @@ import { useGetBalance } from "../../../../api/hooks/useAuth";
 
 const SOCKET_URL = "https://jaa.up.railway.app";
 
+const BRAND = "#1B3710";
+const BRAND_DEEP = "#122808";
+const LIGHT_GREEN = "#DCEDD6";
+const ACCENT_GREEN = "#A9D99B";
+
 interface DashboardProps {
   refreshTick?: number;
 }
+
+// ─── Animated count-up for the balance ───────────────────────
+const useCountUp = (target: number, duration = 800) => {
+  const [display, setDisplay] = useState(target);
+  const animRef = useRef(new Animated.Value(target)).current;
+  const firstRun = useRef(true);
+
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      setDisplay(target);
+      animRef.setValue(target);
+      return;
+    }
+
+    const listener = animRef.addListener(({ value }) => setDisplay(value));
+    Animated.timing(animRef, {
+      toValue: target,
+      duration,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false, // listener-driven, no styles animated
+    }).start(() => {
+      animRef.removeListener(listener);
+      setDisplay(target);
+    });
+
+    return () => animRef.removeListener(listener);
+  }, [target]);
+
+  return display;
+};
 
 const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
   const navigation = useNavigation<any>();
   const [modalVisible, setModalVisible] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
-  const [currentBalance, setCurrentBalance] = useState(null);
+  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const pressScale = useRef(new Animated.Value(1)).current;
 
   const userData = useAuthStore((state) => state.userData);
   const isWalletCreated = useAuthStore((state) => state.isWalletCreated);
@@ -38,12 +79,20 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
   const truncate = (str: string, max: number) =>
     str?.length > max ? str.slice(0, max) + "…" : str;
 
-  const handleCopy = (value: string, label: string) => {
-    Clipboard.setString(value);
-    Alert.alert("Copied", `${label} copied to clipboard`);
+  const handleCopy = async (value: string) => {
+    await Clipboard.setStringAsync(value);
+    setCopied(true);
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+    copyTimer.current = setTimeout(() => setCopied(false), 1800);
   };
 
-  // Socket
+  useEffect(() => {
+    return () => {
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+    };
+  }, []);
+
+  // ─── Socket: live balance updates ──────────────────────────
   useEffect(() => {
     if (!email) return;
     const socket = io(SOCKET_URL);
@@ -62,7 +111,7 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch]),
+    }, [refetch])
   );
 
   useEffect(() => {
@@ -72,163 +121,170 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
     }
   }, [refreshTick]);
 
+  const rawBalance = Number(currentBalance ?? balance?.data ?? 0);
+  const animatedBalance = useCountUp(rawBalance);
+
   const formatCurrency = (amount: number) =>
-    Number(amount).toLocaleString("en-NG", {
+    amount.toLocaleString("en-NG", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
 
-  const rawBalance = currentBalance ?? balance?.data ?? "0.00";
+  const [whole, decimals] = formatCurrency(animatedBalance).split(".");
 
-  const displayBalance = balanceLoading ? (
-    <ActivityIndicator size="small" color="#fff" />
-  ) : balanceVisible ? (
-    `₦${formatCurrency(rawBalance)}`
-  ) : (
-    "₦****.**"
-  );
+  // ─── Press feedback on the card ────────────────────────────
+  const pressIn = () =>
+    Animated.spring(pressScale, {
+      toValue: 0.98,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 0,
+    }).start();
+
+  const pressOut = () =>
+    Animated.spring(pressScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 6,
+    }).start();
 
   return (
     <>
-      <View style={styles.container}>
-        <View style={styles.row}>
-          <View style={styles.innerContainer}>
-            {/* Balance header */}
-            <View style={styles.balanceContainer}>
-              <Text variant="light" color="#fff" size="sm">
-                Balance
-              </Text>
-              <TouchableOpacity
-                onPress={() => setBalanceVisible(!balanceVisible)}
-                activeOpacity={0.7}
-              >
-                <MaterialCommunityIcons
-                  name={balanceVisible ? "eye-off" : "eye"}
-                  size={20}
-                  color="#fff"
-                  style={styles.eyeIcon}
-                />
-              </TouchableOpacity>
-              <View style={styles.liveDot} />
-            </View>
+      <View style={styles.stackWrap}>
+        {/* BACK CARD — light green, rotated, peeking out */}
+        <View style={styles.backCard} />
 
-            {/* Balance amount + account info */}
-            <View style={styles.balanceDetails}>
-              <Text
-                variant="bold"
-                size="3xl"
-                color="#fff"
-                style={styles.amountText}
-              >
-                {displayBalance}
-              </Text>
+        {/* MAIN CARD */}
+        <Animated.View style={{ transform: [{ scale: pressScale }] }}>
+          <Pressable onPressIn={pressIn} onPressOut={pressOut}>
+            <View style={styles.card}>
+              {/* Decorative rings bleeding off the top-right corner */}
+              <View style={styles.ringOuter} pointerEvents="none" />
+              <View style={styles.ringInner} pointerEvents="none" />
 
-              {isWalletCreated ? (
-                // ── Wallet exists ─────────────────────────
-                <>
-                  <View style={styles.accountInfo}>
-                    <MaterialCommunityIcons
-                      name="credit-card-outline"
-                      size={16}
-                      color="rgba(255,255,255,0.7)"
-                      style={styles.accountIcon}
-                    />
+              {/* HEADER */}
+              <View style={styles.headerRow}>
+                <View style={styles.labelRow}>
+                  <View style={styles.liveDot} />
+                  <Text variant="light" color="rgba(255,255,255,0.7)" size="sm">
+                    Available balance
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setBalanceVisible(!balanceVisible)}
+                  activeOpacity={0.7}
+                  hitSlop={10}
+                  style={styles.eyeButton}
+                >
+                  <MaterialCommunityIcons
+                    name={balanceVisible ? "eye-off-outline" : "eye-outline"}
+                    size={17}
+                    color="rgba(255,255,255,0.85)"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* BALANCE — oversized */}
+              <View style={styles.amountRow}>
+                {balanceLoading && currentBalance === null ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : balanceVisible ? (
+                  <>
+                    <Text
+                      variant="bold"
+                      color={ACCENT_GREEN}
+                      style={styles.currency}
+                    >
+                      ₦
+                    </Text>
+                    <Text
+                      variant="bold"
+                      color="#fff"
+                      style={styles.amountWhole}
+                    >
+                      {whole}
+                    </Text>
+                    <Text
+                      variant="bold"
+                      color="rgba(255,255,255,0.5)"
+                      style={styles.amountDecimals}
+                    >
+                      .{decimals}
+                    </Text>
+                  </>
+                ) : (
+                  <Text variant="bold" color="#fff" style={styles.amountWhole}>
+                    ••••••
+                  </Text>
+                )}
+              </View>
+
+              {/* FOOTER — account / create + Top Up */}
+              <View style={styles.footerRow}>
+                {isWalletCreated ? (
+                  <TouchableOpacity
+                    style={styles.accountChip}
+                    activeOpacity={0.75}
+                    onPress={() => handleCopy(accountNumber)}
+                  >
                     <Text
                       variant="light"
-                      color="rgba(255,255,255,0.8)"
+                      color="rgba(255,255,255,0.6)"
                       size="xs"
                     >
-                      {truncate(bankName, 20)}
+                      {truncate(bankName, 12)}
                     </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={styles.accountInfo}
-                    activeOpacity={0.7}
-                    onPress={() => handleCopy(accountNumber, "Account number")}
-                  >
-                    <MaterialCommunityIcons
-                      name="account-outline"
-                      size={16}
-                      color="rgba(255,255,255,0.7)"
-                      style={styles.accountIcon}
-                    />
-                    <Text variant="light" color="#fff" size="xs">
+                    <Text variant="semibold" color="#fff" size="sm">
                       {accountNumber}
                     </Text>
                     <MaterialCommunityIcons
-                      name="content-copy"
+                      name={copied ? "check" : "content-copy"}
                       size={13}
-                      color="rgba(255,255,255,0.6)"
-                      style={styles.copyIcon}
+                      color={copied ? ACCENT_GREEN : "rgba(255,255,255,0.55)"}
                     />
                   </TouchableOpacity>
-                </>
-              ) : (
-                // ── No wallet — prompt to create ──────────
+                ) : (
+                  <TouchableOpacity
+                    style={styles.accountChip}
+                    onPress={() =>
+                      navigation.navigate("StackNav", { screen: "Wallet" })
+                    }
+                    activeOpacity={0.8}
+                  >
+                    <MaterialCommunityIcons
+                      name="plus-circle-outline"
+                      size={14}
+                      color={ACCENT_GREEN}
+                    />
+                    <Text
+                      variant="light"
+                      color="rgba(255,255,255,0.85)"
+                      size="xs"
+                    >
+                      Create account to receive money
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
-                  style={styles.createAccountBtn}
-                  onPress={() =>
-                    navigation.navigate("StackNav", { screen: "Wallet" })
-                  }
-                  activeOpacity={0.8}
+                  style={styles.topUp}
+                  onPress={() => setModalVisible(true)}
+                  activeOpacity={0.85}
                 >
                   <MaterialCommunityIcons
-                    name="plus-circle-outline"
-                    size={14}
-                    color="rgba(255,255,255,0.9)"
+                    name="plus"
+                    size={17}
+                    color={BRAND_DEEP}
                   />
-                  <Text variant="light" color="rgba(255,255,255,0.9)" size="xs">
-                    Create Account to receive money
+                  <Text variant="semibold" color={BRAND_DEEP} size="sm">
+                    Top Up
                   </Text>
                 </TouchableOpacity>
-              )}
+              </View>
             </View>
-          </View>
-
-          {/* Top Up button */}
-          <TouchableOpacity
-            style={styles.topUp}
-            onPress={() => setModalVisible(true)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.plusIconContainer}>
-              <MaterialCommunityIcons
-                name="plus"
-                size={18}
-                color={COLORS.brand}
-              />
-            </View>
-            <Text variant="semibold" color={COLORS.brand} size="sm">
-              Top Up
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Quick actions bar */}
-        <View style={styles.row2}>
-          <TouchableOpacity style={styles.yellowContent} activeOpacity={0.8}>
-            <MaterialCommunityIcons
-              name="lightning-bolt"
-              size={20}
-              color={COLORS.brand}
-              style={styles.boltIcon}
-            />
-            <View style={styles.yellowTextContainer}>
-              <Text variant="semibold" color={COLORS.brand} size="sm">
-                Quick Actions
-              </Text>
-              <Text variant="light" color={COLORS.brand} size="xs">
-                Transfer, Pay Bills, Buy Airtime
-              </Text>
-            </View>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={COLORS.brand}
-            />
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+        </Animated.View>
       </View>
 
       <TopUpModal
@@ -242,99 +298,127 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
 export default Dashboard;
 
 const styles = StyleSheet.create({
-  container: {
-    borderRadius: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+  stackWrap: {
+    // room for the back card to peek out
+    paddingBottom: 10,
   },
-  innerContainer: { flex: 1 },
-  balanceContainer: {
+  backCard: {
+    position: "absolute",
+    left: 14,
+    right: 14,
+    bottom: 0,
+    height: 60,
+    borderRadius: 22,
+    backgroundColor: LIGHT_GREEN,
+    transform: [{ rotate: "-1.6deg" }],
+  },
+  card: {
+    backgroundColor: BRAND,
+    borderRadius: 24,
+    padding: 20,
+    overflow: "hidden",
+    shadowColor: BRAND_DEEP,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 18,
+    elevation: 10,
+  },
+  ringOuter: {
+    position: "absolute",
+    top: -70,
+    right: -70,
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    borderWidth: 30,
+    borderColor: "rgba(169,217,155,0.09)",
+  },
+  ringInner: {
+    position: "absolute",
+    top: -30,
+    right: -30,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 22,
+    borderColor: "rgba(169,217,155,0.12)",
+  },
+  headerRow: {
     flexDirection: "row",
-    gap: 8,
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
   },
-  eyeIcon: { opacity: 0.8 },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+  },
   liveDot: {
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: "#22c55e",
-    marginLeft: "auto",
+    backgroundColor: ACCENT_GREEN,
   },
-  balanceDetails: { gap: 4 },
-  amountText: { letterSpacing: 0.5, marginBottom: 4 },
-  accountInfo: {
+  eyeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  amountRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginTop: 16,
+    marginBottom: 20,
+    minHeight: 52,
+  },
+  currency: {
+    fontSize: 24,
+    lineHeight: 40,
+    marginRight: 4,
+  },
+  amountWhole: {
+    fontSize: 44,
+    lineHeight: 52,
+    letterSpacing: -1.5,
+  },
+  amountDecimals: {
+    fontSize: 22,
+    lineHeight: 40,
+  },
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+  },
+  accountChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 7,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexShrink: 1,
   },
-  accountIcon: { opacity: 0.8 },
-  copyIcon: { marginLeft: 4, opacity: 0.7 },
   topUp: {
     flexDirection: "row",
-    gap: 6,
     alignItems: "center",
-    backgroundColor: COLORS.white,
-    width: 88,
-    height: 36,
-    borderRadius: 12,
-    justifyContent: "center",
-    marginRight: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3,
+    gap: 4,
+    backgroundColor: ACCENT_GREEN,
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    height: 42,
+    shadowColor: ACCENT_GREEN,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  plusIconContainer: {
-    backgroundColor: "rgba(0,0,0,0.05)",
-    borderRadius: 8,
-    padding: 4,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: COLORS.brand,
-    padding: 12,
-    borderTopEndRadius: 15,
-    borderTopStartRadius: 15,
-  },
-  row2: {
-    height: 44,
-    backgroundColor: COLORS.yellow,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
-  },
-  yellowContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flex: 1,
-  },
-  yellowTextContainer: {
-    flex: 1,
-    marginLeft: 12,
-    gap: 2,
-  },
-  boltIcon: { opacity: 0.9 },
-  createAccountBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.25)",
-    alignSelf: "flex-start",
-    marginTop: 4,
-  },
+  topUpText: {},
 });

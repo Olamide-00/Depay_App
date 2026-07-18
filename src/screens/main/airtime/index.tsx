@@ -1,15 +1,19 @@
 import { View, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
+import { useRoute } from "@react-navigation/native";
 import { styles } from "./style";
 import CommonHeader from "../../../components/ui/commonHeader";
 import AirtimeTab from "./component/airtimeTab";
 import DataTab from "./component/dataTab";
 import { ContactsProvider } from "../../../utils/contactProvider";
-import { useGetAllServices } from "../../../api/hooks/useBills";
 import Text from "../../../components/common/txt";
 
 const Airtime = () => {
-  const [activeTab, setActiveTab] = useState<"airtime" | "data">("airtime");
+  const route = useRoute<any>();
+  const initialType = route.params?.serviceType === "data" ? "data" : "airtime";
+  const preselectedNetwork: string | undefined = route.params?.network;
+
+  const [activeTab, setActiveTab] = useState<"airtime" | "data">(initialType);
 
   return (
     <ContactsProvider>
@@ -47,8 +51,20 @@ const Airtime = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Tab Content */}
-        {activeTab === "airtime" ? <AirtimeTab /> : <DataTab />}
+        {/* Tab Content — only the tab matching the hint gets the preselect */}
+        {activeTab === "airtime" ? (
+          <AirtimeTab
+            preselectedNetwork={
+              initialType === "airtime" ? preselectedNetwork : undefined
+            }
+          />
+        ) : (
+          <DataTab
+            preselectedNetwork={
+              initialType === "data" ? preselectedNetwork : undefined
+            }
+          />
+        )}
       </View>
     </ContactsProvider>
   );

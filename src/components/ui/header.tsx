@@ -1,96 +1,105 @@
 // Header.tsx
-import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
-import React from "react";
+import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
+import React, { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Text from "../common/txt";
 import { useNavigation } from "@react-navigation/native";
 import useAuthStore, { selectUserData } from "../../store/userStore";
 
-const Header = () => {
+const BRAND = "#1B3710";
+const BRAND_DEEP = "#122808";
+const LIGHT_GREEN = "#EAF3E9";
+const ACCENT_GREEN = "#A9D99B";
+const INK = "#141613";
+const MUTED = "#8A9086";
+
+interface HeaderProps {
+  notificationCount?: number;
+}
+
+const Header = ({ notificationCount = 0 }: HeaderProps) => {
   const navigation = useNavigation<any>();
+  const [imageFailed, setImageFailed] = useState(false);
 
   const userData = useAuthStore(selectUserData);
   const name = userData?.name || "User";
   const firstName = name.split(" ")[0];
   const initial = firstName.charAt(0).toUpperCase();
+  const profilePicture = (userData as any)?.profilePicture;
+
+  const showImage = !!profilePicture && !imageFailed;
 
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
     if (hour < 17) return "Good afternoon";
     return "Good evening";
-    SS;
   };
 
   return (
     <View style={styles.container}>
       {/* Left — avatar + greeting */}
       <TouchableOpacity
-        style={styles.greetingRow}
+        style={styles.left}
         onPress={() => navigation.navigate("StackNav", { screen: "User" })}
-        activeOpacity={0.75}
+        activeOpacity={0.8}
       >
-        {/* Avatar */}
-        <View style={styles.avatarWrapper}>
-          <View style={styles.avatar}>
-            <Text variant="bold" size="lg" color="#fff">
-              {initial}
-            </Text>
-          </View>
-          {/* Online dot */}
-          <View style={styles.onlineDot} />
+        <View style={styles.avatarRing}>
+          {showImage ? (
+            <Image
+              source={{ uri: profilePicture }}
+              style={styles.avatarImage}
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <View style={styles.avatar}>
+              <Text variant="bold" size="md" color={ACCENT_GREEN}>
+                {initial}
+              </Text>
+            </View>
+          )}
         </View>
 
-        {/* Greeting text */}
         <View style={styles.greetingText}>
-          <Text
-            size="xs"
-            color="#9A9AA0"
-            variant="regular"
-            style={styles.greeting}
-          >
+          <Text size="xs" color={MUTED} variant="regular">
             {getGreeting()} 👋
           </Text>
-          <Text variant="bold" size="lg" color="#1A1A1E" style={styles.name}>
+          <Text variant="bold" color={INK} style={styles.name}>
             {firstName}
           </Text>
         </View>
       </TouchableOpacity>
 
-      {/* Right — action buttons */}
+      {/* Right — soft icon buttons */}
       <View style={styles.actions}>
-        {/* Customer care */}
         <TouchableOpacity
           style={styles.iconBtn}
           onPress={() => navigation.navigate("StackNav", { screen: "Support" })}
-          activeOpacity={0.75}
+          activeOpacity={0.7}
         >
-          <MaterialCommunityIcons name="headset" size={20} color="#7B3FE4" />
+          <MaterialCommunityIcons name="headset" size={19} color={BRAND} />
         </TouchableOpacity>
 
-        {/* Notification */}
         <TouchableOpacity
-          style={[styles.iconBtn, styles.iconBtnDark]}
+          style={styles.iconBtn}
           onPress={() =>
             navigation.navigate("StackNav", { screen: "Notification" })
           }
-          activeOpacity={0.75}
+          activeOpacity={0.7}
         >
-          <MaterialCommunityIcons
-            name="bell-outline"
-            size={20}
-            color="#1A1A1E"
-          />
-          <View style={styles.notifBadge}>
-            <Text
-              size="xs"
-              color="#fff"
-              variant="bold"
-              style={styles.notifCount}
-            >
-              3
-            </Text>
-          </View>
+          <MaterialCommunityIcons name="bell-outline" size={19} color={BRAND} />
+          {notificationCount > 0 && (
+            <View style={styles.notifBadge}>
+              <Text
+                size="xs"
+                color="#fff"
+                variant="bold"
+                style={styles.notifCount}
+              >
+                {notificationCount > 9 ? "9+" : notificationCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -102,60 +111,43 @@ export default Header;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
-
-    paddingBottom: 6,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingVertical: 10,
   },
 
   // ── Left ──────────────────────────────────────
-  greetingRow: {
+  left: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 11,
   },
-
-  // Avatar
-  avatarWrapper: {
-    position: "relative",
+  avatarRing: {
+    padding: 2.5,
+    borderRadius: 26,
+    backgroundColor: LIGHT_GREEN,
   },
   avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: "#7B3FE4",
-    justifyContent: "center",
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: BRAND,
     alignItems: "center",
-    shadowColor: "#7B3FE4",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 5,
-    borderWidth: 2,
-    borderColor: "#EDE1FF",
+    justifyContent: "center",
   },
-  onlineDot: {
-    position: "absolute",
-    bottom: 1,
-    right: 1,
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: "#22c55e",
-    borderWidth: 2,
-    borderColor: "#fff",
+  avatarImage: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
   },
-
-  // Greeting
   greetingText: {
     gap: 1,
   },
-  greeting: {
-    letterSpacing: 0.1,
-  },
   name: {
+    fontSize: 17,
     letterSpacing: -0.3,
+    lineHeight: 21,
   },
 
   // ── Right ─────────────────────────────────────
@@ -165,31 +157,26 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   iconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#F0E8FF",
-    justifyContent: "center",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: LIGHT_GREEN,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E8D9FF",
-  },
-  iconBtnDark: {
-    backgroundColor: "#F5F5F7",
-    borderColor: "#EFEFEF",
+    justifyContent: "center",
   },
 
   // Notification badge
   notifBadge: {
     position: "absolute",
-    top: 6,
-    right: 6,
-    width: 16,
+    top: 4,
+    right: 4,
+    minWidth: 16,
     height: 16,
     borderRadius: 8,
+    paddingHorizontal: 3,
     backgroundColor: "#EF4444",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1.5,
     borderColor: "#fff",
   },

@@ -11,10 +11,7 @@ import {
   Simcard1,
   Simcard,
   Mobile,
-  Flash,
   Receipt21,
-  WalletMoney,
-  Send2,
   AddCircle,
   Card,
   People,
@@ -31,23 +28,14 @@ const COLUMN = 5;
 const H_PADDING = 30;
 const GAP = 8;
 const ITEM_WIDTH = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (COLUMN - 1)) / COLUMN;
-const ICON_SIZE = Math.round(ITEM_WIDTH * 0.3);
+const ICON_SIZE = 22;
 
-const iconColors = [
-  "#FF8A65",
-  "#6B34FF",
-  "#22C55E",
-  "#FFB609",
-  "#9575CD",
-  "#06B6D4",
-  "#FFB74D",
-  "#7986CB",
-  "#A1887F",
-  "#90A4AE",
-];
+const BRAND = "#1B3710";
+const INK = "#141613";
+const MUTED = "#6B7268";
 
-const getIconComponent = (icon: string, color: string) => {
-  const p = { size: ICON_SIZE, color, variant: "Bulk" };
+const getIconComponent = (icon: string) => {
+  const p = { size: ICON_SIZE, color: BRAND, variant: "Bulk" as const };
   switch (icon) {
     case "Simcard1":
       return <Simcard1 {...p} />;
@@ -85,27 +73,28 @@ const QuickAction = () => {
     }
   };
 
-  const renderItem = ({ item, index }: any) => {
-    const color = iconColors[index % iconColors.length];
-    return (
-      <TouchableOpacity
-        style={styles.item}
-        onPress={() => handlePress(item, index)}
-        activeOpacity={0.7}
+  const renderItem = ({ item, index }: any) => (
+    <TouchableOpacity
+      style={styles.item}
+      onPress={() => handlePress(item, index)}
+      activeOpacity={0.6}
+    >
+      {getIconComponent(item.icon)}
+      <Text
+        size="xs"
+        color={MUTED}
+        variant="regular"
+        style={styles.label}
+        numberOfLines={1}
       >
-        <View style={[styles.iconBox, { backgroundColor: `${color}18` }]}>
-          {getIconComponent(item.icon, color)}
-        </View>
-        <Text size="xs" color="#4A4A4E" style={styles.label} numberOfLines={1}>
-          {item.name}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      <Text variant="semibold" size="md" color="#1A1A1E" style={styles.title}>
+      <Text variant="semibold" size="md" color={INK} style={styles.title}>
         Quick Access
       </Text>
 
@@ -129,26 +118,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    marginBottom: 12,
+    marginBottom: 14,
     letterSpacing: -0.1,
   },
-
   row: {
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 18,
   },
-
   item: {
     width: ITEM_WIDTH,
     alignItems: "center",
-    gap: 6,
-  },
-  iconBox: {
-    width: ITEM_WIDTH * 0.65,
-    height: ITEM_WIDTH * 0.65,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 5,
+    paddingVertical: 2,
   },
   label: {
     textAlign: "center",

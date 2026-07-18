@@ -7,14 +7,19 @@ import { useNavigation } from "@react-navigation/native";
 import { useGetAllServices } from "../../../../api/hooks/useBills";
 import Text from "../../../../components/common/txt";
 
-const AirtimeTab = () => {
-  const navigation = useNavigation();
+interface AirtimeTabProps {
+  /** Network hint from the Services screen, e.g. "mtn" */
+  preselectedNetwork?: string;
+}
+
+const AirtimeTab = ({ preselectedNetwork }: AirtimeTabProps) => {
+  const navigation = useNavigation<any>();
   const { data, isLoading } = useGetAllServices("airtime");
 
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [amount, setAmount] = useState("");
-  const [networks, setNetworks] = useState([]);
+  const [networks, setNetworks] = useState<any[]>([]);
   const [errors, setErrors] = useState({
     phoneNumber: "",
     amount: "",
@@ -23,17 +28,28 @@ const AirtimeTab = () => {
 
   useEffect(() => {
     if (data?.data?.content) {
-      const mapped = data.data.content.map((item) => ({
+      const mapped = data.data.content.map((item: any) => ({
         label: item.name ? item.name.split(" ")[0] : "Unknown",
         value: item.serviceID,
         image: item.image, // use actual logo from API
       }));
       setNetworks(mapped);
+
+      // Auto-select from the Services screen hint (only if nothing chosen yet)
+      if (preselectedNetwork && !selectedNetwork) {
+        const hint = preselectedNetwork.toLowerCase();
+        const match = mapped.find(
+          (n: any) =>
+            n.label.toLowerCase().includes(hint) ||
+            String(n.value).toLowerCase().includes(hint)
+        );
+        if (match) setSelectedNetwork(match.value);
+      }
     }
-  }, [data]);
+  }, [data, preselectedNetwork]);
 
   const selectedService = data?.data?.content?.find(
-    (item) => item.serviceID === selectedNetwork,
+    (item: any) => item.serviceID === selectedNetwork
   );
 
   const handleContinue = () => {
@@ -55,7 +71,7 @@ const AirtimeTab = () => {
           icon="wifi"
           options={networks}
           selectedValue={selectedNetwork}
-          onSelect={(value) => {
+          onSelect={(value: string) => {
             setSelectedNetwork(value);
             setErrors((prev) => ({ ...prev, selectedNetwork: "" }));
           }}
@@ -72,7 +88,7 @@ const AirtimeTab = () => {
         <PhoneInputWithContact
           label="Phone Number"
           value={phoneNumber}
-          onChangeText={(text) => {
+          onChangeText={(text: string) => {
             setPhoneNumber(text);
             setErrors((prev) => ({ ...prev, phoneNumber: "" }));
           }}

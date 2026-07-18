@@ -10,15 +10,20 @@ import {
 } from "../../../../api/hooks/useBills";
 import Text from "../../../../components/common/txt";
 
-const DataTab = () => {
-  const navigation = useNavigation();
+interface DataTabProps {
+  /** Network hint from the Services screen, e.g. "mtn" */
+  preselectedNetwork?: string;
+}
+
+const DataTab = ({ preselectedNetwork }: DataTabProps) => {
+  const navigation = useNavigation<any>();
   const { data, isLoading } = useGetAllServices("data");
 
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedDataPlan, setSelectedDataPlan] = useState("");
-  const [networks, setNetworks] = useState([]);
-  const [dataPlans, setDataPlans] = useState([]);
+  const [networks, setNetworks] = useState<any[]>([]);
+  const [dataPlans, setDataPlans] = useState<any[]>([]);
   const [errors, setErrors] = useState({
     phoneNumber: "",
     selectedNetwork: "",
@@ -28,7 +33,7 @@ const DataTab = () => {
   // Build network options from API
   useEffect(() => {
     if (data?.data?.content) {
-      const mapped = data.data.content.map((item) => ({
+      const mapped = data.data.content.map((item: any) => ({
         label: item.name ? item.name.split(" ")[0] : "Unknown",
         value: item.serviceID,
         image: item.image,
@@ -36,13 +41,24 @@ const DataTab = () => {
 
       // Deduplicate by label
       const unique = mapped.filter(
-        (provider, index, self) =>
-          index === self.findIndex((p) => p.label === provider.label),
+        (provider: any, index: number, self: any[]) =>
+          index === self.findIndex((p) => p.label === provider.label)
       );
 
       setNetworks(unique);
+
+      // Auto-select from the Services screen hint (only if nothing chosen yet)
+      if (preselectedNetwork && !selectedNetwork) {
+        const hint = preselectedNetwork.toLowerCase();
+        const match = unique.find(
+          (n: any) =>
+            n.label.toLowerCase().includes(hint) ||
+            String(n.value).toLowerCase().includes(hint)
+        );
+        if (match) setSelectedNetwork(match.value);
+      }
     }
-  }, [data]);
+  }, [data, preselectedNetwork]);
 
   // Fetch data plans for the selected network
   const { data: dataPackage, isLoading: dataPackageLoading } =
@@ -51,7 +67,7 @@ const DataTab = () => {
   // Build data plan options from API
   useEffect(() => {
     if (dataPackage?.data?.content?.variations) {
-      const plans = dataPackage.data.content.variations.map((plan) => ({
+      const plans = dataPackage.data.content.variations.map((plan: any) => ({
         label: plan.name,
         value: plan.variation_code,
         icon: undefined,
@@ -64,7 +80,7 @@ const DataTab = () => {
 
   // Find selected plan details for navigation
   const selectedPlanObject = dataPackage?.data?.content?.variations?.find(
-    (plan) => plan.variation_code === selectedDataPlan,
+    (plan: any) => plan.variation_code === selectedDataPlan
   );
 
   const handleContinue = () => {
@@ -91,7 +107,7 @@ const DataTab = () => {
           icon="wifi"
           options={networks}
           selectedValue={selectedNetwork}
-          onSelect={(value) => {
+          onSelect={(value: string) => {
             setSelectedNetwork(value);
             setSelectedDataPlan(""); // reset plan on network change
             setErrors((prev) => ({ ...prev, selectedNetwork: "" }));
@@ -109,7 +125,7 @@ const DataTab = () => {
         <PhoneInputWithContact
           label="Phone Number"
           value={phoneNumber}
-          onChangeText={(text) => {
+          onChangeText={(text: string) => {
             setPhoneNumber(text);
             setErrors((prev) => ({ ...prev, phoneNumber: "" }));
           }}
@@ -123,7 +139,7 @@ const DataTab = () => {
         <BottomSheetSelector
           options={dataPlans}
           selectedValue={selectedDataPlan}
-          onSelect={(value) => {
+          onSelect={(value: string) => {
             setSelectedDataPlan(value);
             setErrors((prev) => ({ ...prev, selectedDataPlan: "" }));
           }}
@@ -131,10 +147,10 @@ const DataTab = () => {
             !selectedNetwork
               ? "Select a network first"
               : dataPackageLoading
-                ? "Loading plans..."
-                : dataPlans.length === 0
-                  ? "No plans available"
-                  : "Select Data Plan"
+              ? "Loading plans..."
+              : dataPlans.length === 0
+              ? "No plans available"
+              : "Select Data Plan"
           }
           sheetTitle="Select Data Plan"
           variant="field"
