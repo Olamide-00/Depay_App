@@ -6,17 +6,22 @@ import {
   ScrollView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import CommonHeader from "../../../components/ui/commonHeader";
 import BottomSheetSelector from "../../../components/common/bottomsheet";
 import PhoneInputWithContact from "../../../components/common/numberSelector";
 import { ContactsProvider } from "../../../utils/contactProvider";
 import { useNavigation } from "@react-navigation/native";
 import { useGetServicePLan } from "../../../api/hooks/useBills";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import Text from "../../../components/common/txt";
+
+const BRAND = "#1B3710";
+const LIGHT_GREEN = "#EAF3E9";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
+const ERROR_RED = "#D92D20";
 
 const Waec = () => {
   const navigation = useNavigation<any>();
@@ -39,7 +44,7 @@ const Waec = () => {
   // Update total amount when exam type or quantity changes
   useEffect(() => {
     const selected = variations.find(
-      (item: any) => item.variation_code === selectedExamType,
+      (item: any) => item.variation_code === selectedExamType
     );
     const unitAmount = parseFloat(selected?.variation_amount || "0");
     const qty = Math.max(parseInt(quantity || "0"), 0);
@@ -55,6 +60,12 @@ const Waec = () => {
     }
   }, [quantity]);
 
+  const adjustQuantity = (delta: number) => {
+    const current = Math.max(parseInt(quantity || "0"), 0);
+    const next = Math.max(current + delta, 1);
+    setQuantity(String(next));
+  };
+
   const handleContinue = () => {
     navigation.navigate("Confirmation", {
       serviceID,
@@ -68,6 +79,11 @@ const Waec = () => {
   const isQuantityValid = parseInt(quantity || "0") >= 1;
   const isFormValid =
     selectedExamType && isQuantityValid && phoneNumber.length >= 10;
+
+  const unitPrice =
+    selectedExamType && parseInt(quantity) > 0
+      ? amount / parseInt(quantity)
+      : 0;
 
   return (
     <ContactsProvider>
@@ -103,41 +119,75 @@ const Waec = () => {
             />
           </View>
 
-          {/* Quantity */}
+          {/* Quantity — stepper */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Quantity</Text>
-            <TextInput
-              style={[styles.input, quantityError ? styles.inputError : null]}
-              placeholder="Enter quantity"
-              placeholderTextColor="#999"
-              value={quantity}
-              onChangeText={setQuantity}
-              keyboardType="numeric"
-            />
+            <View
+              style={[
+                styles.stepperWrapper,
+                quantityError && styles.fieldWrapperError,
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.stepperButton}
+                onPress={() => adjustQuantity(-1)}
+                disabled={parseInt(quantity || "0") <= 1}
+              >
+                <MaterialCommunityIcons
+                  name="minus"
+                  size={18}
+                  color={parseInt(quantity || "0") <= 1 ? "#C2C9BE" : BRAND}
+                />
+              </TouchableOpacity>
+
+              <TextInput
+                style={styles.stepperInput}
+                value={quantity}
+                onChangeText={(text) =>
+                  setQuantity(text.replace(/[^0-9]/g, ""))
+                }
+                keyboardType="numeric"
+                textAlign="center"
+              />
+
+              <TouchableOpacity
+                style={styles.stepperButton}
+                onPress={() => adjustQuantity(1)}
+              >
+                <MaterialCommunityIcons name="plus" size={18} color={BRAND} />
+              </TouchableOpacity>
+            </View>
             {quantityError ? (
               <Text style={styles.errorText}>{quantityError}</Text>
-            ) : null}
+            ) : (
+              <Text style={styles.helperText}>Number of pins to purchase</Text>
+            )}
           </View>
 
-          {/* Amount — auto-calculated, read only */}
+          {/* Amount — auto-calculated, locked */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Total Amount</Text>
-            <View style={styles.amountWrapper}>
-              <View style={styles.currencyBox}>
-                <Text style={styles.currencySymbol}>₦</Text>
+            <View style={styles.amountWrapperLocked}>
+              <View style={styles.currencyBoxLocked}>
+                <Text style={styles.currencySymbolLocked}>₦</Text>
               </View>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="0.00"
-                placeholderTextColor="#999"
-                value={amount > 0 ? amount.toLocaleString("en-NG") : ""}
-                editable={false}
+              <Text style={styles.amountLockedText}>
+                {amount > 0 ? amount.toLocaleString("en-NG") : "—"}
+              </Text>
+              <MaterialCommunityIcons
+                name="lock-outline"
+                size={16}
+                color="#A8AFA5"
               />
             </View>
-            {selectedExamType && quantity && parseInt(quantity) > 1 && (
-              <Text style={styles.quantityNote}>
-                {parseInt(quantity)} × ₦
-                {(amount / parseInt(quantity)).toLocaleString("en-NG")} per pin
+            {selectedExamType && parseInt(quantity) > 1 ? (
+              <Text style={styles.helperText}>
+                {parseInt(quantity)} × ₦{unitPrice.toLocaleString("en-NG")} per
+                pin
+              </Text>
+            ) : (
+              <Text style={styles.helperText}>
+                Set automatically by exam type and quantity
               </Text>
             )}
           </View>
@@ -164,88 +214,111 @@ export default Waec;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
   },
   scrollContent: {
-    paddingHorizontal: wp(4),
-    paddingTop: hp(3),
-    paddingBottom: hp(6),
-    gap: hp(2),
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 40,
+    gap: 20,
   },
   inputContainer: {
-    gap: 6,
+    gap: 8,
   },
   label: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
+    fontFamily: "Poppins-Medium",
+    color: INK,
   },
-  input: {
-    backgroundColor: "#F8F8F8",
-    borderRadius: 10,
-    height: 50,
-    paddingHorizontal: 14,
-    fontSize: 15,
-    color: "#111",
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
+
+  fieldWrapperError: {
+    borderColor: ERROR_RED,
   },
-  inputError: {
-    borderColor: "#ef4444",
+  helperText: {
+    fontSize: 12.5,
+    fontFamily: "Poppins-Regular",
+    color: MUTED,
+    marginTop: 2,
   },
   errorText: {
-    color: "#ef4444",
-    fontSize: 12,
+    fontSize: 12.5,
+    fontFamily: "Poppins-Regular",
+    color: ERROR_RED,
     marginTop: 2,
   },
-  amountWrapper: {
+
+  stepperWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F8F8F8",
-    borderRadius: 10,
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
+    height: 56,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: FIELD_BG,
     overflow: "hidden",
   },
-  currencyBox: {
-    paddingHorizontal: 14,
+  stepperButton: {
+    width: 52,
     height: "100%",
-    justifyContent: "center",
-    backgroundColor: "#EFEFEF",
-    borderRightWidth: 1,
-    borderRightColor: "#E0E0E0",
-  },
-  currencySymbol: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#555",
-  },
-  amountInput: {
-    flex: 1,
-    paddingHorizontal: 14,
-    fontSize: 15,
-    color: "#111",
-  },
-  quantityNote: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 2,
-  },
-  continueButton: {
-    backgroundColor: "#6C2BD9",
-    borderRadius: 12,
-    height: 52,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: hp(2),
+  },
+  stepperInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: "Poppins-SemiBold",
+    color: INK,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: BORDER,
+    height: "100%",
+  },
+
+  amountWrapperLocked: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 56,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: "#F2F4F0",
+    paddingHorizontal: 14,
+    gap: 10,
+  },
+  currencyBoxLocked: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#E4E9E1",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  currencySymbolLocked: {
+    fontSize: 14,
+    fontFamily: "Poppins-SemiBold",
+    color: MUTED,
+  },
+  amountLockedText: {
+    flex: 1,
+    fontSize: 15.5,
+    fontFamily: "Poppins-SemiBold",
+    color: INK,
+  },
+
+  continueButton: {
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
   },
   disabledButton: {
-    backgroundColor: "#C4B5F7",
+    opacity: 0.35,
   },
   continueButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: "#FFFFFF",
+    fontSize: 15.5,
+    fontFamily: "Poppins-SemiBold",
   },
 });

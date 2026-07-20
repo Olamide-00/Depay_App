@@ -1,44 +1,89 @@
-import { View, TouchableOpacity, StyleSheet } from "react-native";
-import React from "react";
+import { View, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import React, { useRef } from "react";
 import CommonHeader from "../../../components/ui/commonHeader";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import Text from "../../../components/common/txt";
+
+const BRAND = "#1B3710";
+const LIGHT_GREEN = "#EAF3E9";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#ECEFEA";
 
 const examBoards = [
   {
     id: "1",
     label: "JAMB",
     screen: "Jamb",
-    icon: "school-outline",
-    color: "#4C6FFF",
+    icon: "school-outline" as const,
   },
   {
     id: "2",
     label: "WAEC",
     screen: "Waec",
-    icon: "document-text-outline",
-    color: "#FF6B6B",
+    icon: "document-text-outline" as const,
   },
   {
     id: "3",
     label: "NECO",
     screen: "Neco",
-    icon: "ribbon-outline",
-    color: "#6BCB77",
+    icon: "ribbon-outline" as const,
   },
   {
     id: "4",
     label: "NABTEB",
     screen: "Nabteb",
-    icon: "medal-outline",
-    color: "#FFD93D",
+    icon: "medal-outline" as const,
   },
 ];
+
+const ExamCard = ({
+  board,
+  onPress,
+}: {
+  board: (typeof examBoards)[number];
+  onPress: () => void;
+}) => {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const pressIn = () =>
+    Animated.spring(scale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 0,
+    }).start();
+
+  const pressOut = () =>
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 6,
+    }).start();
+
+  return (
+    <Animated.View style={[styles.cardWrap, { transform: [{ scale }] }]}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={onPress}
+        onPressIn={pressIn}
+        onPressOut={pressOut}
+        activeOpacity={0.85}
+      >
+        <View style={styles.iconContainer}>
+          <Ionicons name={board.icon} size={28} color={BRAND} />
+        </View>
+        <Text style={styles.cardLabel}>{board.label}</Text>
+        <View style={styles.subPill}>
+          <Text style={styles.cardSub}>Buy PIN</Text>
+          <Ionicons name="arrow-forward" size={11} color={BRAND} />
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 const Education = () => {
   const navigation = useNavigation<any>();
@@ -54,27 +99,11 @@ const Education = () => {
 
         <View style={styles.grid}>
           {examBoards.map((board) => (
-            <TouchableOpacity
+            <ExamCard
               key={board.id}
-              style={styles.card}
+              board={board}
               onPress={() => navigation.navigate(board.screen)}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: board.color + "20" },
-                ]}
-              >
-                <Ionicons
-                  name={board.icon as any}
-                  size={32}
-                  color={board.color}
-                />
-              </View>
-              <Text style={styles.cardLabel}>{board.label}</Text>
-              <Text style={styles.cardSub}>Buy PIN</Text>
-            </TouchableOpacity>
+            />
           ))}
         </View>
       </View>
@@ -87,54 +116,73 @@ export default Education;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
   },
   container: {
     flex: 1,
-    paddingHorizontal: wp(4),
-    paddingTop: hp(4),
+    paddingHorizontal: 16,
+    paddingTop: 24,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#111",
+    fontFamily: "Poppins-SemiBold",
+    color: INK,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: "#888",
-    marginBottom: hp(3),
+    fontFamily: "Poppins-Regular",
+    color: MUTED,
+    marginBottom: 24,
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: wp(4),
+    gap: 14,
+  },
+  cardWrap: {
+    width: "47%",
   },
   card: {
-    width: (wp(100) - wp(8) - wp(4)) / 2,
-    backgroundColor: "#F8F8F8",
-    borderRadius: 16,
-    paddingVertical: hp(2.5),
-    paddingHorizontal: wp(4),
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingVertical: 22,
+    paddingHorizontal: 16,
     alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    shadowColor: BRAND,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 1,
   },
   iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 58,
+    height: 58,
+    borderRadius: 18,
+    backgroundColor: LIGHT_GREEN,
     alignItems: "center",
     justifyContent: "center",
   },
   cardLabel: {
     fontSize: 15,
-    fontWeight: "700",
-    color: "#111",
+    fontFamily: "Poppins-SemiBold",
+    color: INK,
+  },
+  subPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: LIGHT_GREEN,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
   cardSub: {
-    fontSize: 12,
-    color: "#888",
+    fontSize: 11,
+    fontFamily: "Poppins-SemiBold",
+    color: BRAND,
   },
 });

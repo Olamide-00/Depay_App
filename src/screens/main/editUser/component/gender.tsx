@@ -1,7 +1,21 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  ActionSheetIOS,
+  Modal,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 import Text from "../../../../components/common/txt";
+
+const BRAND = "#1B3710";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
 
 interface GenderSelectorProps {
   label: string;
@@ -23,164 +37,156 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({
   onGenderChange,
   placeholder = "Select gender",
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [androidPickerVisible, setAndroidPickerVisible] = useState(false);
+  const [draftValue, setDraftValue] = useState(value);
 
-  const handleSelect = (gender: string) => {
-    onGenderChange(gender);
-    setIsVisible(false);
-  };
+  const getDisplayValue = () =>
+    genderOptions.find((o) => o.value === value)?.label ?? "";
 
-  const getDisplayValue = () => {
-    const selected = genderOptions.find((option) => option.value === value);
-    return selected ? selected.label : "";
+  const openPicker = () => {
+    if (Platform.OS === "ios") {
+      // Native iOS action sheet — built into React Native core
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...genderOptions.map((o) => o.label), "Cancel"],
+          cancelButtonIndex: genderOptions.length,
+        },
+        (index) => {
+          if (index < genderOptions.length) {
+            onGenderChange(genderOptions[index].value);
+          }
+        }
+      );
+    } else {
+      setDraftValue(value);
+      setAndroidPickerVisible(true);
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity
-        style={styles.inputWrapper}
-        onPress={() => setIsVisible(true)}
-      >
+      <TouchableOpacity style={styles.inputWrapper} onPress={openPicker}>
         <Text style={[styles.input, !value && styles.placeholder]}>
           {getDisplayValue() || placeholder}
         </Text>
-        <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+        <Ionicons name="chevron-down" size={18} color={MUTED} />
       </TouchableOpacity>
 
-      {/* Gender Selection Modal */}
-      <Modal
-        visible={isVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setIsVisible(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setIsVisible(false)}
+      {/* Android — native Picker (Material spinner dialog) */}
+      {Platform.OS === "android" && (
+        <Modal
+          visible={androidPickerVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setAndroidPickerVisible(false)}
         >
-          <View style={styles.bottomSheetContainer}>
-            <TouchableOpacity activeOpacity={1}>
-              <View style={styles.bottomSheetHandle} />
-              <View style={styles.bottomSheetContent}>
-                <Text style={styles.bottomSheetTitle}>Select Gender</Text>
-                {genderOptions.map((option) => (
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setAndroidPickerVisible(false)}
+          >
+            <View style={styles.pickerSheet}>
+              <TouchableOpacity activeOpacity={1}>
+                <View style={styles.pickerHeader}>
                   <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.optionItem,
-                      value === option.value && styles.selectedOption,
-                    ]}
-                    onPress={() => handleSelect(option.value)}
+                    onPress={() => setAndroidPickerVisible(false)}
                   >
-                    <Text
-                      style={[
-                        styles.optionText,
-                        value === option.value && styles.selectedOptionText,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                    {value === option.value && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={20}
-                        color="#6C2BD9"
-                      />
-                    )}
+                    <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
-                ))}
-              </View>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+                  <Text style={styles.pickerTitle}>Select Gender</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      onGenderChange(draftValue);
+                      setAndroidPickerVisible(false);
+                    }}
+                  >
+                    <Text style={styles.doneText}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <Picker
+                  selectedValue={draftValue}
+                  onValueChange={(v) => setDraftValue(v)}
+                >
+                  {genderOptions.map((option) => (
+                    <Picker.Item
+                      key={option.value}
+                      label={option.label}
+                      value={option.value}
+                    />
+                  ))}
+                </Picker>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
+  container: { marginBottom: 20 },
   label: {
     fontSize: 14,
-    color: "#000",
+    fontFamily: "Poppins-Medium",
+    color: INK,
     marginBottom: 8,
-    fontWeight: "400",
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+    backgroundColor: FIELD_BG,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 56,
+    borderWidth: 1.5,
+    borderColor: BORDER,
   },
   input: {
     fontSize: 15,
-    color: "#000",
+    fontFamily: "Poppins-Regular",
+    color: INK,
     flex: 1,
   },
   placeholder: {
-    color: "#9CA3AF",
+    color: "#A8AFA5",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(18,40,8,0.4)",
     justifyContent: "flex-end",
   },
-  bottomSheetContainer: {
-    backgroundColor: "#fff",
+  pickerSheet: {
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 34,
+    paddingBottom: 16,
   },
-  bottomSheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: "#D1D5DB",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 20,
-  },
-  bottomSheetContent: {
-    paddingHorizontal: 16,
-  },
-  bottomSheetTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#000",
-    marginBottom: 16,
-  },
-  optionItem: {
+  pickerHeader: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-    backgroundColor: "#F8F8F8",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
   },
-  selectedOption: {
-    backgroundColor: "#F5F3FF",
-    borderWidth: 1,
-    borderColor: "#6C2BD9",
-  },
-  optionText: {
+  pickerTitle: {
     fontSize: 15,
-    color: "#333",
-    fontWeight: "500",
+    fontFamily: "Poppins-SemiBold",
+    color: INK,
   },
-  selectedOptionText: {
-    color: "#6C2BD9",
-    fontWeight: "600",
+  cancelText: {
+    fontSize: 15,
+    fontFamily: "Poppins-Regular",
+    color: MUTED,
+  },
+  doneText: {
+    fontSize: 15,
+    fontFamily: "Poppins-SemiBold",
+    color: BRAND,
   },
 });
 

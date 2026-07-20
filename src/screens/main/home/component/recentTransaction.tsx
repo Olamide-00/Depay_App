@@ -1,13 +1,16 @@
 // RecentTransaction.tsx
-import { StyleSheet, TouchableOpacity, View, ScrollView } from "react-native";
-import React from "react";
+import { StyleSheet, TouchableOpacity, View, Animated } from "react-native";
+import React, { useEffect, useRef } from "react";
 import Item from "../../../../components/ui/item";
-import { COLORS } from "../../../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import useAuthStore from "../../../../store/userStore";
 import { useGetBillsHistory } from "../../../../api/hooks/useBills";
 import Text from "../../../../components/common/txt";
+
+const BRAND = "#1B3710";
+const LIGHT_GREEN = "#EAF3E9";
+const BORDER = "#ECEFEA";
 
 const RecentTransaction = () => {
   const navigation = useNavigation<any>();
@@ -30,14 +33,44 @@ const RecentTransaction = () => {
     type: typeof item.type === "string" ? item.type.toLowerCase() : "debit",
   });
 
+  // Shimmer sweep
+  const shimmer = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(shimmer, {
+        toValue: 1,
+        duration: 1100,
+        useNativeDriver: true,
+      })
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
+  const shimmerTranslate = shimmer.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-120, 220],
+  });
+
+  const SkeletonBlock = ({ style }: { style: any }) => (
+    <View style={[style, styles.skeletonBase]}>
+      <Animated.View
+        style={[
+          styles.shimmerOverlay,
+          { transform: [{ translateX: shimmerTranslate }] },
+        ]}
+      />
+    </View>
+  );
+
   const SkeletonRow = () => (
     <View style={styles.skeletonRow}>
-      <View style={styles.skeletonIcon} />
+      <SkeletonBlock style={styles.skeletonIcon} />
       <View style={styles.skeletonContent}>
-        <View style={styles.skeletonLine} />
-        <View style={styles.skeletonLineShort} />
+        <SkeletonBlock style={styles.skeletonLine} />
+        <SkeletonBlock style={styles.skeletonLineShort} />
       </View>
-      <View style={styles.skeletonAmount} />
+      <SkeletonBlock style={styles.skeletonAmount} />
     </View>
   );
 
@@ -45,11 +78,11 @@ const RecentTransaction = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.headerContainer}>
-        <Text variant="semibold" size="md" color="#1A1A1E">
+        <Text variant="semibold" size="md" color="#141613">
           Recent Transactions
         </Text>
         <TouchableOpacity onPress={() => navigation.navigate("Transaction")}>
-          <Text variant="semibold" size="sm" color={COLORS.brand}>
+          <Text variant="semibold" size="sm" color={BRAND}>
             View All
           </Text>
         </TouchableOpacity>
@@ -57,40 +90,36 @@ const RecentTransaction = () => {
 
       {/* Content */}
       {isLoading ? (
-        <View style={styles.skeletonContainer}>
+        <View style={styles.listContainer}>
           {[1, 2, 3].map((i) => (
             <SkeletonRow key={i} />
           ))}
         </View>
       ) : recentTransactions.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <MaterialCommunityIcons
-            name="receipt-text-outline"
-            size={40}
-            color="rgba(108, 43, 217, 0.2)"
-          />
-          <Text variant="semibold" size="md" color="#9CA3AF">
-            No Transactions Yet
+          <View style={styles.emptyIconCircle}>
+            <MaterialCommunityIcons
+              name="receipt-text-outline"
+              size={28}
+              color={BRAND}
+            />
+          </View>
+          <Text variant="semibold" size="sm" color="#141613">
+            No transactions yet
           </Text>
-          <Text variant="regular" size="sm" color="#D1D5DB" center>
+          <Text variant="regular" size="xs" color="#8A9086" center>
             Your recent transactions will appear here
           </Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.scrollArea}
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={false}
-        >
-          <View style={styles.listContainer}>
-            {recentTransactions.map((item: any, index: number) => (
-              <Item
-                key={item._id || item.id || index.toString()}
-                data={sanitize(item)}
-              />
-            ))}
-          </View>
-        </ScrollView>
+        <View style={styles.listContainer}>
+          {recentTransactions.map((item: any, index: number) => (
+            <Item
+              key={item._id || item.id || index.toString()}
+              data={sanitize(item)}
+            />
+          ))}
+        </View>
       )}
     </View>
   );
@@ -103,7 +132,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
 
-  // ── Header ────────────────────────────────────
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -111,10 +139,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  // ── Scroll area ───────────────────────────────
-  scrollArea: {
-    height: 320, // fixed height — inner scroll lives here
-  },
   listContainer: {
     gap: 8,
   },
@@ -122,14 +146,20 @@ const styles = StyleSheet.create({
   // ── Empty ─────────────────────────────────────
   emptyContainer: {
     alignItems: "center",
-    paddingVertical: 32,
-    gap: 8,
+    paddingVertical: 28,
+    gap: 4,
+  },
+  emptyIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: LIGHT_GREEN,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6,
   },
 
   // ── Skeleton ──────────────────────────────────
-  skeletonContainer: {
-    gap: 8,
-  },
   skeletonRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -139,13 +169,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#F2F2F5",
+    borderColor: BORDER,
+  },
+  skeletonBase: {
+    backgroundColor: "#F0F3EE",
+    overflow: "hidden",
+  },
+  shimmerOverlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: 60,
+    backgroundColor: "rgba(255,255,255,0.6)",
   },
   skeletonIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#F3F4F6",
   },
   skeletonContent: {
     flex: 1,
@@ -154,19 +194,16 @@ const styles = StyleSheet.create({
   skeletonLine: {
     width: "55%",
     height: 13,
-    backgroundColor: "#F3F4F6",
     borderRadius: 4,
   },
   skeletonLineShort: {
     width: "35%",
     height: 11,
-    backgroundColor: "#F9FAFB",
     borderRadius: 4,
   },
   skeletonAmount: {
     width: 60,
     height: 13,
-    backgroundColor: "#F3F4F6",
     borderRadius: 4,
   },
 });

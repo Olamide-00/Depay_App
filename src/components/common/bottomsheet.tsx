@@ -8,14 +8,21 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../constants/Colors";
 import Text from "./txt";
+
+const BRAND = "#1B3710";
+const LIGHT_GREEN = "#EAF3E9";
+const ACCENT_GREEN = "#A9D99B";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
 
 interface Option {
   label: string;
   value: string;
   icon?: keyof typeof Ionicons.glyphMap;
-  image?: string; // NEW: support image URL
+  image?: string; // image URL
 }
 
 interface BottomSheetSelectorProps {
@@ -53,6 +60,7 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
         <TouchableOpacity
           style={styles.selectorButton}
           onPress={() => setIsVisible(true)}
+          activeOpacity={0.7}
         >
           {/* Show selected network image or fallback icon */}
           {selectedOption?.image ? (
@@ -61,13 +69,13 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
               style={styles.inlineImage}
             />
           ) : (
-            <Ionicons name={icon} size={16} color="#6C2BD9" />
+            <Ionicons name={icon} size={16} color={BRAND} />
           )}
           <Text style={styles.selectorText}>{displayText}</Text>
           <Ionicons
             name="chevron-down"
             size={16}
-            color="#6C2BD9"
+            color={BRAND}
             style={styles.chevronIcon}
           />
         </TouchableOpacity>
@@ -75,6 +83,7 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
         <TouchableOpacity
           style={styles.fieldButton}
           onPress={() => setIsVisible(true)}
+          activeOpacity={0.7}
         >
           <View style={styles.fieldLeft}>
             {selectedOption?.image && (
@@ -88,11 +97,12 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
                 styles.fieldText,
                 !selectedOption && styles.fieldPlaceholder,
               ]}
+              numberOfLines={1}
             >
               {displayText}
             </Text>
           </View>
-          <Ionicons name="chevron-down" size={16} color="#999" />
+          <Ionicons name="chevron-down" size={16} color={MUTED} />
         </TouchableOpacity>
       )}
 
@@ -113,50 +123,59 @@ const BottomSheetSelector: React.FC<BottomSheetSelectorProps> = ({
               <View style={styles.bottomSheetContent}>
                 <Text style={styles.bottomSheetTitle}>{sheetTitle}</Text>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                  {options.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      style={[
-                        styles.optionItem,
-                        selectedValue === option.value && styles.selectedOption,
-                      ]}
-                      onPress={() => handleSelect(option.value)}
-                    >
-                      {/* Image takes priority over icon */}
-                      {option.image ? (
-                        <Image
-                          source={{ uri: option.image }}
-                          style={styles.optionImage}
-                        />
-                      ) : option.icon ? (
-                        <Ionicons
-                          name={option.icon}
-                          size={20}
-                          color={
-                            selectedValue === option.value ? "#6C2BD9" : "#666"
-                          }
-                          style={styles.optionIcon}
-                        />
-                      ) : null}
-
-                      <Text
+                  {options.map((option) => {
+                    const isSelected = selectedValue === option.value;
+                    return (
+                      <TouchableOpacity
+                        key={option.value}
                         style={[
-                          styles.optionText,
-                          selectedValue === option.value &&
-                            styles.selectedOptionText,
+                          styles.optionItem,
+                          isSelected && styles.selectedOption,
                         ]}
+                        onPress={() => handleSelect(option.value)}
+                        activeOpacity={0.7}
                       >
-                        {option.label}
-                      </Text>
-                      {selectedValue === option.value && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={20}
-                          color="#6C2BD9"
-                        />
-                      )}
-                    </TouchableOpacity>
-                  ))}
+                        {/* Image takes priority over icon */}
+                        {option.image ? (
+                          <Image
+                            source={{ uri: option.image }}
+                            style={styles.optionImage}
+                          />
+                        ) : option.icon ? (
+                          <View
+                            style={[
+                              styles.optionIconBox,
+                              isSelected && styles.optionIconBoxActive,
+                            ]}
+                          >
+                            <Ionicons
+                              name={option.icon}
+                              size={18}
+                              color={isSelected ? BRAND : MUTED}
+                            />
+                          </View>
+                        ) : null}
+
+                        <Text
+                          style={[
+                            styles.optionText,
+                            isSelected && styles.selectedOptionText,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                        {isSelected && (
+                          <View style={styles.checkCircle}>
+                            <Ionicons
+                              name="checkmark"
+                              size={13}
+                              color="#FFFFFF"
+                            />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
                 </ScrollView>
               </View>
             </TouchableOpacity>
@@ -175,9 +194,9 @@ const styles = StyleSheet.create({
   },
   selectorText: {
     fontSize: 14,
-    color: "#6C2BD9",
+    color: BRAND,
     marginLeft: 6,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   chevronIcon: {
     marginLeft: 4,
@@ -191,90 +210,112 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F8F8F8",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 50,
+    backgroundColor: FIELD_BG,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 56,
   },
   fieldLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
+    flex: 1,
+    marginRight: 8,
   },
   fieldImage: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
   },
   fieldText: {
     fontSize: 15,
-    color: "#000",
+    color: INK,
+    flexShrink: 1,
   },
   fieldPlaceholder: {
-    color: "#999",
+    color: "#A8AFA5",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(18,40,8,0.45)",
     justifyContent: "flex-end",
   },
   bottomSheetContainer: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingBottom: 34,
     maxHeight: "70%",
   },
   bottomSheetHandle: {
     width: 40,
     height: 4,
-    backgroundColor: "#D1D5DB",
+    backgroundColor: BORDER,
     borderRadius: 2,
     alignSelf: "center",
     marginTop: 12,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   bottomSheetContent: {
     paddingHorizontal: 16,
   },
   bottomSheetTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#000",
-    marginBottom: 16,
+    fontSize: 17,
+    fontWeight: "700",
+    color: INK,
+    marginBottom: 14,
   },
   optionItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 13,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     marginBottom: 8,
-    backgroundColor: "#F8F8F8",
+    borderWidth: 1.5,
+    borderColor: "transparent",
   },
   selectedOption: {
-    backgroundColor: "#F5F3FF",
-    borderWidth: 1,
-    borderColor: "#6C2BD9",
+    backgroundColor: LIGHT_GREEN,
+    borderColor: BRAND,
   },
   optionImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     marginRight: 12,
   },
-  optionIcon: {
+  optionIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: FIELD_BG,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
+  },
+  optionIconBoxActive: {
+    backgroundColor: "#FFFFFF",
   },
   optionText: {
     flex: 1,
-    fontSize: 15,
-    color: "#333",
+    fontSize: 14.5,
+    color: INK,
     fontWeight: "500",
   },
   selectedOptionText: {
-    color: COLORS.brand,
-    fontWeight: "600",
+    color: BRAND,
+    fontWeight: "700",
+  },
+  checkCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

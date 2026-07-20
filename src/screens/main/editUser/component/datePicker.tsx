@@ -1,21 +1,34 @@
 import React, { useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  Modal,
-  StyleSheet,
-  Platform,
-} from "react-native";
+import { View, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Text from "../../../../components/common/txt";
 
+const BRAND = "#1B3710";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
+
 interface DatePickerModalProps {
   label: string;
-  value: string;
+  value: string; // "DD/MM/YYYY"
   onDateChange: (date: string) => void;
   placeholder?: string;
 }
+
+const parseDate = (value: string): Date => {
+  const [d, m, y] = value.split("/").map(Number);
+  if (d && m && y) return new Date(y, m - 1, d);
+  return new Date(2000, 0, 1);
+};
+
+const formatDate = (date: Date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 const DatePickerModal: React.FC<DatePickerModalProps> = ({
   label,
@@ -23,108 +36,64 @@ const DatePickerModal: React.FC<DatePickerModalProps> = ({
   onDateChange,
   placeholder = "Select date",
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const currentDate = value ? parseDate(value) : new Date(2000, 0, 1);
 
-  const formatDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  const openPicker = () => setShowPicker(true);
 
-  const handleDateChange = (event: any, date?: Date) => {
+  const handleChange = (event: any, date?: Date) => {
+    // Android fires this once with type "set" or "dismissed";
+    // iOS spinner fires continuously while scrolling.
     if (Platform.OS === "android") {
       setShowPicker(false);
-    }
-    if (date) {
-      setSelectedDate(date);
-      if (Platform.OS === "android") {
-        const formattedDate = formatDate(date);
-        onDateChange(formattedDate);
-        setIsVisible(false);
+      if (event.type === "set" && date) {
+        onDateChange(formatDate(date));
       }
+      return;
     }
-  };
-
-  const handleConfirm = () => {
-    const formattedDate = formatDate(selectedDate);
-    onDateChange(formattedDate);
-    setIsVisible(false);
-    setShowPicker(false);
-  };
-
-  const handleCancel = () => {
-    setIsVisible(false);
-    setShowPicker(false);
-  };
-
-  const openPicker = () => {
-    setIsVisible(true);
-    if (Platform.OS === "android") {
-      setShowPicker(true);
-    }
+    // iOS
+    if (date) onDateChange(formatDate(date));
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
+
       <TouchableOpacity style={styles.inputWrapper} onPress={openPicker}>
         <Text style={[styles.input, !value && styles.placeholder]}>
           {value || placeholder}
         </Text>
-        <Ionicons name="calendar-outline" size={20} color="#9CA3AF" />
+        <Ionicons name="calendar-outline" size={18} color={MUTED} />
       </TouchableOpacity>
 
-      {/* iOS Modal */}
-      {Platform.OS === "ios" && (
-        <Modal
-          visible={isVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={handleCancel}
-        >
+      {/* iOS: compact picker only appears once triggered, positioned inline */}
+      {Platform.OS === "ios" && showPicker && (
+        <View style={styles.iosPickerRow}>
+          <DateTimePicker
+            value={currentDate}
+            mode="date"
+            display="compact"
+            onChange={handleChange}
+            maximumDate={new Date()}
+            themeVariant="light"
+            accentColor={BRAND}
+          />
           <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={handleCancel}
+            onPress={() => setShowPicker(false)}
+            style={styles.doneButton}
           >
-            <View style={styles.bottomSheetContainer}>
-              <TouchableOpacity activeOpacity={1}>
-                <View style={styles.bottomSheetHandle} />
-                <View style={styles.bottomSheetContent}>
-                  <View style={styles.pickerHeader}>
-                    <TouchableOpacity onPress={handleCancel}>
-                      <Text style={styles.cancelButton}>Cancel</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.pickerTitle}>Select Date</Text>
-                    <TouchableOpacity onPress={handleConfirm}>
-                      <Text style={styles.confirmButton}>Done</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <DateTimePicker
-                    value={selectedDate}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleDateChange}
-                    maximumDate={new Date()}
-                    textColor="#000"
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.doneText}>Done</Text>
           </TouchableOpacity>
-        </Modal>
+        </View>
       )}
 
-      {/* Android Picker */}
+      {/* Android: native dialog, mounted only while open */}
       {Platform.OS === "android" && showPicker && (
         <DateTimePicker
-          value={selectedDate}
+          value={currentDate}
           mode="date"
           display="default"
-          onChange={handleDateChange}
+          onChange={handleChange}
           maximumDate={new Date()}
         />
       )}
@@ -133,77 +102,52 @@ const DatePickerModal: React.FC<DatePickerModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
+  container: { marginBottom: 20 },
   label: {
     fontSize: 14,
-    color: "#000",
+    fontFamily: "Poppins-Medium",
+    color: INK,
     marginBottom: 8,
-    fontWeight: "400",
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+    backgroundColor: FIELD_BG,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 56,
+    borderWidth: 1.5,
+    borderColor: BORDER,
   },
   input: {
     fontSize: 15,
-    color: "#000",
-    flex: 1,
+    fontFamily: "Poppins-Regular",
+    color: INK,
   },
   placeholder: {
-    color: "#9CA3AF",
+    color: "#A8AFA5",
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  bottomSheetContainer: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 34,
-  },
-  bottomSheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: "#D1D5DB",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 20,
-  },
-  bottomSheetContent: {
-    paddingHorizontal: 16,
-  },
-  pickerHeader: {
+  iosPickerRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
-    paddingHorizontal: 4,
+    justifyContent: "space-between",
+    marginTop: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: FIELD_BG,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
   },
-  pickerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+  doneButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  cancelButton: {
-    fontSize: 16,
-    color: "#6B7280",
-  },
-  confirmButton: {
-    fontSize: 16,
-    color: "#6C2BD9",
-    fontWeight: "600",
+  doneText: {
+    fontSize: 14,
+    fontFamily: "Poppins-SemiBold",
+    color: BRAND,
   },
 });
 

@@ -1,6 +1,11 @@
 import React from "react";
-import { View, TextInput, StyleSheet, Image } from "react-native";
+import { View, TextInput, StyleSheet } from "react-native";
 import Text from "../../../../components/common/txt";
+
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
 
 interface PhoneNumberInputProps {
   label: string;
@@ -13,7 +18,7 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
   label,
   value,
   onChangeText,
-  placeholder = "+234 901 234 5678",
+  placeholder = "901 234 5678",
 }) => {
   return (
     <View style={styles.container}>
@@ -26,10 +31,15 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
         <TextInput
           style={styles.input}
           placeholder={placeholder}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor="#A8AFA5"
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={(text) => onChangeText(text.replace(/[^0-9]/g, ""))}
           keyboardType="phone-pad"
+          // Native autofill hints — lets iOS/Android suggest a saved
+          // number from Contacts/keychain
+          textContentType="telephoneNumber"
+          autoComplete="tel"
+          maxLength={10}
         />
       </View>
     </View>
@@ -37,47 +47,44 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
+  container: { marginBottom: 20 },
   label: {
     fontSize: 14,
-    color: "#000",
+    fontFamily: "Poppins-Medium",
+    color: INK,
     marginBottom: 8,
-    fontWeight: "400",
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+    backgroundColor: FIELD_BG,
+    borderRadius: 14,
+    height: 56,
+    paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
   },
   countryCode: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 6,
     paddingRight: 12,
     borderRightWidth: 1,
-    borderRightColor: "#E5E7EB",
-    gap: 6,
+    borderRightColor: BORDER,
   },
-  flag: {
-    fontSize: 20,
-  },
+  flag: { fontSize: 18 },
   codeText: {
     fontSize: 15,
-    color: "#000",
-    fontWeight: "500",
+    fontFamily: "Poppins-SemiBold",
+    color: INK,
   },
   input: {
     flex: 1,
     fontSize: 15,
-    color: "#000",
-    paddingVertical: 10,
+    fontFamily: "Poppins-Regular",
+    color: INK,
     paddingLeft: 12,
+    height: "100%",
   },
 });
 
