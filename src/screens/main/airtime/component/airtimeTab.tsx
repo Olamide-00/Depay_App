@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, TouchableOpacity } from "react-native";
-import { styles } from "../style";
+import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import BottomSheetSelector from "../../../../components/common/bottomsheet";
 import PhoneInputWithContact from "../../../../components/common/numberSelector";
 import { useNavigation } from "@react-navigation/native";
 import { useGetAllServices } from "../../../../api/hooks/useBills";
 import Text from "../../../../components/common/txt";
+
+const BRAND = "#1B3710";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
+const ERROR_RED = "#D92D20";
 
 interface AirtimeTabProps {
   /** Network hint from the Services screen, e.g. "mtn" */
@@ -99,14 +105,14 @@ const AirtimeTab = ({ preselectedNetwork }: AirtimeTabProps) => {
       {/* Amount Input */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Amount</Text>
-        <View style={styles.phoneInputWrapper}>
-          <View style={styles.phoneIconContainer}>
+        <View style={styles.amountWrapper}>
+          <View style={styles.currencyBox}>
             <Text style={styles.currencySymbol}>₦</Text>
           </View>
           <TextInput
-            style={styles.phoneInput}
+            style={styles.amountInput}
             placeholder="Enter amount"
-            placeholderTextColor="#999"
+            placeholderTextColor="#A8AFA5"
             value={amount}
             onChangeText={(text) => {
               setAmount(text);
@@ -133,3 +139,73 @@ const AirtimeTab = ({ preselectedNetwork }: AirtimeTabProps) => {
 };
 
 export default AirtimeTab;
+
+const styles = StyleSheet.create({
+  tabContent: {
+    padding: 16,
+  },
+  selectorContainer: {
+    marginTop: 8,
+  },
+  inputContainer: {
+    marginTop: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontFamily: "Poppins-Medium",
+    color: INK,
+    marginBottom: 8,
+  },
+  amountWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 56,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: FIELD_BG,
+    overflow: "hidden",
+  },
+  currencyBox: {
+    width: 48,
+    alignSelf: "stretch",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EAF3E9",
+  },
+  currencySymbol: {
+    fontSize: 17,
+    fontFamily: "Poppins-SemiBold",
+    color: BRAND,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 15.5,
+    fontFamily: "Poppins-Medium",
+    color: INK,
+    paddingHorizontal: 14,
+    height: "100%",
+  },
+  errorText: {
+    fontSize: 12.5,
+    fontFamily: "Poppins-Regular",
+    color: ERROR_RED,
+    marginTop: 6,
+  },
+  continueButton: {
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 32,
+  },
+  disabledButton: {
+    opacity: 0.35,
+  },
+  continueButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15.5,
+    fontFamily: "Poppins-SemiBold",
+  },
+});

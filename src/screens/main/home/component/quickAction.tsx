@@ -27,8 +27,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const COLUMN = 5;
 const H_PADDING = 30;
 const GAP = 8;
-const ITEM_WIDTH = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (COLUMN - 1)) / COLUMN;
-const ICON_SIZE = 22;
+const ITEM_WIDTH = (SCREEN_WIDTH - H_PADDING * 1 - GAP * (COLUMN - 1)) / COLUMN;
+const ICON_SIZE = 30;
 
 const BRAND = "#1B3710";
 const INK = "#141613";

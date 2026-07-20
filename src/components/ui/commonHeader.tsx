@@ -1,50 +1,57 @@
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Platform } from "react-native";
 import React from "react";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Text from "../common/txt";
 import { ArrowLeft2 } from "iconsax-react-native";
-import { COLORS } from "../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
+
+const BRAND = "#1B3710";
+const LIGHT_GREEN = "#EAF3E9";
+const INK = "#141613";
 
 interface HeaderProps {
   title: string;
   back?: boolean;
   onBackPress?: () => void;
+  right?: React.ReactNode;
 }
 
-const CommonHeader = ({ title, back, onBackPress }: HeaderProps) => {
+const CommonHeader = ({ title, back, onBackPress, right }: HeaderProps) => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const handleBackPress = () => {
-    navigation.goBack();
+    if (onBackPress) {
+      onBackPress();
+    } else {
+      navigation.goBack();
+    }
   };
 
+  const topPadding =
+    insets.top > 0 ? insets.top + 6 : Platform.OS === "android" ? 14 : 6;
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: topPadding }]}>
       <View style={styles.content}>
-        {back && (
+        {back ? (
           <TouchableOpacity
             onPress={handleBackPress}
             style={styles.backButton}
             activeOpacity={0.7}
+            hitSlop={8}
           >
-            <ArrowLeft2 size={wp("6%")} color={COLORS.black} />
+            <ArrowLeft2 size={20} color={INK} />
           </TouchableOpacity>
+        ) : (
+          <View style={styles.sideSlot} />
         )}
 
-        <View
-          style={[
-            styles.titleContainer,
-            back ? styles.titleWithBack : styles.titleWithoutBack,
-          ]}
-        >
-          <Text variant="bold" size="lg" style={styles.title}>
-            {title}
-          </Text>
-        </View>
+        <Text variant="bold" size="lg" style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
+
+        <View style={styles.sideSlot}>{right ?? null}</View>
       </View>
     </View>
   );
@@ -54,42 +61,36 @@ export default CommonHeader;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: wp("4%"),
-    paddingTop: hp("3%"),
-    paddingBottom: hp("1%"),
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    // no border, no shadow — whitespace does the separating
   },
   content: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: hp("5%"),
+    minHeight: 44,
+    gap: 10,
   },
   backButton: {
-    padding: wp("1%"),
-    marginRight: wp("3%"),
-  },
-  titleContainer: {
-    flex: 1,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: LIGHT_GREEN,
+    alignItems: "center",
     justifyContent: "center",
   },
-  titleWithBack: {
-    marginLeft: 0,
-  },
-  titleWithoutBack: {
+  sideSlot: {
+    width: 40,
+    height: 40,
     alignItems: "center",
+    justifyContent: "center",
   },
   title: {
-    color: COLORS.black,
+    flex: 1,
+    color: INK,
     textAlign: "center",
+    fontSize: 17,
+    letterSpacing: -0.3,
   },
 });

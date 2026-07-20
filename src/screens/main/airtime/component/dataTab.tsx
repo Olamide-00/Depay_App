@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity } from "react-native";
-import { styles } from "../style";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import BottomSheetSelector from "../../../../components/common/bottomsheet";
 import PhoneInputWithContact from "../../../../components/common/numberSelector";
 import { useNavigation } from "@react-navigation/native";
@@ -9,6 +8,10 @@ import {
   useGetServicePLan,
 } from "../../../../api/hooks/useBills";
 import Text from "../../../../components/common/txt";
+
+const BRAND = "#1B3710";
+const INK = "#141613";
+const ERROR_RED = "#D92D20";
 
 interface DataTabProps {
   /** Network hint from the Services screen, e.g. "mtn" */
@@ -173,3 +176,43 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
 };
 
 export default DataTab;
+
+const styles = StyleSheet.create({
+  tabContent: {
+    padding: 16,
+  },
+  selectorContainer: {
+    marginTop: 8,
+  },
+  inputContainer: {
+    marginTop: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontFamily: "Poppins-Medium",
+    color: INK,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 12.5,
+    fontFamily: "Poppins-Regular",
+    color: ERROR_RED,
+    marginTop: 6,
+  },
+  continueButton: {
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 32,
+  },
+  disabledButton: {
+    opacity: 0.35,
+  },
+  continueButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15.5,
+    fontFamily: "Poppins-SemiBold",
+  },
+});
