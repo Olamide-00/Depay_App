@@ -100,13 +100,13 @@ const Wallet = () => {
           ]);
           Alert.alert(
             "Success! 🎉",
-            "Your bank account has been created successfully.",
+            "Your bank account has been created successfully."
           );
         } else {
           useAuthStore.getState().setIsWalletCreated(true);
           Alert.alert(
             "Almost there!",
-            "Your account is being set up. Check back in a moment — it should be ready shortly.",
+            "Your account is being set up. Check back in a moment — it should be ready shortly."
           );
         }
 
@@ -239,7 +239,7 @@ const Wallet = () => {
                 color={COLORS.brand}
               />
               <Text style={accountStyles.infoText}>
-                Payments sent to this account will reflect in your Jaan wallet
+                Payments sent to this account will reflect in your Depay wallet
                 balance automatically.
               </Text>
             </View>
@@ -398,7 +398,7 @@ const Wallet = () => {
             onPress={() =>
               Alert.alert(
                 "Need Help?",
-                "Dial *565*0# on your registered number or contact your bank for assistance.",
+                "Dial *565*0# on your registered number or contact your bank for assistance."
               )
             }
           >
@@ -429,8 +429,8 @@ const Wallet = () => {
           </View>
           <Text style={formStyles.termsText}>
             I consent to the collection of my BVN, phone number, and personal
-            details in line with CBN requirements. Jaan will never share or sell
-            my information.
+            details in line with CBN requirements. Depay will never share or
+            sell my information.
           </Text>
         </TouchableOpacity>
 

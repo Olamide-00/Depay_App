@@ -48,7 +48,7 @@
       "expo-font",
       [
         "expo-local-authentication",
-        { "faceIDPermission": "Allow JAAN to use Face ID to log you in." }
+        { "faceIDPermission": "Allow Depay to use Face ID to log you in." }
       ]
     ]
   }

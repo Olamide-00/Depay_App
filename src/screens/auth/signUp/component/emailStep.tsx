@@ -61,7 +61,7 @@ const SignUpEmail = () => {
         {/* Title */}
         <Text style={styles.title}>Unlock Seamless Digital Living</Text>
         <Text style={styles.subtitle}>
-          With JAAN it just 1 tap to access your digital needs
+          With Depay it just 1 tap to access your digital needs
         </Text>
 
         {/* Email Input */}

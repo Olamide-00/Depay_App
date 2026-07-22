@@ -56,7 +56,7 @@ const Receipt = () => {
     transaction.email ||
     userData?.email ||
     "---";
-  const referralCode = userData?.tag ? `JAAN${userData.tag}` : "JAANREF123";
+  const referralCode = userData?.tag ? `Depay${userData.tag}` : "DEPAYREF123";
   const isSuccess = status === "SUCCESS";
 
   const handleCopyId = () => {
@@ -97,7 +97,7 @@ const Receipt = () => {
       const isAvailable = await Sharing.isAvailableAsync();
       if (!isAvailable) {
         await Share.share({
-          message: `JAAN Transaction Receipt\n\nType: ${category}\nAmount: ₦${amount.toLocaleString(
+          message: `Depay Transaction Receipt\n\nType: ${category}\nAmount: ₦${amount.toLocaleString(
             "en-NG",
             { minimumFractionDigits: 2 }
           )}\nStatus: ${status}\nDate: ${displayDate}\nTransaction ID: ${transactionId}`,
