@@ -37,7 +37,7 @@ const slides = [
   {
     id: 2,
     image: {
-      uri: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=1200&q=80",
+      uri: "https://images.unsplash.com/photo-1631024723490-e50733b2d7eb?q=80&w=1444&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     eyebrow: "AIRTIME & DATA",
     title: "Topped up in\nseconds.",
