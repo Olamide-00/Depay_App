@@ -208,19 +208,21 @@ export default function Login() {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
         style={styles.flex}
       >
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           contentContainerStyle={[
             styles.content,
             { paddingBottom: Math.max(insets.bottom, 16) + 24 },
           ]}
         >
           <Image
-            source={require("../../../../assets/images/logo2.png")}
+            source={require("../../../../assets/images/DEPAYLOGO.png")}
             resizeMode="contain"
             style={styles.logo}
           />
@@ -357,12 +359,12 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 24,
-    paddingTop: 32,
   },
   logo: {
-    width: 96,
-    height: 32,
-    marginBottom: 40,
+    width: 140,
+    height: 140,
+    marginBottom: 32,
+    alignSelf: "center",
   },
   title: {
     color: INK,
@@ -375,7 +377,7 @@ const styles = StyleSheet.create({
     color: MUTED,
     fontSize: 15,
     lineHeight: 22,
-    marginBottom: 32,
+    marginBottom: 50,
   },
   form: {
     width: "100%",

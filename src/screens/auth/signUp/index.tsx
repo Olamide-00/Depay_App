@@ -109,7 +109,7 @@ const SignUp = () => {
         </TouchableOpacity>
 
         <Image
-          source={require("../../../../assets/images/logo2.png")}
+          source={require("../../../../assets/images/DEPAYLOGO.png")}
           resizeMode="contain"
           style={styles.logo}
         />
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: 8,
+    // paddingTop: 8,
   },
   backButton: {
     width: 40,
@@ -265,8 +265,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   logo: {
-    width: 84,
-    height: 28,
+    width: 80,
+    height: 76,
+    alignSelf: "center",
   },
   content: {
     flex: 1,

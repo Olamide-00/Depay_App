@@ -99,7 +99,7 @@ const Stepper: React.FC<StepperProps> = ({
 const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: wp("5%"),
-    paddingTop: hp("2%"),
+    paddingTop: hp("0%"),
   },
   container: {
     flexDirection: "row",

@@ -76,7 +76,7 @@ const Receipt = () => {
       if (permStatus !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please allow access to save the receipt.",
+          "Please allow access to save the receipt."
         );
         return;
       }
@@ -97,7 +97,10 @@ const Receipt = () => {
       const isAvailable = await Sharing.isAvailableAsync();
       if (!isAvailable) {
         await Share.share({
-          message: `JAAN Transaction Receipt\n\nType: ${category}\nAmount: ₦${amount.toLocaleString("en-NG", { minimumFractionDigits: 2 })}\nStatus: ${status}\nDate: ${displayDate}\nTransaction ID: ${transactionId}`,
+          message: `JAAN Transaction Receipt\n\nType: ${category}\nAmount: ₦${amount.toLocaleString(
+            "en-NG",
+            { minimumFractionDigits: 2 }
+          )}\nStatus: ${status}\nDate: ${displayDate}\nTransaction ID: ${transactionId}`,
           title: "Transaction Receipt",
         });
         return;
@@ -197,7 +200,7 @@ const Receipt = () => {
           {/* Top card — amount + status */}
           <View style={styles.topCard}>
             <Image
-              source={require("../../../../assets/images/logo2.png")}
+              source={require("../../../../assets/images/DEPAYLOGO.png")}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -271,7 +274,9 @@ const Receipt = () => {
             <DetailRow label="Beneficiary" value={beneficiary} />
             <DetailRow
               label="Amount"
-              value={`₦${amount.toLocaleString("en-NG", { minimumFractionDigits: 2 })}`}
+              value={`₦${amount.toLocaleString("en-NG", {
+                minimumFractionDigits: 2,
+              })}`}
             />
             <DetailRow
               label="Status"

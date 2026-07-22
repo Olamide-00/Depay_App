@@ -5,13 +5,13 @@
     "scheme": "depay",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/depay.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/depay.png",
       "resizeMode": "cover",
-      "backgroundColor": "#6B34FF"
+      "backgroundColor": "#fff"
     },
     "fonts": [
       "./assets/fonts/Tinos-Regular.ttf",
@@ -25,9 +25,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#6B34FF"
+        "foregroundImage": "./assets/images/depay.png",
+        "backgroundColor": "#fff"
       },
+      "softwareKeyboardLayoutMode": "resize",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.olamide00.depay",
@@ -37,7 +38,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/images/DEPAYLOGO.png.png"
     },
     "plugins": [
       "@react-native-community/datetimepicker",
