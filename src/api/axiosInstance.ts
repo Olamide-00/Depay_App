@@ -1,9 +1,7 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-
-
-const BASE_URL = "https://jaa.up.railway.app/api/v1";
+const BASE_URL = "http://192.168.1.92:8080/api/v1";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -25,7 +23,7 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor for handling errors
@@ -34,7 +32,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     console.error("API Error:", error.response?.data || error.message);
     return Promise.reject(error);
-  },
+  }
 );
 
 export default axiosInstance;

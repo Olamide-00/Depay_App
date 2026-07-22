@@ -1,197 +1,175 @@
 // style.ts
 import { StyleSheet } from "react-native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import { COLORS } from "../../../constants/Colors";
+
+const BRAND = "#1B3710";
+const BRAND_TINT = "#EAF0E6";
+const INK = "#141613";
+const MUTED = "#6B7268";
+const BORDER = "#E5E8E3";
+const FIELD_BG = "#FAFBF9";
+const DIVIDER = "#EDEFEA";
 
 export const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#F5F5F7",
+    backgroundColor: "#FFFFFF",
   },
-  scroll: {
-    flex: 1, // takes all space above the buttons
-  },
-  scrollContent: {
-    paddingBottom: 16, // breathing room at the bottom of scroll area
-  },
-
-  // flex column — card grows to fill, buttons stick to bottom
   container: {
     flex: 1,
-    paddingHorizontal: wp("5%"),
-    paddingBottom: hp("2%"),
-    justifyContent: "space-between", // ← pushes actions to bottom
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 24,
   },
 
-  // ── Icon section ──────────────────────────────
+  // ── Icon + heading ──
   iconSection: {
     alignItems: "center",
-    paddingVertical: hp("1.5%"),
+    marginBottom: 28,
   },
   iconRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "#F0E6FF",
-    justifyContent: "center",
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: BRAND_TINT,
     alignItems: "center",
-    marginBottom: hp("1%"),
-    shadowColor: COLORS.brand,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 3,
+    justifyContent: "center",
+    marginBottom: 16,
   },
   iconContainer: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: "#fff",
-    justifyContent: "center",
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
+    justifyContent: "center",
   },
   reviewText: {
-    fontSize: 18,
+    color: INK,
+    fontSize: 22,
     fontWeight: "700",
-    color: "#1A1A1E",
     letterSpacing: -0.3,
-  },
-  reviewSubtext: {
-    fontSize: 12,
-    color: "#9A9AA0",
-    textAlign: "center",
-    marginTop: 2,
-  },
-
-  // ── Details card ──────────────────────────────
-  detailsCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: wp("4.5%"),
-    borderWidth: 1.5,
-    borderColor: "#EDE6FA",
-    shadowColor: "#7B3FE4",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 3,
-  },
-
-  // ── Amount ────────────────────────────────────
-  amountSection: {
-    backgroundColor: "#F5EEFF",
-    paddingVertical: hp("1.5%"), // tighter than before
-    paddingHorizontal: wp("4%"),
-    borderRadius: 14,
-    alignItems: "center",
-    marginBottom: hp("1.5%"),
-    borderWidth: 1,
-    borderColor: "#E8D9FF",
-  },
-  amountLabel: {
-    fontSize: 10,
-    color: "#9A80C0",
-    fontWeight: "600",
-    letterSpacing: 0.8,
     marginBottom: 4,
   },
+  reviewSubtext: {
+    color: MUTED,
+    fontSize: 14,
+    textAlign: "center",
+  },
+
+  // ── Details card ──
+  detailsCard: {
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: FIELD_BG,
+    padding: 24,
+  },
+
+  amountSection: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  amountLabel: {
+    color: MUTED,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
   amountValue: {
-    fontSize: 30,
+    color: INK,
+    fontSize: 34,
     fontWeight: "800",
-    color: COLORS.brand,
     letterSpacing: -0.5,
+    marginBottom: 10,
   },
   amountBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
-    marginTop: 6,
-    backgroundColor: "#EDE1FF",
-    paddingHorizontal: 9,
-    paddingVertical: 2,
+    gap: 5,
+    backgroundColor: BRAND_TINT,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 20,
   },
   amountBadgeText: {
-    fontSize: 10,
-    color: COLORS.brand,
-    fontWeight: "600",
-    letterSpacing: 0.2,
+    color: BRAND,
+    fontSize: 11,
+    fontWeight: "700",
   },
 
-  // ── Divider ───────────────────────────────────
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginBottom: hp("1.5%"),
+    marginBottom: 16,
+    gap: 10,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#F0EDF7",
+    backgroundColor: DIVIDER,
   },
   dividerLabel: {
-    fontSize: 10,
-    color: "#C0B8D4",
-    fontWeight: "600",
+    color: MUTED,
+    fontSize: 11,
+    fontWeight: "700",
     letterSpacing: 1,
   },
 
-  // ── Items ─────────────────────────────────────
   itemContainer: {
-    gap: hp("1%"), // tighter gap
+    marginBottom: 16,
   },
 
-  // ── Note ──────────────────────────────────────
   noteCard: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: wp("2%"),
-    marginTop: hp("1.5%"),
-    backgroundColor: "#FBF8FF",
-    padding: wp("3%"),
-    borderRadius: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.brand,
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: BRAND_TINT,
+    borderRadius: 12,
+    padding: 12,
   },
   noteText: {
     flex: 1,
-    fontSize: 11,
-    color: "#7B6A99",
-    lineHeight: 15,
+    color: BRAND,
+    fontSize: 12.5,
+    lineHeight: 18,
   },
 
-  // ── Actions — always at bottom ────────────────
+  // ── Fixed bottom actions ──
   actions: {
-    paddingTop: hp("1.5%"),
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: DIVIDER,
+    backgroundColor: "#FFFFFF",
   },
   btn: {
-    backgroundColor: COLORS.brand,
-    borderWidth: 0,
-    paddingVertical: hp("1.8%"),
+    height: 56,
     borderRadius: 14,
-    shadowColor: COLORS.brand,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 12,
-    elevation: 5,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
   },
   btnText: {
     color: "#FFFFFF",
+    fontSize: 16.5,
     fontWeight: "700",
-    letterSpacing: 0.3,
   },
   cancelButton: {
-    paddingVertical: hp("1.2%"),
+    height: 48,
     alignItems: "center",
+    justifyContent: "center",
   },
   cancelButtonText: {
-    fontSize: 13,
-    color: "#B0A8C4",
+    color: MUTED,
+    fontSize: 14.5,
     fontWeight: "600",
-    letterSpacing: 0.2,
   },
 });

@@ -2,6 +2,7 @@ import React from "react";
 import { View, TouchableOpacity, StyleSheet, Vibration } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Text from "../common/txt";
+import { COLORS } from "../../constants/Colors";
 
 interface CustomKeypadProps {
   onKeyPress: (key: string) => void;
@@ -21,7 +22,7 @@ const CustomKeypad: React.FC<CustomKeypadProps> = ({
   showForgotPin = true,
   onForgotPin,
   submitIcon = "play",
-  submitColor = "#6C2BD9",
+  submitColor = COLORS.brand,
   vibrate = true,
 }) => {
   const handlePress = (key: string) => {
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E8E8E8",
   },
   submitKey: {
-    backgroundColor: "#6C2BD9",
+    backgroundColor: COLORS.brand,
   },
 });
 

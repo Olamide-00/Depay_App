@@ -115,7 +115,7 @@ export default function Login() {
 
   // ─── Email/password login ─────────────────────────────────
   const handleLogin = () => {
-    setIsAuthenticated(true);
+    // setIsAuthenticated(true);
     if (!validate()) return;
 
     login(

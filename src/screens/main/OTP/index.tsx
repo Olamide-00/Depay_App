@@ -1,4 +1,3 @@
-// OTP.tsx — full corrected file
 import { View, ActivityIndicator, Animated } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { styles } from "./style";
@@ -41,7 +40,7 @@ const OTP = () => {
   const maxPinLength = 4;
 
   const dotAnims = useRef(
-    [...Array(maxPinLength)].map(() => new Animated.Value(1)),
+    [...Array(maxPinLength)].map(() => new Animated.Value(1))
   ).current;
 
   const overlayAnim = useRef(new Animated.Value(0)).current;
@@ -138,7 +137,7 @@ const OTP = () => {
                   const isSuccess =
                     response?.success === true &&
                     response?.data?.response_description?.includes(
-                      "TRANSACTION SUCCESSFUL",
+                      "TRANSACTION SUCCESSFUL"
                     );
 
                   const hasToken =
@@ -154,7 +153,7 @@ const OTP = () => {
                         navigation.navigate("ElectReceipt", {
                           data: response?.data,
                         }),
-                      300,
+                      300
                     );
                   } else if (isSuccess) {
                     setTimeout(
@@ -163,7 +162,7 @@ const OTP = () => {
                           success: true,
                           message: "Transaction Completed",
                         }),
-                      300,
+                      300
                     );
                   } else {
                     setTimeout(
@@ -174,7 +173,7 @@ const OTP = () => {
                           subMessage:
                             "Your payment could not be processed. Please try again.",
                         }),
-                      300,
+                      300
                     );
                   }
                 },
@@ -191,10 +190,10 @@ const OTP = () => {
                         message: "Transaction Failed",
                         subMessage: message,
                       }),
-                    300,
+                    300
                   );
                 },
-              },
+              }
             );
           },
 
@@ -208,7 +207,7 @@ const OTP = () => {
             setErrorMsg("Incorrect PIN. Please try again.");
             setPin(""); // clear pin so user can retype
           },
-        },
+        }
       );
     } else {
       if (pin.length > 0) {
