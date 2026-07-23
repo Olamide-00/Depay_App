@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: SCREEN_BG,
+    paddingBottom: 65,
   },
   scrollContent: {
     paddingHorizontal: 16,

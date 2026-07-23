@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: COLORS.white,
+    paddingBottom: hp("5%"),
   },
   profileHeader: {
     paddingHorizontal: wp("4%"),

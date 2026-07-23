@@ -1,114 +1,9 @@
 // constants/service.js
 export const services = [
-  // ================= AIRTIME =================
-  {
-    id: 1,
-    label: "MTN",
-    category: "airtime",
-    screen: "Airtime",
-    serviceType: "airtime",
-    network: "mtn",
-    image: require("../../assets/services/mtn.png"),
-  },
-  {
-    id: 2,
-    label: "Airtel",
-    category: "airtime",
-    screen: "Airtime",
-    serviceType: "airtime",
-    network: "airtel",
-    image: require("../../assets/services/airtel.png"),
-  },
-  {
-    id: 3,
-    label: "Glo",
-    category: "airtime",
-    screen: "Airtime",
-    serviceType: "airtime",
-    network: "glo",
-    image: require("../../assets/services/glo.png"),
-  },
-  {
-    id: 4,
-    label: "9mobile",
-    category: "airtime",
-    screen: "Airtime",
-    serviceType: "airtime",
-    network: "9mobile",
-    image: require("../../assets/services/9mobile.png"),
-  },
-
-  // ================= DATA =================
-  {
-    id: 5,
-    label: "MTN Data",
-    category: "data",
-    screen: "Airtime",
-    serviceType: "data",
-    network: "mtn",
-    image: require("../../assets/services/mtn.png"),
-  },
-  {
-    id: 6,
-    label: "Airtel Data",
-    category: "data",
-    screen: "Airtime",
-    serviceType: "data",
-    network: "airtel",
-    image: require("../../assets/services/airtel.png"),
-  },
-  {
-    id: 7,
-    label: "Glo Data",
-    category: "data",
-    screen: "Airtime",
-    serviceType: "data",
-    network: "glo",
-    image: require("../../assets/services/glo.png"),
-  },
-  {
-    id: 8,
-    label: "9mobile Data",
-    category: "data",
-    screen: "Airtime",
-    serviceType: "data",
-    network: "9mobile",
-    image: require("../../assets/services/9mobile.png"),
-  },
-
-  // ================= CABLE TV =================
-  {
-    id: 9,
-    label: "DSTV",
-    category: "tv",
-    screen: "TV",
-    image: require("../../assets/services/dstv.png"),
-  },
-  {
-    id: 10,
-    label: "GOTV",
-    category: "tv",
-    screen: "TV",
-    image: require("../../assets/service2/gotv.png"),
-  },
-  {
-    id: 11,
-    label: "StarTimes",
-    category: "tv",
-    screen: "TV",
-    image: require("../../assets/service2/startime.png"),
-  },
-  {
-    id: 12,
-    label: "Showmax",
-    category: "tv",
-    screen: "TV",
-    image: require("../../assets/service2/showmax.png"),
-  },
-
   // ================= ELECTRICITY (all DisCos) =================
   // image: null → tile renders a colored monogram until you add a logo.
   // To add a logo later: image: require("../../assets/services/discos/ikeja.png")
+
   {
     id: 13,
     label: "Ikeja Electric",
@@ -218,6 +113,112 @@ export const services = [
     short: "YL",
     color: "#6A1B9A",
     biller: "yola-electric",
+  },
+
+  // ================= AIRTIME =================
+  {
+    id: 1,
+    label: "MTN",
+    category: "airtime",
+    screen: "Airtime",
+    serviceType: "airtime",
+    network: "mtn",
+    image: require("../../assets/services/mtn.png"),
+  },
+  {
+    id: 2,
+    label: "Airtel",
+    category: "airtime",
+    screen: "Airtime",
+    serviceType: "airtime",
+    network: "airtel",
+    image: require("../../assets/services/airtel.png"),
+  },
+  {
+    id: 3,
+    label: "Glo",
+    category: "airtime",
+    screen: "Airtime",
+    serviceType: "airtime",
+    network: "glo",
+    image: require("../../assets/services/glo.png"),
+  },
+  {
+    id: 4,
+    label: "9mobile",
+    category: "airtime",
+    screen: "Airtime",
+    serviceType: "airtime",
+    network: "9mobile",
+    image: require("../../assets/services/9mobile.png"),
+  },
+
+  // ================= DATA =================
+  {
+    id: 5,
+    label: "MTN Data",
+    category: "data",
+    screen: "Airtime",
+    serviceType: "data",
+    network: "mtn",
+    image: require("../../assets/services/mtn.png"),
+  },
+  {
+    id: 6,
+    label: "Airtel Data",
+    category: "data",
+    screen: "Airtime",
+    serviceType: "data",
+    network: "airtel",
+    image: require("../../assets/services/airtel.png"),
+  },
+  {
+    id: 7,
+    label: "Glo Data",
+    category: "data",
+    screen: "Airtime",
+    serviceType: "data",
+    network: "glo",
+    image: require("../../assets/services/glo.png"),
+  },
+  {
+    id: 8,
+    label: "9mobile Data",
+    category: "data",
+    screen: "Airtime",
+    serviceType: "data",
+    network: "9mobile",
+    image: require("../../assets/services/9mobile.png"),
+  },
+
+  // ================= CABLE TV =================
+  {
+    id: 9,
+    label: "DSTV",
+    category: "tv",
+    screen: "TV",
+    image: require("../../assets/services/dstv.png"),
+  },
+  {
+    id: 10,
+    label: "GOTV",
+    category: "tv",
+    screen: "TV",
+    image: require("../../assets/service2/gotv.png"),
+  },
+  {
+    id: 11,
+    label: "StarTimes",
+    category: "tv",
+    screen: "TV",
+    image: require("../../assets/service2/startime.png"),
+  },
+  {
+    id: 12,
+    label: "Showmax",
+    category: "tv",
+    screen: "TV",
+    image: require("../../assets/service2/showmax.png"),
   },
 
   // ================= EDUCATION =================

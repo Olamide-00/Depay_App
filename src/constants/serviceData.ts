@@ -13,6 +13,12 @@ import {
 
 export const serviceData = [
   {
+    id: 2,
+    name: "Electricity",
+    icon: "Electricity",
+    screen: "Electricity",
+  },
+  {
     id: 1,
     name: "Airtime",
     icon: "Simcard1",
@@ -24,12 +30,7 @@ export const serviceData = [
     icon: "Simcard2",
     screen: "Data",
   },
-  {
-    id: 2,
-    name: "Electricity",
-    icon: "Electricity",
-    screen: "Electricity",
-  },
+
   {
     id: 4,
     name: "Cable TV",

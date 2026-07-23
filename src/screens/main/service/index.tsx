@@ -1,4 +1,3 @@
-// Service.tsx
 import {
   View,
   ScrollView,
@@ -29,10 +28,11 @@ const LIGHT_GREEN = "#EAF3E9";
 const byCategory = (cat) => serviceData.filter((s) => s.category === cat);
 
 const allSections = [
+  { title: "Electricity", emoji: "💡", data: byCategory("electricity") },
   { title: "Airtime", emoji: "📞", data: byCategory("airtime") },
   { title: "Data", emoji: "📶", data: byCategory("data") },
   { title: "Cable TV", emoji: "📺", data: byCategory("tv") },
-  { title: "Electricity", emoji: "💡", data: byCategory("electricity") },
+
   { title: "Education", emoji: "🎓", data: byCategory("education") },
 ];
 
@@ -55,9 +55,9 @@ const Service = () => {
     navigation.navigate("StackNav", {
       screen: item.screen,
       params: {
-        serviceType: item.serviceType, // "airtime" | "data"
-        network: item.network, // "mtn" | "airtel" | "glo" | "9mobile"
-        biller: item.biller, // electricity DisCo identifier
+        serviceType: item.serviceType,
+        network: item.network,
+        biller: item.biller,
       },
     });
   };
@@ -183,6 +183,7 @@ const styles = {
   root: {
     flex: 1,
     backgroundColor: "#F7F9F6",
+    paddingBottom: 60,
   } as any,
   scrollContent: {
     paddingHorizontal: H_PADDING,
