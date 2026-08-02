@@ -39,3 +39,13 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+
+
+
+
+
+w6WQDX8zpNp2Umwy
+
+
+mongodb+srv://<db_username>:w6WQDX8zpNp2Umwy@depay-cluster.kijbhaw.mongodb.net/?appName=Depay-cluster
