@@ -9,6 +9,7 @@ import {
   Keyboard,
   LayoutAnimation,
   UIManager,
+  TextStyle,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import Stepper from "../component/stepper";
@@ -87,26 +88,25 @@ const SignUpOTP = () => {
   };
 
   const submitCode = (code: string) => {
-    navigation.navigate("SignUpPassword", { email });
-    // if (code.length < OTP_LENGTH || isVerifying) return;
+    if (code.length < OTP_LENGTH || isVerifying) return;
 
-    // Keyboard.dismiss();
-    // setError("");
+    Keyboard.dismiss();
+    setError("");
 
-    // verifyOTP(
-    //   { email, otp: code },
-    //   {
-    //     onSuccess: () => {
-    //       navigation.navigate("SignUpPassword", { email });
-    //     },
-    //     onError: (err: any) => {
-    //       const message =
-    //         err?.response?.data?.message || "Invalid code. Please try again.";
-    //       setError(message);
-    //       clearOtp();
-    //     },
-    //   }
-    // );
+    verifyOTP(
+      { email, otp: code },
+      {
+        onSuccess: () => {
+          navigation.navigate("SignUpPassword", { email });
+        },
+        onError: (err: any) => {
+          const message =
+            err?.response?.data?.message || "Invalid code. Please try again.";
+          setError(message);
+          clearOtp();
+        },
+      },
+    );
   };
 
   const handleOtpChange = (value: string, index: number) => {
@@ -170,7 +170,7 @@ const SignUpOTP = () => {
             "Failed to resend the code. Please try again.";
           setError(message);
         },
-      }
+      },
     );
   };
 
@@ -219,7 +219,9 @@ const SignUpOTP = () => {
             {otp.map((digit, index) => (
               <TextInput
                 key={index}
-                ref={(ref) => (inputRefs.current[index] = ref)}
+                ref={(ref) => {
+                  inputRefs.current[index] = ref;
+                }}
                 style={[
                   styles.otpInput,
                   focusedIndex === index && styles.otpInputFocused,
@@ -255,7 +257,14 @@ const SignUpOTP = () => {
                 hitSlop={8}
               >
                 <Text
-                  style={[styles.resendLink, isResending && { opacity: 0.5 }]}
+                  style={
+                    // flatten to TextStyle to satisfy TS (StyleProp<TextStyle> expects TextStyle | TextStyle[])
+                    // StyleSheet.flatten returns TextStyle | undefined
+                    StyleSheet.flatten([
+                      styles.resendLink,
+                      isResending ? { opacity: 0.5 } : undefined,
+                    ]) as TextStyle
+                  }
                 >
                   {isResending ? "Sending..." : "Resend it"}
                 </Text>
@@ -400,6 +409,9 @@ const styles = StyleSheet.create({
     color: BRAND,
     fontSize: 14,
     fontWeight: "700",
+  },
+  bottom: {
+    paddingHorizontal: 24,
   },
   verifyButton: {
     height: 56,

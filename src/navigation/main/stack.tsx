@@ -31,11 +31,7 @@ export default function StackNavigation() {
       screenOptions={{ headerShown: false, animation: "slide_from_right" }}
     >
       <Stack.Screen name="Airtime" component={Airtime} />
-      <Stack.Screen
-        name="Confirmation"
-        component={Confirmation}
-        options={{ presentation: "modal", animation: "slide_from_bottom" }}
-      />
+      <Stack.Screen name="Confirmation" component={Confirmation} />
       <Stack.Screen name="OTP" component={OTP} />
       <Stack.Screen name="Success" component={Success} />
       <Stack.Screen name="User" component={User} />
