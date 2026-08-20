@@ -7,29 +7,18 @@
     "orientation": "portrait",
     "icon": "./assets/images/depay.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/depay.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#fff"
-    },
-    "fonts": [
-      "./assets/fonts/Tinos-Regular.ttf",
-      "./assets/fonts/Tinos-Bold.ttf",
-      "./assets/fonts/Tinos-Italic.ttf",
-      "./assets/fonts/Tinos-BoldItalic.ttf"
-    ],
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.olamide00.depay"
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/depay.png",
-        "backgroundColor": "#fff"
+        "backgroundColor": "#ffffff"
       },
       "softwareKeyboardLayoutMode": "resize",
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.olamide00.depay",
       "permissions": [
@@ -37,19 +26,50 @@
         "android.permission.INTERNET"
       ]
     },
+
     "web": {
-      "favicon": "./assets/images/DEPAYLOGO.png.png"
+      "favicon": "./assets/images/depay.png"
     },
+
     "plugins": [
       "@react-native-community/datetimepicker",
       "expo-secure-store",
       "expo-web-browser",
       "expo-build-properties",
-      "expo-font",
+
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Tinos-Regular.ttf",
+            "./assets/fonts/Tinos-Bold.ttf",
+            "./assets/fonts/Tinos-Italic.ttf",
+            "./assets/fonts/Tinos-BoldItalic.ttf"
+          ]
+        }
+      ],
+
       [
         "expo-local-authentication",
-        { "faceIDPermission": "Allow Depay to use Face ID to log you in." }
-      ]
+        {
+          "faceIDPermission": "Allow Depay to use Face ID to log you in."
+        }
+      ],
+
+      "expo-image",
+      "expo-sharing",
+
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/depay.png",
+          "imageWidth": 200,
+          "resizeMode": "cover",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+
+      "expo-status-bar"
     ]
   }
 }
