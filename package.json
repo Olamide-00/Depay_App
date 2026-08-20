@@ -50,7 +50,6 @@
     "react-native-svg": "^15.15.2",
     "react-native-view-shot": "4.0.3",
     "socket.io-client": "^4.8.3",
-    "undefined": "@expo/ui/swift-ui",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
