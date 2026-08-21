@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import * as Contacts from "expo-contacts";
+import * as Contacts from "expo-contacts/legacy";
 import { Alert } from "react-native";
 
 interface Contact {
