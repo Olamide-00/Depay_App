@@ -69,10 +69,11 @@ const ResetPassword = () => {
                     color={hasMinLength ? "#10B981" : "#9CA3AF"}
                   />
                   <Text
-                    style={[
-                      styles.requirementText,
-                      hasMinLength && styles.requirementMet,
-                    ]}
+                    style={
+                      hasMinLength
+                        ? [styles.requirementText, styles.requirementMet]
+                        : styles.requirementText
+                    }
                   >
                     at least 8 characters
                   </Text>
@@ -85,10 +86,11 @@ const ResetPassword = () => {
                     color={hasNumber ? "#10B981" : "#9CA3AF"}
                   />
                   <Text
-                    style={[
-                      styles.requirementText,
-                      hasNumber && styles.requirementMet,
-                    ]}
+                    style={
+                      hasNumber
+                        ? [styles.requirementText, styles.requirementMet]
+                        : styles.requirementText
+                    }
                   >
                     at least 1 number
                   </Text>
@@ -101,10 +103,11 @@ const ResetPassword = () => {
                     color={hasUppercase ? "#10B981" : "#9CA3AF"}
                   />
                   <Text
-                    style={[
-                      styles.requirementText,
-                      hasUppercase && styles.requirementMet,
-                    ]}
+                    style={
+                      hasUppercase
+                        ? [styles.requirementText, styles.requirementMet]
+                        : styles.requirementText
+                    }
                   >
                     at least 1 uppercase letter
                   </Text>
@@ -117,10 +120,11 @@ const ResetPassword = () => {
                     color={hasLowercase ? "#10B981" : "#9CA3AF"}
                   />
                   <Text
-                    style={[
-                      styles.requirementText,
-                      hasLowercase && styles.requirementMet,
-                    ]}
+                    style={
+                      hasLowercase
+                        ? [styles.requirementText, styles.requirementMet]
+                        : styles.requirementText
+                    }
                   >
                     at least 1 lowercase letter
                   </Text>

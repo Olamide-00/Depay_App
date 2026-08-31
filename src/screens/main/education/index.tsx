@@ -24,18 +24,6 @@ const examBoards = [
     screen: "Waec",
     icon: "document-text-outline" as const,
   },
-  {
-    id: "3",
-    label: "NECO",
-    screen: "Neco",
-    icon: "ribbon-outline" as const,
-  },
-  {
-    id: "4",
-    label: "NABTEB",
-    screen: "Nabteb",
-    icon: "medal-outline" as const,
-  },
 ];
 
 const ExamCard = ({
