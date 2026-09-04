@@ -7,12 +7,13 @@
     "orientation": "portrait",
     "icon": "./assets/images/depay.png",
     "userInterfaceStyle": "light",
-
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.olamide00.depay"
+      "bundleIdentifier": "com.olamide00.depay",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/depay.png",
@@ -23,20 +24,19 @@
       "package": "com.olamide00.depay",
       "permissions": [
         "android.permission.GET_ACCOUNTS",
-        "android.permission.INTERNET"
+        "android.permission.INTERNET",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
-
     "web": {
       "favicon": "./assets/images/depay.png"
     },
-
     "plugins": [
       "@react-native-community/datetimepicker",
       "expo-secure-store",
       "expo-web-browser",
       "expo-build-properties",
-
       [
         "expo-font",
         {
@@ -48,17 +48,14 @@
           ]
         }
       ],
-
       [
         "expo-local-authentication",
         {
           "faceIDPermission": "Allow Depay to use Face ID to log you in."
         }
       ],
-
       "expo-image",
       "expo-sharing",
-
       [
         "expo-splash-screen",
         {
@@ -68,8 +65,12 @@
           "backgroundColor": "#ffffff"
         }
       ],
-
       "expo-status-bar"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "152c014f-3cae-4fc3-b395-7955665a8f07"
+      }
+    }
   }
 }

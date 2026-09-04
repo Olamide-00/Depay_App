@@ -17,7 +17,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import useAuthStore from "../../../../store/userStore";
 import { useGetBalance } from "../../../../api/hooks/useAuth";
 
-const SOCKET_URL = "https://jaa.up.railway.app";
+const SOCKET_URL = "https://admin.depay.com.ng/";
 
 const BRAND = "#1B3710";
 const BRAND_DEEP = "#122808";
@@ -111,7 +111,7 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch])
+    }, [refetch]),
   );
 
   useEffect(() => {

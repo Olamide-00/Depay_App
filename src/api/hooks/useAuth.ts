@@ -147,7 +147,6 @@ const useGetBalance = (email: string) => {
       return response.data;
     },
     staleTime: 0,
-    cacheTime: 0,
   });
 
   return { balance, isLoading, isError, refetch };
