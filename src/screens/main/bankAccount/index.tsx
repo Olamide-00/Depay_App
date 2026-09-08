@@ -100,13 +100,13 @@ const Wallet = () => {
           ]);
           Alert.alert(
             "Success! 🎉",
-            "Your bank account has been created successfully."
+            "Your bank account has been created successfully.",
           );
         } else {
           useAuthStore.getState().setIsWalletCreated(true);
           Alert.alert(
             "Almost there!",
-            "Your account is being set up. Check back in a moment — it should be ready shortly."
+            "Your account is being set up. Check back in a moment — it should be ready shortly.",
           );
         }
 
@@ -398,7 +398,7 @@ const Wallet = () => {
             onPress={() =>
               Alert.alert(
                 "Need Help?",
-                "Dial *565*0# on your registered number or contact your bank for assistance."
+                "Dial *565*0# on your registered number or contact your bank for assistance.",
               )
             }
           >

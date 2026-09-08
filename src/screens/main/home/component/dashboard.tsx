@@ -12,12 +12,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import Text from "../../../../components/common/txt";
 import TopUpModal from "./topupModal";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import useAuthStore from "../../../../store/userStore";
 import { useGetBalance } from "../../../../api/hooks/useAuth";
 
-const SOCKET_URL = "https://admin.depay.com.ng/";
+const SOCKET_URL = "https://api.depay.com.ng/";
+const POLL_INTERVAL_MS = 20000;
 
 const BRAND = "#1B3710";
 const BRAND_DEEP = "#122808";
@@ -65,7 +66,10 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [currentBalance, setCurrentBalance] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const pressScale = useRef(new Animated.Value(1)).current;
 
@@ -92,21 +96,57 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
     };
   }, []);
 
+  const { balance, refetch, isLoading: balanceLoading } = useGetBalance(email);
+
   // ─── Socket: live balance updates ──────────────────────────
   useEffect(() => {
     if (!email) return;
+
     const socket = io(SOCKET_URL);
+    socketRef.current = socket;
+
+    socket.on("connect", () => setIsSocketConnected(true));
+    socket.on("connect_error", () => setIsSocketConnected(false));
+    socket.on("disconnect", () => setIsSocketConnected(false));
+
     socket.emit("join", email);
+
     socket.on("balance_updated", (data) => {
       setCurrentBalance(data.newBalance);
     });
+
     return () => {
+      socket.off("connect");
+      socket.off("connect_error");
+      socket.off("disconnect");
       socket.off("balance_updated");
       socket.disconnect();
+      socketRef.current = null;
+      setIsSocketConnected(false);
     };
   }, [email]);
 
-  const { balance, refetch, isLoading: balanceLoading } = useGetBalance(email);
+  // ─── HTTP polling fallback — only while the socket is down ──
+  useEffect(() => {
+    if (!email || isSocketConnected) {
+      if (pollTimer.current) {
+        clearInterval(pollTimer.current);
+        pollTimer.current = null;
+      }
+      return;
+    }
+
+    pollTimer.current = setInterval(() => {
+      refetch();
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      if (pollTimer.current) {
+        clearInterval(pollTimer.current);
+        pollTimer.current = null;
+      }
+    };
+  }, [email, isSocketConnected, refetch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -166,7 +206,12 @@ const Dashboard = ({ refreshTick = 0 }: DashboardProps) => {
               {/* HEADER */}
               <View style={styles.headerRow}>
                 <View style={styles.labelRow}>
-                  <View style={styles.liveDot} />
+                  <View
+                    style={[
+                      styles.liveDot,
+                      !isSocketConnected && styles.liveDotOffline,
+                    ]}
+                  />
                   <Text variant="light" color="rgba(255,255,255,0.7)" size="sm">
                     Available balance
                   </Text>
@@ -358,6 +403,9 @@ const styles = StyleSheet.create({
     height: 7,
     borderRadius: 4,
     backgroundColor: ACCENT_GREEN,
+  },
+  liveDotOffline: {
+    backgroundColor: "rgba(255,255,255,0.3)",
   },
   eyeButton: {
     width: 32,
