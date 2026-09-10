@@ -30,8 +30,9 @@ const User = () => {
   const displayName = userData?.fullName || userData?.name || "User";
   const initial = displayName.charAt(0).toUpperCase();
 
-  const kycStatus: "verified" | "pending" | "unverified" =
-    userData?.kycStatus ?? "unverified";
+  const kycStatus: "verified" | "unverified" = userData?.isWalletCreated
+    ? "verified"
+    : "unverified";
 
   const kycConfig = {
     verified: {
@@ -39,7 +40,6 @@ const User = () => {
       icon: "checkmark-circle" as const,
       tint: BRAND,
     },
-    pending: { label: "Pending", icon: "time-outline" as const, tint: AMBER },
     unverified: {
       label: "Unverified",
       icon: "alert-circle-outline" as const,
@@ -110,7 +110,7 @@ const User = () => {
         scrollEventThrottle={16}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: true },
         )}
       >
         {/* IDENTITY ROW — avatar overlaps the banner's bottom edge */}
