@@ -16,7 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useGetAllServices } from "../../../api/hooks/useBills";
 import useVerify from "../../../api/hooks/useVerify";
 import Text from "../../../components/common/txt";
-// import useAuthStore from "../../../store/userStore";
+import useAuthStore from "../../../store/userStore";
 
 const BRAND = "#1B3710";
 const LIGHT_GREEN = "#EAF3E9";
@@ -33,13 +33,17 @@ const QUICK_AMOUNTS = [500, 1000, 2000, 5000, 10000, 20000];
 const Electricity = () => {
   const navigation = useNavigation<any>();
 
-  const phoneNumber = "";
+  const phoneNumber = useAuthStore(
+    (state) => (state as { phoneNumber?: string }).phoneNumber,
+  );
+
+  console.log("phoneNumber in Electricity screen:", phoneNumber);
 
   const { data: servicesData, isLoading: servicesLoading } =
     useGetAllServices("electricity-bill");
 
   const [paymentType, setPaymentType] = useState<"prepaid" | "postpaid">(
-    "prepaid"
+    "prepaid",
   );
   const [serviceProvider, setServiceProvider] = useState("");
   const [meterNumber, setMeterNumber] = useState("");
@@ -93,7 +97,7 @@ const Electricity = () => {
           onError: () => {
             setCustomerName("");
           },
-        }
+        },
       );
     } else {
       setCustomerName("");
