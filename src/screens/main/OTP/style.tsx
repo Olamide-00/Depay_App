@@ -1,4 +1,3 @@
-// style.ts
 import { StyleSheet, Platform } from "react-native";
 import { COLORS } from "../../../constants/Colors";
 
@@ -39,15 +38,15 @@ export const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: "#DCDCE0", // empty = outlined circle
+    borderColor: "#DCDCE0",
   },
   dotFilled: {
     backgroundColor: COLORS.brand,
-    borderColor: COLORS.brand, // filled = solid brand color
+    borderColor: COLORS.brand,
   },
   dotError: {
     backgroundColor: "#EF4444",
-    borderColor: "#EF4444", // wrong PIN = red
+    borderColor: "#EF4444",
   },
 
   // ── Inline error ──────────────────────────────
@@ -64,34 +63,27 @@ export const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  // ── Full-screen loading overlay ───────────────
+  // ── Processing overlay ────────────────────────
+  // Just the dim scrim, spinner, and label — no card, no border,
+  // no shadow. Nothing sitting inside a box.
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject, // covers entire screen
-    backgroundColor: "rgba(255,255,255,0.85)",
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(10,14,9,0.72)",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 99,
   },
-  loadingCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingVertical: 32,
-    paddingHorizontal: 48,
-    alignItems: "center",
-    gap: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: "#F0EDF7",
+  spinner: {
+    marginBottom: 16,
   },
-  loadingText: {
-    fontSize: 14,
-    color: "#7B6A99",
-    fontWeight: "600",
-    letterSpacing: 0.2,
+  successIcon: {
+    marginBottom: 16,
+  },
+  loadingLabel: {
+    fontSize: 14.5,
+    fontFamily: "Poppins-Medium",
+    color: "#FFFFFF",
+    letterSpacing: 0.1,
   },
 
   // ── Keypad ────────────────────────────────────
