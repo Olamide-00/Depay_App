@@ -23,12 +23,12 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
   const { data, isLoading } = useGetAllServices("data");
 
   const [selectedNetwork, setSelectedNetwork] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [selectedDataPlan, setSelectedDataPlan] = useState("");
   const [networks, setNetworks] = useState<any[]>([]);
   const [dataPlans, setDataPlans] = useState<any[]>([]);
   const [errors, setErrors] = useState({
-    phoneNumber: "",
+    phone: "",
     selectedNetwork: "",
     selectedDataPlan: "",
   });
@@ -45,7 +45,7 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
       // Deduplicate by label
       const unique = mapped.filter(
         (provider: any, index: number, self: any[]) =>
-          index === self.findIndex((p) => p.label === provider.label)
+          index === self.findIndex((p) => p.label === provider.label),
       );
 
       setNetworks(unique);
@@ -56,7 +56,7 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
         const match = unique.find(
           (n: any) =>
             n.label.toLowerCase().includes(hint) ||
-            String(n.value).toLowerCase().includes(hint)
+            String(n.value).toLowerCase().includes(hint),
         );
         if (match) setSelectedNetwork(match.value);
       }
@@ -83,13 +83,13 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
 
   // Find selected plan details for navigation
   const selectedPlanObject = dataPackage?.data?.content?.variations?.find(
-    (plan: any) => plan.variation_code === selectedDataPlan
+    (plan: any) => plan.variation_code === selectedDataPlan,
   );
 
   const handleContinue = () => {
     navigation.navigate("Confirmation", {
       serviceID: selectedNetwork,
-      phoneNumber,
+      phone,
       amount: selectedPlanObject?.variation_amount,
       variation_code: selectedPlanObject?.variation_code,
       plan: selectedPlanObject,
@@ -97,10 +97,7 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
   };
 
   const disable =
-    !selectedNetwork ||
-    !phoneNumber ||
-    phoneNumber.length < 10 ||
-    !selectedDataPlan;
+    !selectedNetwork || !phone || phone.length < 10 || !selectedDataPlan;
 
   return (
     <View style={styles.tabContent}>
@@ -127,10 +124,10 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
       <View style={styles.inputContainer}>
         <PhoneInputWithContact
           label="Phone Number"
-          value={phoneNumber}
+          value={phone}
           onChangeText={(text: string) => {
-            setPhoneNumber(text);
-            setErrors((prev) => ({ ...prev, phoneNumber: "" }));
+            setPhone(text);
+            setErrors((prev) => ({ ...prev, phone: "" }));
           }}
           placeholder="Enter phone number"
         />
@@ -150,10 +147,10 @@ const DataTab = ({ preselectedNetwork }: DataTabProps) => {
             !selectedNetwork
               ? "Select a network first"
               : dataPackageLoading
-              ? "Loading plans..."
-              : dataPlans.length === 0
-              ? "No plans available"
-              : "Select Data Plan"
+                ? "Loading plans..."
+                : dataPlans.length === 0
+                  ? "No plans available"
+                  : "Select Data Plan"
           }
           sheetTitle="Select Data Plan"
           variant="field"

@@ -15,7 +15,7 @@ type RouteParams = {
   serviceID?: string;
   variation_code?: string;
   amount?: any;
-  phoneNumber?: string;
+  phone?: string;
   billersCode?: string;
   type?: string;
 };
@@ -24,7 +24,7 @@ const OTP = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { serviceID, variation_code, amount, phoneNumber, billersCode, type } =
+  const { serviceID, variation_code, amount, phone, billersCode, type } =
     (route.params as RouteParams) || {};
 
   const userData = useAuthStore((state: any) => state.userData);
@@ -40,7 +40,7 @@ const OTP = () => {
   const maxPinLength = 4;
 
   const dotAnims = useRef(
-    [...Array(maxPinLength)].map(() => new Animated.Value(1))
+    [...Array(maxPinLength)].map(() => new Animated.Value(1)),
   ).current;
 
   const overlayAnim = useRef(new Animated.Value(0)).current;
@@ -124,7 +124,7 @@ const OTP = () => {
                 serviceID,
                 variation_code,
                 amount,
-                phone: phoneNumber,
+                phone,
                 email,
                 billersCode,
                 type,
@@ -137,32 +137,16 @@ const OTP = () => {
                   const isSuccess =
                     response?.success === true &&
                     response?.data?.response_description?.includes(
-                      "TRANSACTION SUCCESSFUL"
+                      "TRANSACTION SUCCESSFUL",
                     );
 
-                  const hasToken =
-                    typeof response?.data?.token === "string" &&
-                    response?.data?.token.trim() !== "";
-                  const hasUnits =
-                    typeof response?.data?.units === "string" &&
-                    response?.data?.units.trim() !== "";
-
-                  if (isSuccess && hasToken && hasUnits) {
+                  if (isSuccess) {
                     setTimeout(
                       () =>
-                        navigation.navigate("ElectReceipt", {
-                          data: response?.data,
+                        navigation.navigate("Receipt", {
+                          transaction: response?.data,
                         }),
-                      300
-                    );
-                  } else if (isSuccess) {
-                    setTimeout(
-                      () =>
-                        navigation.navigate("Success", {
-                          success: true,
-                          message: "Transaction Completed",
-                        }),
-                      300
+                      300,
                     );
                   } else {
                     setTimeout(
@@ -173,7 +157,7 @@ const OTP = () => {
                           subMessage:
                             "Your payment could not be processed. Please try again.",
                         }),
-                      300
+                      300,
                     );
                   }
                 },
@@ -190,10 +174,10 @@ const OTP = () => {
                         message: "Transaction Failed",
                         subMessage: message,
                       }),
-                    300
+                    300,
                   );
                 },
-              }
+              },
             );
           },
 
@@ -207,7 +191,7 @@ const OTP = () => {
             setErrorMsg("Incorrect PIN. Please try again.");
             setPin(""); // clear pin so user can retype
           },
-        }
+        },
       );
     } else {
       if (pin.length > 0) {

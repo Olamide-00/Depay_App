@@ -18,6 +18,7 @@ import {
 } from "../../../api/hooks/useBills";
 import useVerify from "../../../api/hooks/useVerify";
 import Text from "../../../components/common/txt";
+import useAuthStore from "../../../store/userStore";
 
 const BRAND = "#1B3710";
 const LIGHT_GREEN = "#EAF3E9";
@@ -42,6 +43,9 @@ const TV = () => {
   const [providers, setProviders] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
 
+  const userData = useAuthStore((state: any) => state.userData);
+  const phone = userData?.phoneNumber;
+
   // Build provider options from API
   useEffect(() => {
     if (servicesData?.data?.content) {
@@ -62,7 +66,7 @@ const TV = () => {
     if (packagesData?.data?.content?.variations) {
       const mapped = packagesData.data.content.variations.map((pkg: any) => ({
         label: `${pkg.name} — ₦${parseFloat(
-          pkg.variation_amount
+          pkg.variation_amount,
         ).toLocaleString()}`,
         value: pkg.variation_code,
         amount: pkg.variation_amount,
@@ -88,7 +92,7 @@ const TV = () => {
           onError: () => {
             setCustomerName("");
           },
-        }
+        },
       );
     } else {
       setCustomerName("");
@@ -107,7 +111,7 @@ const TV = () => {
       billersCode: smartCardNumber,
       variation_code: selectedPackage,
       amount,
-      phoneNumber: null,
+      phone,
       type: "tv",
     });
   };
@@ -117,6 +121,7 @@ const TV = () => {
     !smartCardNumber ||
     !selectedPackage ||
     !customerName ||
+    !phone ||
     isVerifying ||
     packages.length === 0;
 
@@ -211,10 +216,10 @@ const TV = () => {
                 !serviceProvider
                   ? "Select a provider first"
                   : packagesLoading
-                  ? "Loading packages..."
-                  : packages.length === 0
-                  ? "No packages available"
-                  : "Select package"
+                    ? "Loading packages..."
+                    : packages.length === 0
+                      ? "No packages available"
+                      : "Select package"
               }
               sheetTitle="Select Package"
               variant="field"

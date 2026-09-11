@@ -23,11 +23,11 @@ const AirtimeTab = ({ preselectedNetwork }: AirtimeTabProps) => {
   const { data, isLoading } = useGetAllServices("airtime");
 
   const [selectedNetwork, setSelectedNetwork] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState("");
   const [networks, setNetworks] = useState<any[]>([]);
   const [errors, setErrors] = useState({
-    phoneNumber: "",
+    phone: "",
     amount: "",
     selectedNetwork: "",
   });
@@ -47,7 +47,7 @@ const AirtimeTab = ({ preselectedNetwork }: AirtimeTabProps) => {
         const match = mapped.find(
           (n: any) =>
             n.label.toLowerCase().includes(hint) ||
-            String(n.value).toLowerCase().includes(hint)
+            String(n.value).toLowerCase().includes(hint),
         );
         if (match) setSelectedNetwork(match.value);
       }
@@ -55,19 +55,18 @@ const AirtimeTab = ({ preselectedNetwork }: AirtimeTabProps) => {
   }, [data, preselectedNetwork]);
 
   const selectedService = data?.data?.content?.find(
-    (item: any) => item.serviceID === selectedNetwork
+    (item: any) => item.serviceID === selectedNetwork,
   );
 
   const handleContinue = () => {
     navigation.navigate("Confirmation", {
       serviceID: selectedService?.serviceID,
-      phoneNumber,
+      phone,
       amount,
     });
   };
 
-  const disable =
-    !selectedNetwork || !phoneNumber || phoneNumber.length < 10 || !amount;
+  const disable = !selectedNetwork || !phone || phone.length < 10 || !amount;
 
   return (
     <View style={styles.tabContent}>
@@ -93,10 +92,10 @@ const AirtimeTab = ({ preselectedNetwork }: AirtimeTabProps) => {
       <View style={styles.inputContainer}>
         <PhoneInputWithContact
           label="Phone Number"
-          value={phoneNumber}
+          value={phone}
           onChangeText={(text: string) => {
-            setPhoneNumber(text);
-            setErrors((prev) => ({ ...prev, phoneNumber: "" }));
+            setPhone(text);
+            setErrors((prev) => ({ ...prev, phone: "" }));
           }}
           placeholder="Enter phone number"
         />

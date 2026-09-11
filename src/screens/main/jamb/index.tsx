@@ -40,7 +40,7 @@ const Jamb = () => {
 
   const [selectedExamType, setSelectedExamType] = useState("");
   const [profileCode, setProfileCode] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState(0);
   const [customerName, setCustomerName] = useState("");
   const [profileError, setProfileError] = useState("");
@@ -48,7 +48,7 @@ const Jamb = () => {
   // Update amount when exam type changes
   useEffect(() => {
     const selected = variations.find(
-      (item: any) => item.variation_code === selectedExamType
+      (item: any) => item.variation_code === selectedExamType,
     );
     setAmount(parseFloat(selected?.variation_amount || "0"));
   }, [selectedExamType, variations]);
@@ -73,11 +73,11 @@ const Jamb = () => {
         {
           onSuccess: (data: any) => {
             setCustomerName(
-              data?.data?.content?.Customer_Name || "Invalid Profile"
+              data?.data?.content?.Customer_Name || "Invalid Profile",
             );
           },
           onError: () => setCustomerName(""),
-        }
+        },
       );
     } else {
       setCustomerName("");
@@ -89,7 +89,7 @@ const Jamb = () => {
       serviceID,
       variation_code: selectedExamType,
       amount: amount.toString(),
-      phoneNumber,
+      phone,
       billersCode: profileCode,
       type: "education",
     });
@@ -99,7 +99,7 @@ const Jamb = () => {
     selectedExamType &&
     profileCode.length === 10 &&
     customerName &&
-    phoneNumber.length >= 10 &&
+    phone.length >= 10 &&
     !isVerifying;
 
   return (
@@ -175,8 +175,8 @@ const Jamb = () => {
           <View style={styles.inputContainer}>
             <PhoneInputWithContact
               label="Phone Number"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
+              value={phone}
+              onChangeText={setPhone}
               placeholder="Enter phone number"
             />
           </View>

@@ -33,11 +33,7 @@ const QUICK_AMOUNTS = [500, 1000, 2000, 5000, 10000, 20000];
 const Electricity = () => {
   const navigation = useNavigation<any>();
 
-  const phoneNumber = useAuthStore(
-    (state) => (state as { phoneNumber?: string }).phoneNumber,
-  );
-
-  console.log("phoneNumber in Electricity screen:", phoneNumber);
+  const phone = useAuthStore((state) => state.userData?.phoneNumber);
 
   const { data: servicesData, isLoading: servicesLoading } =
     useGetAllServices("electricity-bill");
@@ -114,7 +110,7 @@ const Electricity = () => {
       billersCode: meterNumber,
       variation_code: paymentType,
       amount,
-      phoneNumber,
+      phone,
       type: "electricity",
     });
   };

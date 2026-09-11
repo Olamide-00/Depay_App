@@ -59,15 +59,141 @@ const Receipt = () => {
   const referralCode = userData?.tag ? `Depay${userData.tag}` : "DEPAYREF123";
   const isSuccess = status === "SUCCESS";
 
+  // ── Helpers for optional fields ──
+  const isValidValue = (v: any) => {
+    if (v === null || v === undefined) return false;
+    const s = String(v).trim();
+    if (s === "") return false;
+    const upper = s.toUpperCase();
+    if (upper === "N/A" || upper === "NULL" || upper === "UNDEFINED")
+      return false;
+    return true;
+  };
+
+  const handleCopy = (value: string, label = "Value") => {
+    Clipboard.setString(value);
+    Alert.alert("Copied", `${label} copied to clipboard`);
+  };
+
   const handleCopyId = () => {
-    Clipboard.setString(transactionId);
-    Alert.alert("Copied", "Transaction ID copied to clipboard");
+    handleCopy(transactionId, "Transaction ID");
   };
 
   const handleCopyReferral = () => {
-    Clipboard.setString(referralCode);
-    Alert.alert("Copied", "Referral code copied to clipboard");
+    handleCopy(referralCode, "Referral code");
   };
+
+  // ── Electricity-specific fields (only shown if present) ──
+  const rawToken = transaction.token || transaction.purchased_code || "";
+  const cleanToken = String(rawToken)
+    .replace(/^Token\s*:\s*/i, "")
+    .trim();
+
+  const electricityRows = [
+    isValidValue(cleanToken) && {
+      label: "Token",
+      value: cleanToken,
+      copyLabel: "Token",
+    },
+    isValidValue(transaction.units) && {
+      label: "Units",
+      value: String(transaction.units),
+    },
+    isValidValue(transaction.meterNumber) && {
+      label: "Meter Number",
+      value: String(transaction.meterNumber),
+      copyLabel: "Meter number",
+    },
+    isValidValue(transaction.customerName) && {
+      label: "Customer Name",
+      value: String(transaction.customerName),
+    },
+    isValidValue(transaction.customerAddress) && {
+      label: "Customer Address",
+      value: String(transaction.customerAddress),
+    },
+    isValidValue(transaction.tariff) && {
+      label: "Tariff",
+      value: String(transaction.tariff),
+    },
+    isValidValue(transaction.utilityName) && {
+      label: "Utility",
+      value: String(transaction.utilityName),
+    },
+    isValidValue(transaction.tokenAmount) && {
+      label: "Token Amount",
+      value: `₦${Number(transaction.tokenAmount).toLocaleString("en-NG", {
+        minimumFractionDigits: 2,
+      })}`,
+    },
+    isValidValue(transaction.exchangeReference) && {
+      label: "Exchange Reference",
+      value: String(transaction.exchangeReference),
+      copyLabel: "Exchange reference",
+    },
+  ].filter(Boolean) as { label: string; value: string; copyLabel?: string }[];
+
+  const hasElectricityDetails = electricityRows.length > 0;
+
+  // ── Education / Result Checker cards (WAEC, NECO, NABTEB, JAMB, etc.) ──
+  // Primary source: transaction.cards -> [{ Serial, Pin }, ...]
+  // Fallback: parse transaction.purchased_code, e.g.
+  //   "Serial No:WRN123456790, pin: 098765432112"
+  const rawCards: any[] = Array.isArray(transaction.cards)
+    ? transaction.cards
+    : [];
+
+  const parsedFallbackCard = (() => {
+    if (rawCards.length > 0) return null; // cards array already covers it
+    const raw = String(transaction.purchased_code || "");
+    const serialMatch = raw.match(/Serial\s*No\s*:\s*([^,]+)/i);
+    const pinMatch = raw.match(/pin\s*:\s*([^\s,]+)/i);
+    const serial = serialMatch?.[1]?.trim();
+    const pin = pinMatch?.[1]?.trim();
+    if (isValidValue(serial) || isValidValue(pin)) {
+      return { Serial: serial, Pin: pin };
+    }
+    return null;
+  })();
+
+  const educationCards: { Serial?: string; Pin?: string }[] =
+    rawCards.length > 0
+      ? rawCards
+      : parsedFallbackCard
+        ? [parsedFallbackCard]
+        : [];
+
+  const educationRows = educationCards.flatMap((card, index) => {
+    const prefix = educationCards.length > 1 ? `Card ${index + 1} — ` : "";
+    const rows: { label: string; value: string; copyLabel?: string }[] = [];
+
+    if (isValidValue(card?.Serial)) {
+      rows.push({
+        label: `${prefix}Serial No.`,
+        value: String(card.Serial),
+        copyLabel: "Serial number",
+      });
+    }
+    if (isValidValue(card?.Pin)) {
+      rows.push({
+        label: `${prefix}PIN`,
+        value: String(card.Pin),
+        copyLabel: "PIN",
+      });
+    }
+    return rows;
+  });
+
+  const productName =
+    transaction.content?.transactions?.product_name ||
+    transaction.product_name ||
+    "";
+
+  if (isValidValue(productName)) {
+    educationRows.unshift({ label: "Product", value: String(productName) });
+  }
+
+  const hasEducationDetails = educationRows.length > 0;
 
   const handleDownload = async () => {
     try {
@@ -76,7 +202,7 @@ const Receipt = () => {
       if (permStatus !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please allow access to save the receipt."
+          "Please allow access to save the receipt.",
         );
         return;
       }
@@ -99,7 +225,7 @@ const Receipt = () => {
         await Share.share({
           message: `Depay Transaction Receipt\n\nType: ${category}\nAmount: ₦${amount.toLocaleString(
             "en-NG",
-            { minimumFractionDigits: 2 }
+            { minimumFractionDigits: 2 },
           )}\nStatus: ${status}\nDate: ${displayDate}\nTransaction ID: ${transactionId}`,
           title: "Transaction Receipt",
         });
@@ -293,8 +419,70 @@ const Receipt = () => {
               onPress={handleCopyId}
               showCopy
             />
-            <DetailRow label="Date" value={displayDate} last />
+            <DetailRow
+              label="Date"
+              value={displayDate}
+              last={!hasElectricityDetails && !hasEducationDetails}
+            />
           </View>
+
+          {/* Electricity details card — only rendered if there's something to show */}
+          {hasElectricityDetails && (
+            <View style={styles.detailsCard}>
+              <Text
+                variant="semibold"
+                size="sm"
+                color="#1A1A1E"
+                style={styles.sectionTitle}
+              >
+                Electricity Details
+              </Text>
+
+              {electricityRows.map((row, index) => (
+                <DetailRow
+                  key={row.label}
+                  label={row.label}
+                  value={row.value}
+                  onPress={
+                    row.copyLabel
+                      ? () => handleCopy(row.value, row.copyLabel)
+                      : undefined
+                  }
+                  showCopy={!!row.copyLabel}
+                  last={index === electricityRows.length - 1}
+                />
+              ))}
+            </View>
+          )}
+
+          {/* Education / Result Checker details card — WAEC, NECO, JAMB, etc. */}
+          {hasEducationDetails && (
+            <View style={styles.detailsCard}>
+              <Text
+                variant="semibold"
+                size="sm"
+                color="#1A1A1E"
+                style={styles.sectionTitle}
+              >
+                PIN Details
+              </Text>
+
+              {educationRows.map((row, index) => (
+                <DetailRow
+                  key={`${row.label}-${index}`}
+                  label={row.label}
+                  value={row.value}
+                  onPress={
+                    row.copyLabel
+                      ? () => handleCopy(row.value, row.copyLabel)
+                      : undefined
+                  }
+                  showCopy={!!row.copyLabel}
+                  last={index === educationRows.length - 1}
+                />
+              ))}
+            </View>
+          )}
 
           {/* Referral card */}
           <View style={styles.referralCard}>

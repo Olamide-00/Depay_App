@@ -1,4 +1,3 @@
-// Confirmation.tsx
 import {
   View,
   Animated,
@@ -20,7 +19,7 @@ type ConfirmationParams = {
   serviceID: string;
   variation_code?: string;
   amount: string;
-  phoneNumber?: string;
+  phone?: string;
   billersCode?: string;
   type?: string;
   plan?: { name?: string };
@@ -34,7 +33,7 @@ const Confirmation = () => {
     serviceID = "",
     variation_code,
     amount,
-    phoneNumber,
+    phone,
     billersCode,
     type,
     plan,
@@ -150,6 +149,17 @@ const Confirmation = () => {
     }).start();
   };
 
+  const handleConfirm = () => {
+    navigation.navigate("OTP", {
+      serviceID,
+      variation_code,
+      amount: numericAmount,
+      phone,
+      billersCode,
+      type,
+    });
+  };
+
   const isData = serviceID.toLowerCase().includes("data");
   const isElectricity =
     variation_code === "prepaid" || variation_code === "postpaid";
@@ -158,10 +168,10 @@ const Confirmation = () => {
   const serviceTypeLabel = isData
     ? "Data"
     : isElectricity
-    ? "Electricity"
-    : isTV
-    ? "TV"
-    : "Airtime";
+      ? "Electricity"
+      : isTV
+        ? "TV"
+        : "Airtime";
   const numericAmount = parseFloat(amount) || 0;
   const formattedAmount = numericAmount.toLocaleString("en-NG", {
     minimumFractionDigits: 2,
@@ -265,9 +275,7 @@ const Confirmation = () => {
               {isElectricity && billersCode && (
                 <Item label="Meter Number" value={billersCode} />
               )}
-              {(isData || (!isTV && !isElectricity)) && phoneNumber && (
-                <Item label="Phone Number" value={phoneNumber} />
-              )}
+              {phone && <Item label="Phone Number" value={phone} />}
             </View>
 
             <View style={styles.noteCard}>
@@ -295,31 +303,12 @@ const Confirmation = () => {
               activeOpacity={1}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
-              onPress={() =>
-                navigation.navigate("OTP", {
-                  serviceID,
-                  variation_code,
-                  amount: numericAmount,
-                  phoneNumber,
-                  billersCode,
-                  type,
-                })
-              }
             >
               <Btn
                 title="Confirm & Continue"
                 style={styles.btn}
                 textStyle={styles.btnText}
-                onPress={() =>
-                  navigation.navigate("OTP", {
-                    serviceID,
-                    variation_code,
-                    amount: numericAmount,
-                    phoneNumber,
-                    billersCode,
-                    type,
-                  })
-                }
+                onPress={handleConfirm}
               />
             </TouchableOpacity>
           </Animated.View>

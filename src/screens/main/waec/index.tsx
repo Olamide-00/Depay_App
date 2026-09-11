@@ -37,14 +37,14 @@ const Waec = () => {
 
   const [selectedExamType, setSelectedExamType] = useState("");
   const [quantity, setQuantity] = useState("1");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState(0);
   const [quantityError, setQuantityError] = useState("");
 
   // Update total amount when exam type or quantity changes
   useEffect(() => {
     const selected = variations.find(
-      (item: any) => item.variation_code === selectedExamType
+      (item: any) => item.variation_code === selectedExamType,
     );
     const unitAmount = parseFloat(selected?.variation_amount || "0");
     const qty = Math.max(parseInt(quantity || "0"), 0);
@@ -71,14 +71,13 @@ const Waec = () => {
       serviceID,
       variation_code: selectedExamType,
       amount: amount.toString(),
-      phoneNumber,
+      phone,
       type: "education",
     });
   };
 
   const isQuantityValid = parseInt(quantity || "0") >= 1;
-  const isFormValid =
-    selectedExamType && isQuantityValid && phoneNumber.length >= 10;
+  const isFormValid = selectedExamType && isQuantityValid && phone.length >= 10;
 
   const unitPrice =
     selectedExamType && parseInt(quantity) > 0
@@ -113,8 +112,8 @@ const Waec = () => {
           <View style={styles.inputContainer}>
             <PhoneInputWithContact
               label="Phone Number"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
+              value={phone}
+              onChangeText={setPhone}
               placeholder="Enter phone number"
             />
           </View>
