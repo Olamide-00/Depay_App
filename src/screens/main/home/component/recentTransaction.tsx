@@ -5,8 +5,12 @@ import Item from "../../../../components/ui/item";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import useAuthStore from "../../../../store/userStore";
-import { useGetBillsHistory } from "../../../../api/hooks/useBills";
+import {
+  useGetBillsHistory,
+  useGetFundingHistory,
+} from "../../../../api/hooks/useBills";
 import Text from "../../../../components/common/txt";
+import { mergeHistories } from "../../../../utils/transactionHistory";
 
 const BRAND = "#1B3710";
 const LIGHT_GREEN = "#EAF3E9";
@@ -18,7 +22,13 @@ const RecentTransaction = () => {
   const userData = useAuthStore((state) => state.userData);
   const email = userData?.email || "";
 
-  const { data: history = [], isLoading } = useGetBillsHistory(email);
+  const { data: bills = [], isLoading: billsLoading } =
+    useGetBillsHistory(email);
+  const { data: funding = [], isLoading: fundingLoading } =
+    useGetFundingHistory(email);
+
+  const isLoading = billsLoading || fundingLoading;
+  const history = mergeHistories(bills, funding);
   const recentTransactions = history.slice(0, 5);
 
   const sanitize = (item: any) => ({
@@ -41,7 +51,7 @@ const RecentTransaction = () => {
         toValue: 1,
         duration: 1100,
         useNativeDriver: true,
-      })
+      }),
     );
     loop.start();
     return () => loop.stop();

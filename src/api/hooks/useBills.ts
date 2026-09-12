@@ -22,9 +22,8 @@ export const useGetAllServices = (identifier: string) => {
 
       const getServicesUrl = `bills/get-services?identifier=${identifier}`;
 
-      const response = await axiosInstance.get<ApiResponse<any>>(
-        getServicesUrl
-      );
+      const response =
+        await axiosInstance.get<ApiResponse<any>>(getServicesUrl);
       return response.data;
     },
     enabled: !!identifier,
@@ -57,9 +56,8 @@ export const useGetServicePLan = (serviceID: string) => {
 
       const getServicesPlansUrl = `bills/get-packages?serviceID=${serviceID}`;
 
-      const response = await axiosInstance.get<ApiResponse<any>>(
-        getServicesPlansUrl
-      );
+      const response =
+        await axiosInstance.get<ApiResponse<any>>(getServicesPlansUrl);
       return response.data;
     },
     enabled: !!serviceID,
@@ -85,7 +83,7 @@ export const usePayBills = () => {
     mutationFn: async (userData) => {
       const response = await axiosInstance.post<ApiResponse<any>>(
         API_ENDPOINTS.PAY_BILLS,
-        userData
+        userData,
       );
       return response.data;
     },
@@ -97,22 +95,44 @@ export const usePayBills = () => {
 };
 
 export const useGetBillsHistory = (email: string) => {
-  return useQuery<ApiResponse<any>, Error>({
+  return useQuery<any[], Error>({
     queryKey: ["bills", "histories", email],
     queryFn: async () => {
       if (!email) {
         throw new Error("Email is required");
       }
 
-      const response = await axiosInstance.get<ApiResponse<any>>(
-        `${API_ENDPOINTS.BILLS_HISTORIES}/${email}`
+      const response = await axiosInstance.get<any[]>(
+        `${API_ENDPOINTS.BILLS_HISTORIES}/${email}`,
       );
-      console.log(
-        "response",
-        response.data[0].transactionReference,
-        response.data[0].amount
-      );
+      // Note: response.data is the raw history array here (not wrapped in
+      // {data: ...}), and can be empty for a brand-new user — indexing into
+      // it unconditionally (as this used to do for a debug log) throws and
+      // fails the whole query, which is why history sometimes never loaded.
       return response.data;
+    },
+    enabled: !!email,
+    refetchOnWindowFocus: false,
+    retry: 2,
+  });
+};
+
+// Wallet funding history (bank transfer top-ups, admin credits, etc).
+// Previously the app had an endpoint constant for this but never actually
+// called it, so admin wallet credits never showed up here even though they
+// were visible on the admin dashboard.
+export const useGetFundingHistory = (email: string) => {
+  return useQuery<any[], Error>({
+    queryKey: ["bills", "funding-history", email],
+    queryFn: async () => {
+      if (!email) {
+        throw new Error("Email is required");
+      }
+
+      const response = await axiosInstance.get<ApiResponse<any[]>>(
+        `${API_ENDPOINTS.FUNDING_HISTORY}/${email}`,
+      );
+      return response.data?.data ?? [];
     },
     enabled: !!email,
     refetchOnWindowFocus: false,

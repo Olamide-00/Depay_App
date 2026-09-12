@@ -4,26 +4,13 @@ import Text from "../common/txt";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/Colors";
 import { useNavigation } from "@react-navigation/native";
-
-const getCategoryIcon = (category: string) => {
-  const iconMap: { [key: string]: string } = {
-    airtime: "phone",
-    data: "wifi",
-    betting: "cards-spade",
-    netflix: "netflix",
-    electricity: "lightning-bolt",
-    gotv: "television",
-    dstv: "television",
-    tv: "television",
-    education: "school",
-    transfer: "bank-transfer",
-  };
-  return iconMap[category?.toLowerCase()] || "wallet";
-};
+import { getCategoryIcon } from "../../utils/transactionHistory";
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return "---";
-  return new Date(dateString).toLocaleString("en-NG", {
+  const parsed = new Date(dateString);
+  if (isNaN(parsed.getTime())) return "---";
+  return parsed.toLocaleString("en-NG", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -54,7 +41,10 @@ const Item = ({ data }: any) => {
 
   const status = typeof data.status === "string" ? data.status : "pending";
   const isSuccess = status === "success";
-  const dateStr = data.transaction_date || data.date || data.time || "";
+  // `date` (Mongo createdAt) first — it's always valid ISO. Provider
+  // `transaction_date` strings are not ISO-8601 and were producing
+  // "Invalid Date" here since they were being read first.
+  const dateStr = data.date || data.transaction_date || data.time || "";
   const displayDate = formatDate(dateStr);
 
   return (

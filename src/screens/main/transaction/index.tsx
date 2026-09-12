@@ -10,54 +10,18 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import CommonHeader from "../../../components/ui/commonHeader";
 import { COLORS } from "../../../constants/Colors";
 import useAuthStore from "../../../store/userStore";
-import { useGetBillsHistory } from "../../../api/hooks/useBills";
+import {
+  useGetBillsHistory,
+  useGetFundingHistory,
+} from "../../../api/hooks/useBills";
 import { useNavigation } from "@react-navigation/native";
 import Text from "../../../components/common/txt";
-
-type TransactionItem = {
-  _id?: string;
-  label: string;
-  amount: string;
-  status: string;
-  date?: string;
-  transaction_date?: string;
-  type?: "debit" | "credit";
-  category?: string;
-  phone?: string;
-  phoneNumber?: string;
-};
-
-const getCategoryIcon = (category: string) => {
-  const map: { [key: string]: string } = {
-    airtime: "phone",
-    data: "wifi",
-    betting: "cards-spade",
-    netflix: "netflix",
-    electricity: "lightning-bolt",
-    gotv: "television",
-    dstv: "television",
-    tv: "television",
-    education: "school",
-    transfer: "bank-transfer",
-  };
-  return map[category?.toLowerCase()] || "wallet";
-};
-
-const getCategoryColor = (category: string) => {
-  const map: { [key: string]: string } = {
-    airtime: "#FF6B6B",
-    data: "#4ECDC4",
-    betting: "#FFD93D",
-    netflix: "#E50914",
-    electricity: "#95E1D3",
-    gotv: "#6C5CE7",
-    dstv: "#A29BFE",
-    tv: "#6C5CE7",
-    education: "#4C6FFF",
-    transfer: "#22c55e",
-  };
-  return map[category?.toLowerCase()] || COLORS.brand;
-};
+import {
+  mergeHistories,
+  getCategoryIcon,
+  getCategoryColor,
+  type TransactionItem,
+} from "../../../utils/transactionHistory";
 
 const TABS = ["all", "expenses", "funding"] as const;
 type Tab = (typeof TABS)[number];
@@ -75,7 +39,13 @@ const Transaction = () => {
   const userData = useAuthStore((state: any) => state.userData);
   const email = userData?.email || "";
 
-  const { data: histories = [], isLoading } = useGetBillsHistory(email);
+  const { data: bills = [], isLoading: billsLoading } =
+    useGetBillsHistory(email);
+  const { data: funding = [], isLoading: fundingLoading } =
+    useGetFundingHistory(email);
+
+  const isLoading = billsLoading || fundingLoading;
+  const histories = mergeHistories(bills, funding);
 
   const tabFiltered = histories.filter((item: TransactionItem) => {
     const type =
@@ -99,8 +69,12 @@ const Transaction = () => {
     const type =
       typeof item.type === "string" ? item.type.toLowerCase() : "debit";
     const isCredit = type === "credit";
-    const amount = parseFloat(item.amount) || 0;
-    const dateStr = item.transaction_date || item.date || "";
+    const amount = parseFloat(String(item.amount)) || 0;
+    // `date` (Mongo createdAt, always valid ISO) must come first.
+    // `transaction_date` is the raw provider string (e.g. VTpass's
+    // "2024-06-17 14:23:45") which isn't ISO-8601 and can fail to parse
+    // in React Native, producing "Invalid Date" — so it's only a fallback.
+    const dateStr = item.date || item.transaction_date || "";
     const status =
       typeof item.status === "string" ? item.status.toLowerCase() : "pending";
     const isSuccess = status === "success";
