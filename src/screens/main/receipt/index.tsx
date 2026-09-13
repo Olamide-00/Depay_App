@@ -552,7 +552,7 @@ const Receipt = () => {
       {/* Done */}
       <TouchableOpacity
         style={styles.doneButton}
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate("TabNav", { screen: "HomeTab" })}
         activeOpacity={0.85}
       >
         <Text variant="bold" size="md" color="#fff">

@@ -178,8 +178,16 @@ const OTP = () => {
                     goToStage("success");
                     setTimeout(() => {
                       hideOverlay(() => setStage("idle"));
+                      // Use the normalized `transaction` object (lowercase
+                      // status, category, label, date — matches what the
+                      // history screens render) instead of the raw VTPass
+                      // `data` payload, which has no top-level `status`
+                      // field and was making the receipt show "Pending"
+                      // right after a successful payment. `|| response?.data`
+                      // is just a safety fallback in case `transaction` is
+                      // ever missing from the response.
                       navigation.navigate("Receipt", {
-                        transaction: response?.data,
+                        transaction: response?.transaction || response?.data,
                       });
                     }, 550);
                   } else {
@@ -284,9 +292,6 @@ const OTP = () => {
         )}
       </View>
 
-      {/* Processing overlay — no card, no borders, just the dim
-          scrim with a spinner and a label that crossfades between
-          stages. */}
       {loading && (
         <Animated.View
           style={[styles.loadingOverlay, { opacity: overlayAnim }]}
