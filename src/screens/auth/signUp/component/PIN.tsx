@@ -45,7 +45,7 @@ const SignUpTransactionPin = () => {
 
   const [pin, setPin] = useState<string[]>(Array(PIN_LENGTH).fill(""));
   const [confirmPin, setConfirmPin] = useState<string[]>(
-    Array(PIN_LENGTH).fill("")
+    Array(PIN_LENGTH).fill(""),
   );
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -53,6 +53,7 @@ const SignUpTransactionPin = () => {
 
   const pinInputRefs = useRef<Array<TextInput | null>>([]);
   const confirmPinInputRefs = useRef<Array<TextInput | null>>([]);
+  const hasSubmittedRef = useRef(false);
 
   const { mutate: completeRegistration, isPending } = useCompleteRegistration();
 
@@ -90,7 +91,10 @@ const SignUpTransactionPin = () => {
   };
 
   const submitRegistration = (code: string) => {
-    if (isPending) return;
+    // Synchronous guard — see hasSubmittedRef comment above. Checking
+    // isPending alone isn't enough here because of the render-timing gap.
+    if (hasSubmittedRef.current || isPending) return;
+    hasSubmittedRef.current = true;
 
     Keyboard.dismiss();
     setError("");
@@ -117,8 +121,12 @@ const SignUpTransactionPin = () => {
             err?.response?.data?.message ||
             "Registration failed. Please try again.";
           setError(message);
+          // Allow retry on genuine failure (bad network, validation
+          // error, etc.) — only the accidental double-fire needed
+          // blocking, not legitimate resubmission after a real error.
+          hasSubmittedRef.current = false;
         },
-      }
+      },
     );
   };
 
@@ -195,7 +203,7 @@ const SignUpTransactionPin = () => {
   const renderPinRow = (
     values: string[],
     refs: React.MutableRefObject<Array<TextInput | null>>,
-    isConfirm: boolean
+    isConfirm: boolean,
   ) => (
     <View style={styles.pinContainer}>
       {values.map((digit, index) => {

@@ -21,6 +21,7 @@ interface CompleteRegistrationData {
   email: string;
   fullName: string;
   password: string;
+  transactionPIN: string;
   pushToken?: string | null;
   gender?: string;
   dateOfBirth?: string;
