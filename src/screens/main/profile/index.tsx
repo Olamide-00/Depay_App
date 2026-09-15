@@ -108,12 +108,12 @@ const Profile = () => {
             subtitle={accountNumber ?? "Generate your account number"}
             onPress={go("Wallet")}
           />
-          <ProfileMenuItem
+          {/* <ProfileMenuItem
             icon="people-outline"
             title="Referrals"
             subtitle="Invite friends, earn rewards"
             onPress={go("Refer")}
-          />
+          /> */}
           <ProfileMenuItem
             icon="notifications-outline"
             title="Notifications"

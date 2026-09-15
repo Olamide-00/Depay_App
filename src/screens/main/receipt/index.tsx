@@ -484,7 +484,7 @@ const Receipt = () => {
             </View>
           )}
 
-          {/* Referral card */}
+          {/* Referral card
           <View style={styles.referralCard}>
             <Text size="xs" color="#9A9AA0" style={{ marginBottom: 8 }}>
               Share your referral code to earn bonus rewards
@@ -513,7 +513,7 @@ const Receipt = () => {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </View> */}
         </View>
       </ViewShot>
 

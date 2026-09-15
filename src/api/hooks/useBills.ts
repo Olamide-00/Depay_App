@@ -105,10 +105,6 @@ export const useGetBillsHistory = (email: string) => {
       const response = await axiosInstance.get<any[]>(
         `${API_ENDPOINTS.BILLS_HISTORIES}/${email}`,
       );
-      // Note: response.data is the raw history array here (not wrapped in
-      // {data: ...}), and can be empty for a brand-new user — indexing into
-      // it unconditionally (as this used to do for a debug log) throws and
-      // fails the whole query, which is why history sometimes never loaded.
       return response.data;
     },
     enabled: !!email,
