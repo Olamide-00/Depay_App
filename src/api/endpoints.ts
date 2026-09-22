@@ -1,9 +1,9 @@
 export const API_ENDPOINTS = {
   // auth endpoint
 
-  SEND_REGISTRATION_OTP: "/user/send-registration-otp", 
-  VERIFY_OTP: "/user/verify-otp",                       
-  REGISTER: "/user/register",                            
+  SEND_REGISTRATION_OTP: "/user/send-registration-otp",
+  VERIFY_OTP: "/user/verify-otp",
+  REGISTER: "/user/register",
   RESEND_OTP: "/user/resend-otp",
   LOGIN: "/user/login",
   DELETE_ACCOUNT: "/user/delete",
@@ -33,6 +33,8 @@ export const API_ENDPOINTS = {
   SERVICE_PLAN: (serviceID: string) =>
     `/bills/get-packages?serviceID=${serviceID}`,
   BILLS_HISTORIES: "/bills/get-bills-history",
+  FEE_QUOTE: (serviceID: string, amount: number) =>
+    `/bills/fee-quote?serviceID=${serviceID}&amount=${amount}`,
 
   // verification
   VERIFY: "/verify",

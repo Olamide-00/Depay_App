@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Easing,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useRef } from "react";
 import { styles } from "./style";
@@ -14,6 +15,7 @@ import { COLORS } from "../../../constants/Colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Text from "../../../components/common/txt";
+import { useGetFeeQuote } from "../../../api/hooks/useBills";
 
 type ConfirmationParams = {
   serviceID: string;
@@ -149,17 +151,6 @@ const Confirmation = () => {
     }).start();
   };
 
-  const handleConfirm = () => {
-    navigation.navigate("OTP", {
-      serviceID,
-      variation_code,
-      amount: numericAmount,
-      phone,
-      billersCode,
-      type,
-    });
-  };
-
   const isData = serviceID.toLowerCase().includes("data");
   const isElectricity =
     variation_code === "prepaid" || variation_code === "postpaid";
@@ -180,6 +171,36 @@ const Confirmation = () => {
   const providerLabel = serviceID
     .replace(/-/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const {
+    quote,
+    isLoading: feeLoading,
+    isError: feeError,
+    refetch: refetchFee,
+  } = useGetFeeQuote(serviceID, numericAmount);
+
+  const fee = quote?.fee ?? 0;
+  const totalPayable = quote?.total ?? numericAmount;
+  const formattedFee = fee.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const formattedTotal = totalPayable.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const handleConfirm = () => {
+    navigation.navigate("OTP", {
+      serviceID,
+      variation_code,
+      amount: numericAmount,
+      expectedTotal: totalPayable,
+      phone,
+      billersCode,
+      type,
+    });
+  };
 
   return (
     <View style={styles.root}>
@@ -228,8 +249,15 @@ const Confirmation = () => {
             ]}
           >
             <View style={styles.amountSection}>
-              <Text style={styles.amountLabel}>TOTAL AMOUNT</Text>
-              <Text style={styles.amountValue}>₦{formattedAmount}</Text>
+              <Text style={styles.amountLabel}>TOTAL PAYABLE</Text>
+              {feeLoading ? (
+                <ActivityIndicator
+                  color={COLORS.brand}
+                  style={styles.amountLoader}
+                />
+              ) : (
+                <Text style={styles.amountValue}>₦{formattedTotal}</Text>
+              )}
               <View style={styles.amountBadge}>
                 <MaterialCommunityIcons
                   name="lightning-bolt"
@@ -248,7 +276,11 @@ const Confirmation = () => {
 
             <View style={styles.itemContainer}>
               <Item label="Service Type" value={serviceTypeLabel} />
-              <Item label="Amount" value={`₦${formattedAmount}`} />
+              <Item label="Bill Amount" value={`₦${formattedAmount}`} />
+              <Item
+                label="Service Charge"
+                value={feeLoading ? "Checking..." : `₦${formattedFee}`}
+              />
               <Item label="Provider" value={providerLabel} />
 
               {isData && plan?.name && (
@@ -288,6 +320,23 @@ const Confirmation = () => {
                 Once confirmed, this transaction cannot be reversed.
               </Text>
             </View>
+
+            {feeError && (
+              <TouchableOpacity
+                style={styles.chargeErrorCard}
+                onPress={() => refetchFee()}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="alert-circle-outline"
+                  size={13}
+                  color={COLORS.error}
+                />
+                <Text style={styles.chargeErrorText}>
+                  Couldn't verify the service charge. Tap to retry.
+                </Text>
+              </TouchableOpacity>
+            )}
           </Animated.View>
         </ScrollView>
 
@@ -309,6 +358,7 @@ const Confirmation = () => {
                 style={styles.btn}
                 textStyle={styles.btnText}
                 onPress={handleConfirm}
+                disabled={feeLoading || feeError}
               />
             </TouchableOpacity>
           </Animated.View>

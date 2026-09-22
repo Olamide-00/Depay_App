@@ -15,6 +15,7 @@ type RouteParams = {
   serviceID?: string;
   variation_code?: string;
   amount?: any;
+  expectedTotal?: number;
   phone?: string;
   billersCode?: string;
   type?: string;
@@ -32,8 +33,15 @@ const OTP = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { serviceID, variation_code, amount, phone, billersCode, type } =
-    (route.params as RouteParams) || {};
+  const {
+    serviceID,
+    variation_code,
+    amount,
+    expectedTotal,
+    phone,
+    billersCode,
+    type,
+  } = (route.params as RouteParams) || {};
 
   const userData = useAuthStore((state: any) => state.userData);
   const email = userData?.email;
@@ -161,6 +169,7 @@ const OTP = () => {
                 serviceID,
                 variation_code,
                 amount,
+                expectedTotal,
                 phone,
                 email,
                 billersCode,
@@ -204,6 +213,22 @@ const OTP = () => {
                 },
                 onError: (error: any) => {
                   hideOverlay(() => setStage("idle"));
+
+                  if (error?.response?.data?.code === "FEE_CHANGED") {
+                    const freshQuote = error.response.data.quote;
+                    setTimeout(() => {
+                      navigation.navigate("Confirmation", {
+                        serviceID,
+                        variation_code,
+                        amount: String(freshQuote?.amount ?? amount),
+                        phone,
+                        billersCode,
+                        type,
+                      });
+                    }, 180);
+                    return;
+                  }
+
                   const message =
                     error?.response?.data?.message ||
                     "Payment failed. Please try again.";

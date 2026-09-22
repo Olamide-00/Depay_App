@@ -94,6 +94,42 @@ export const usePayBills = () => {
   });
 };
 
+// Shown on the confirmation screen so the charge for a service is never
+// hidden from the user — refetches whenever serviceID or amount changes.
+interface FeeQuote {
+  amount: number;
+  fee: number;
+  total: number;
+  category: string | null;
+  feeConfigApplied: boolean;
+}
+
+export const useGetFeeQuote = (serviceID: string, amount: number) => {
+  const { data, isLoading, isError, refetch } = useQuery<
+    ApiResponse<FeeQuote>,
+    Error
+  >({
+    queryKey: ["bills", "fee-quote", serviceID, amount],
+    queryFn: async () => {
+      const response = await axiosInstance.get<ApiResponse<FeeQuote>>(
+        API_ENDPOINTS.FEE_QUOTE(serviceID, amount),
+      );
+      return response.data;
+    },
+    enabled: !!serviceID && amount > 0,
+    refetchOnWindowFocus: false,
+    staleTime: 60 * 1000,
+    retry: 1,
+  });
+
+  return {
+    quote: data?.data,
+    isLoading,
+    isError,
+    refetch,
+  };
+};
+
 export const useGetBillsHistory = (email: string) => {
   return useQuery<any[], Error>({
     queryKey: ["bills", "histories", email],
@@ -113,10 +149,6 @@ export const useGetBillsHistory = (email: string) => {
   });
 };
 
-// Wallet funding history (bank transfer top-ups, admin credits, etc).
-// Previously the app had an endpoint constant for this but never actually
-// called it, so admin wallet credits never showed up here even though they
-// were visible on the admin dashboard.
 export const useGetFundingHistory = (email: string) => {
   return useQuery<any[], Error>({
     queryKey: ["bills", "funding-history", email],
