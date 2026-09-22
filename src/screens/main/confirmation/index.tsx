@@ -155,14 +155,17 @@ const Confirmation = () => {
   const isElectricity =
     variation_code === "prepaid" || variation_code === "postpaid";
   const isTV = ["dstv", "gotv", "startimes"].includes(serviceID);
+  const isEducation = type === "education";
 
-  const serviceTypeLabel = isData
-    ? "Data"
-    : isElectricity
-      ? "Electricity"
-      : isTV
-        ? "TV"
-        : "Airtime";
+  const serviceTypeLabel = isEducation
+    ? "Education"
+    : isData
+      ? "Data"
+      : isElectricity
+        ? "Electricity"
+        : isTV
+          ? "TV"
+          : "Airtime";
   const numericAmount = parseFloat(amount) || 0;
   const formattedAmount = numericAmount.toLocaleString("en-NG", {
     minimumFractionDigits: 2,

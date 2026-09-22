@@ -8,8 +8,6 @@ const MUTED = "#6B7268";
 const BORDER = "#E5E8E3";
 const FIELD_BG = "#FAFBF9";
 const DIVIDER = "#EDEFEA";
-const ERROR = "#D92D20";
-const ERROR_TINT = "#FBEAE8";
 
 export const styles = StyleSheet.create({
   root: {
@@ -90,10 +88,6 @@ export const styles = StyleSheet.create({
     letterSpacing: -0.5,
     marginBottom: 10,
   },
-  amountLoader: {
-    marginTop: 6,
-    marginBottom: 16,
-  },
   amountBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -142,22 +136,6 @@ export const styles = StyleSheet.create({
   noteText: {
     flex: 1,
     color: BRAND,
-    fontSize: 12.5,
-    lineHeight: 18,
-  },
-
-  chargeErrorCard: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    backgroundColor: ERROR_TINT,
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 10,
-  },
-  chargeErrorText: {
-    flex: 1,
-    color: ERROR,
     fontSize: 12.5,
     lineHeight: 18,
   },
