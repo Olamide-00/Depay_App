@@ -195,8 +195,13 @@ const OTP = () => {
                       // right after a successful payment. `|| response?.data`
                       // is just a safety fallback in case `transaction` is
                       // ever missing from the response.
+                      // `providerData` carries the raw VTPass payload so the
+                      // receipt can show every card / KCT token, not just the
+                      // first one the backend normalizes.
                       navigation.navigate("Receipt", {
-                        transaction: response?.transaction || response?.data,
+                        transaction: response?.transaction
+                          ? { ...response.transaction, providerData: response?.data }
+                          : response?.data,
                       });
                     }, 550);
                   } else {

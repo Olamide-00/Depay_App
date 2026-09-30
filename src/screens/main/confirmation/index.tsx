@@ -53,7 +53,6 @@ const Confirmation = () => {
   // ── Press feedback values ──
   const confirmScale = useRef(new Animated.Value(1)).current;
   const cancelOpacity = useRef(new Animated.Value(1)).current;
-
   useEffect(() => {
     Animated.stagger(90, [
       // Icon: fade + scale + a tiny settle rotation for a "pop" feel

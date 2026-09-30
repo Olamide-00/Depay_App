@@ -83,117 +83,132 @@ const Receipt = () => {
     handleCopy(referralCode, "Referral code");
   };
 
-  // ── Electricity-specific fields (only shown if present) ──
-  const rawToken = transaction.token || transaction.purchased_code || "";
-  const cleanToken = String(rawToken)
-    .replace(/^Token\s*:\s*/i, "")
-    .trim();
+  // ── Provider payload ──
+  // Right after a purchase the OTP screen attaches the raw VTPass response
+  // as `providerData`; history rows only carry the backend's normalized
+  // fields (token, units, serialNumber, pin, jambPin). Read normalized
+  // first and fall back to the raw payload.
+  const provider = transaction.providerData || transaction;
+  const pick = (key: string) =>
+    isValidValue(transaction[key]) ? transaction[key] : provider[key];
 
-  const electricityRows = [
-    isValidValue(cleanToken) && {
-      label: "Token",
-      value: cleanToken,
-      copyLabel: "Token",
+  const serviceKey = String(
+    transaction.serviceID || transaction.category || transaction.service || "",
+  ).toLowerCase();
+  const productName =
+    provider.content?.transactions?.product_name ||
+    transaction.product_name ||
+    "";
+
+  // ── Vend codes: token / PIN / serial the customer actually needs ──
+  type VendCode = { label: string; value: string };
+  const vendCodes: VendCode[] = [];
+  const addCode = (label: string, value: any) => {
+    if (!isValidValue(value)) return;
+    const clean = String(value).trim();
+    if (vendCodes.some((c) => c.value === clean)) return;
+    vendCodes.push({ label, value: clean });
+  };
+
+  // Electricity (prepaid) — "Token : 2636..." → "2636..."
+  const rawToken = pick("token") || "";
+  addCode("Token", String(rawToken).replace(/^Token\s*:\s*/i, ""));
+  addCode("KCT 1", provider.kct1);
+  addCode("KCT 2", provider.kct2);
+  addCode("Reset Token", provider.resetToken);
+  addCode("Configure Token", provider.configureToken);
+
+  // WAEC / result checkers — cards: [{ Serial, Pin }, ...]
+  const cards: { Serial?: string; Pin?: string }[] = Array.isArray(
+    provider.cards,
+  )
+    ? provider.cards
+    : [];
+  if (cards.length > 0) {
+    cards.forEach((card, index) => {
+      const prefix = cards.length > 1 ? `Card ${index + 1} — ` : "";
+      addCode(`${prefix}Serial No.`, card?.Serial);
+      addCode(`${prefix}PIN`, card?.Pin);
+    });
+  } else {
+    addCode("Serial No.", transaction.serialNumber);
+    addCode("PIN", transaction.pin);
+  }
+
+  // JAMB — backend stores the digits in `jambPin`
+  addCode("PIN", transaction.jambPin);
+
+  // Last resort: parse purchased_code, e.g.
+  //   "Serial No:WRN123456790, pin: 098765432112" or "Pin : 3678251321392432"
+  if (vendCodes.length === 0) {
+    const raw = String(provider.purchased_code || provider.Pin || "");
+    addCode("Serial No.", raw.match(/Serial\s*No\s*:\s*([^,]+)/i)?.[1]);
+    addCode("PIN", raw.match(/pin\s*:\s*([^\s,]+)/i)?.[1]);
+  }
+
+  const hasVendCodes = vendCodes.length > 0;
+  const isElectricity =
+    serviceKey.includes("electric") ||
+    vendCodes.some((c) => c.label === "Token");
+  const vendTitle = isElectricity ? "Electricity Token" : "PIN Details";
+
+  // Group long digit strings in 4s so they're easy to read and key in
+  const formatCode = (value: string) =>
+    /^\d{12,}$/.test(value) ? value.replace(/(\d{4})(?=\d)/g, "$1 ") : value;
+
+  const vendCodesText = vendCodes
+    .map((c) => `${c.label}: ${c.value}`)
+    .join("\n");
+
+  // ── Extra details (only shown if present) ──
+  const meterNumber = isElectricity
+    ? pick("meterNumber") || transaction.billersCode
+    : null;
+
+  const extraRows = [
+    isValidValue(productName) && {
+      label: "Product",
+      value: String(productName),
     },
-    isValidValue(transaction.units) && {
+    isValidValue(pick("units")) && {
       label: "Units",
-      value: String(transaction.units),
+      value: String(pick("units")),
     },
-    isValidValue(transaction.meterNumber) && {
+    isValidValue(meterNumber) && {
       label: "Meter Number",
-      value: String(transaction.meterNumber),
+      value: String(meterNumber),
       copyLabel: "Meter number",
     },
-    isValidValue(transaction.customerName) && {
+    isValidValue(provider.customerName) && {
       label: "Customer Name",
-      value: String(transaction.customerName),
+      value: String(provider.customerName),
     },
-    isValidValue(transaction.customerAddress) && {
+    isValidValue(provider.customerAddress) && {
       label: "Customer Address",
-      value: String(transaction.customerAddress),
+      value: String(provider.customerAddress),
     },
-    isValidValue(transaction.tariff) && {
+    isValidValue(provider.tariff) && {
       label: "Tariff",
-      value: String(transaction.tariff),
+      value: String(provider.tariff),
     },
-    isValidValue(transaction.utilityName) && {
+    isValidValue(provider.utilityName) && {
       label: "Utility",
-      value: String(transaction.utilityName),
+      value: String(provider.utilityName),
     },
-    isValidValue(transaction.tokenAmount) && {
+    isValidValue(provider.tokenAmount) && {
       label: "Token Amount",
-      value: `₦${Number(transaction.tokenAmount).toLocaleString("en-NG", {
+      value: `₦${Number(provider.tokenAmount).toLocaleString("en-NG", {
         minimumFractionDigits: 2,
       })}`,
     },
-    isValidValue(transaction.exchangeReference) && {
+    isValidValue(provider.exchangeReference) && {
       label: "Exchange Reference",
-      value: String(transaction.exchangeReference),
+      value: String(provider.exchangeReference),
       copyLabel: "Exchange reference",
     },
   ].filter(Boolean) as { label: string; value: string; copyLabel?: string }[];
 
-  const hasElectricityDetails = electricityRows.length > 0;
-
-  // ── Education / Result Checker cards (WAEC, NECO, NABTEB, JAMB, etc.) ──
-  // Primary source: transaction.cards -> [{ Serial, Pin }, ...]
-  // Fallback: parse transaction.purchased_code, e.g.
-  //   "Serial No:WRN123456790, pin: 098765432112"
-  const rawCards: any[] = Array.isArray(transaction.cards)
-    ? transaction.cards
-    : [];
-
-  const parsedFallbackCard = (() => {
-    if (rawCards.length > 0) return null; // cards array already covers it
-    const raw = String(transaction.purchased_code || "");
-    const serialMatch = raw.match(/Serial\s*No\s*:\s*([^,]+)/i);
-    const pinMatch = raw.match(/pin\s*:\s*([^\s,]+)/i);
-    const serial = serialMatch?.[1]?.trim();
-    const pin = pinMatch?.[1]?.trim();
-    if (isValidValue(serial) || isValidValue(pin)) {
-      return { Serial: serial, Pin: pin };
-    }
-    return null;
-  })();
-
-  const educationCards: { Serial?: string; Pin?: string }[] =
-    rawCards.length > 0
-      ? rawCards
-      : parsedFallbackCard
-        ? [parsedFallbackCard]
-        : [];
-
-  const educationRows = educationCards.flatMap((card, index) => {
-    const prefix = educationCards.length > 1 ? `Card ${index + 1} — ` : "";
-    const rows: { label: string; value: string; copyLabel?: string }[] = [];
-
-    if (isValidValue(card?.Serial)) {
-      rows.push({
-        label: `${prefix}Serial No.`,
-        value: String(card.Serial),
-        copyLabel: "Serial number",
-      });
-    }
-    if (isValidValue(card?.Pin)) {
-      rows.push({
-        label: `${prefix}PIN`,
-        value: String(card.Pin),
-        copyLabel: "PIN",
-      });
-    }
-    return rows;
-  });
-
-  const productName =
-    transaction.content?.transactions?.product_name ||
-    transaction.product_name ||
-    "";
-
-  if (isValidValue(productName)) {
-    educationRows.unshift({ label: "Product", value: String(productName) });
-  }
-
-  const hasEducationDetails = educationRows.length > 0;
+  const hasExtraDetails = extraRows.length > 0;
 
   const handleDownload = async () => {
     try {
@@ -226,7 +241,9 @@ const Receipt = () => {
           message: `Depay Transaction Receipt\n\nType: ${category}\nAmount: ₦${amount.toLocaleString(
             "en-NG",
             { minimumFractionDigits: 2 },
-          )}\nStatus: ${status}\nDate: ${displayDate}\nTransaction ID: ${transactionId}`,
+          )}\nStatus: ${status}\nDate: ${displayDate}\nTransaction ID: ${transactionId}${
+            hasVendCodes ? `\n\n${vendCodesText}` : ""
+          }`,
           title: "Transaction Receipt",
         });
         return;
@@ -422,12 +439,72 @@ const Receipt = () => {
             <DetailRow
               label="Date"
               value={displayDate}
-              last={!hasElectricityDetails && !hasEducationDetails}
+              last={!hasExtraDetails}
             />
           </View>
 
-          {/* Electricity details card — only rendered if there's something to show */}
-          {hasElectricityDetails && (
+          {/* Token / PIN card — always shown when the purchase returned one */}
+          {hasVendCodes && (
+            <View style={styles.vendCard}>
+              <View style={styles.vendHeader}>
+                <Text variant="semibold" size="sm" color="#1A1A1E">
+                  {vendTitle}
+                </Text>
+                {vendCodes.length > 1 && (
+                  <TouchableOpacity
+                    style={styles.copyBtn}
+                    onPress={() => handleCopy(vendCodesText, "Details")}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons
+                      name="content-copy"
+                      size={14}
+                      color={COLORS.brand}
+                    />
+                    <Text size="xs" variant="semibold" color={COLORS.brand}>
+                      Copy all
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {vendCodes.map((code, index) => (
+                <View key={`${code.label}-${index}`} style={styles.vendRow}>
+                  <Text size="xs" color="#9A9AA0">
+                    {code.label}
+                  </Text>
+                  <View style={styles.vendValueRow}>
+                    <Text
+                      variant="bold"
+                      size="lg"
+                      color="#1A1A1E"
+                      selectable
+                      style={styles.vendValue}
+                    >
+                      {formatCode(code.value)}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.copyBtn}
+                      onPress={() => handleCopy(code.value, code.label)}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialCommunityIcons
+                        name="content-copy"
+                        size={14}
+                        color={COLORS.brand}
+                      />
+                      <Text size="xs" variant="semibold" color={COLORS.brand}>
+                        Copy
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Extra details — units, meter, tariff, product, etc. */}
+          {hasExtraDetails && (
             <View style={styles.detailsCard}>
               <Text
                 variant="semibold"
@@ -435,10 +512,10 @@ const Receipt = () => {
                 color="#1A1A1E"
                 style={styles.sectionTitle}
               >
-                Electricity Details
+                {isElectricity ? "Electricity Details" : "Product Details"}
               </Text>
 
-              {electricityRows.map((row, index) => (
+              {extraRows.map((row, index) => (
                 <DetailRow
                   key={row.label}
                   label={row.label}
@@ -449,36 +526,7 @@ const Receipt = () => {
                       : undefined
                   }
                   showCopy={!!row.copyLabel}
-                  last={index === electricityRows.length - 1}
-                />
-              ))}
-            </View>
-          )}
-
-          {/* Education / Result Checker details card — WAEC, NECO, JAMB, etc. */}
-          {hasEducationDetails && (
-            <View style={styles.detailsCard}>
-              <Text
-                variant="semibold"
-                size="sm"
-                color="#1A1A1E"
-                style={styles.sectionTitle}
-              >
-                PIN Details
-              </Text>
-
-              {educationRows.map((row, index) => (
-                <DetailRow
-                  key={`${row.label}-${index}`}
-                  label={row.label}
-                  value={row.value}
-                  onPress={
-                    row.copyLabel
-                      ? () => handleCopy(row.value, row.copyLabel)
-                      : undefined
-                  }
-                  showCopy={!!row.copyLabel}
-                  last={index === educationRows.length - 1}
+                  last={index === extraRows.length - 1}
                 />
               ))}
             </View>
@@ -714,6 +762,40 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     textAlign: "right",
+  },
+
+  // ── Token / PIN card ──────────────────────────
+  vendCard: {
+    backgroundColor: "#F8F5FF",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#EDE1FF",
+    gap: 12,
+  },
+  vendHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  vendRow: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  vendValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  vendValue: {
+    flex: 1,
+    letterSpacing: 0.5,
   },
 
   // ── Referral card ─────────────────────────────
